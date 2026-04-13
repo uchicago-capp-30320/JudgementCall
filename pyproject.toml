@@ -1,7 +1,7 @@
 [project]
-name = "djok"
+name = "JudgementCall"
 version = "0.1.0"
-description = "An OK starting place for Django projects."
+description = "A civic education web app for judges and judicial elections."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
