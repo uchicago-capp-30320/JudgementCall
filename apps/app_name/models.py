@@ -65,12 +65,11 @@ class Election(models.Model):
 
     def __str__(self):
         return f"{self.date} election for {self.court}"
-    
+
 
 class Candidacy(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
-
 
 
 class Tenure(models.Model):
