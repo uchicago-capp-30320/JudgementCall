@@ -1,0 +1,41 @@
+# the name of the action
+name: Tests
+
+# when the action is triggered
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# what to do when the action is triggered
+jobs:
+
+  # a job called 'test'
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Create log directory
+        run: mkdir -p _logs
+
+      - name: Run tests
+        run: uv run pytest
+        env:
+          DEBUG: "True"
+          SECRET_KEY: test_key_DONT_USE_IN_PROD
+
