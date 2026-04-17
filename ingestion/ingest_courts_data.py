@@ -25,7 +25,8 @@ def scrape_ncsc_archive():
     r = requests.get(ARCHIVE_NCSC_URL)
     response = lxml.html.fromstring(r.text)
 
-    # state data dict format: {"State_Name": {"Court_Name": {court data dict}}, "State_Name": {},...}
+    # state data dict format: 
+    # {"State_Name": {"Court_Name": {court data dict}}, "State_Name": {},...}
     state_data_dict = defaultdict(lambda: defaultdict(dict))
 
     for item in response.xpath('//div[@id="content"]/*'):
