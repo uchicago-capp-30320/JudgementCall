@@ -1,21 +1,25 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 # drop down types
 class SelectionType(models.TextChoices):
     PARTISAN = "partisan election"
     NONPARTISAN = "nonpartisan election"
     APPOINTMENT = "appointment"
 
-class CaseType(models.TextChoices):
-    TYPE1 = "something"
-    TYPE2 = "something else"
 
-# provisional 
+class CaseType(models.TextChoices):
+    CRIM = "criminal"
+    CIVIL = "civil"
+
+
+# provisional
 class CourtType(models.TextChoices):
     SUPREME = "sup", _("Supreme Court")
     APPELLATE = "apl", _("Appellate Court")
     LOWER = "lwr", _("Lower Court")
+
 
 class PartyAffiliation(models.TextChoices):
     REP = "Republican"
@@ -31,7 +35,9 @@ class Court(models.Model):
     name = models.CharField()
     court_type = models.CharField(choices=CourtType)
     bench_size = models.IntegerField(blank=True)
-    selection_type = models.CharField(choices=SelectionType) #limit selection type to election/appointment, further explanation in selection method
+    selection_type = models.CharField(
+        choices=SelectionType
+    )  # limit selection type to election/appointment, further explanation in selection method
     selection_method = models.TextField(blank=True)
     term_length = models.PositiveSmallIntegerField(choices=range(20), blank=True)
     url = models.URLField(blank=True)
@@ -40,15 +46,18 @@ class Court(models.Model):
     def __str__(self):
         return self.name
 
+
 class Person(models.Model):
     name = models.TextField()
     birth_date = models.DateField(blank=True)
     gender = models.CharField(blank=True)
     race = models.CharField(blank=True)
-    partisan_registration = models.CharField(choices=PartyAffiliation, blank=True)
+    party_registration = models.CharField(choices=PartyAffiliation, blank=True)
+    professional_experience = models.TextField()
 
     def __str__(self):
         return self.name
+
 
 class Election(models.Model):
     court = models.ForeignKey(Court, on_delete=models.CASCADE)
@@ -56,6 +65,12 @@ class Election(models.Model):
 
     def __str__(self):
         return f"{self.date} election for {self.court}"
+    
+
+class Candidacy(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+
 
 class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.CASCADE)
@@ -63,23 +78,29 @@ class Tenure(models.Model):
     start_date = models.DateField()
     end_date = models.DateField(blank=True)
     selection_type = models.CharField(choices=SelectionType)
-    partisanship = models.CharField(choices=PartyAffiliation, blank=True)
-    appointer = models.CharField(blank=True)
+    ticket_party = models.CharField(choices=PartyAffiliation, blank=True)
+    appointer_name = models.CharField(blank=True)
+    appointer_party = models.CharField(choices=PartyAffiliation, blank=True)
     chief_justice = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.person} - {self.court}"
 
+
 class Case(models.Model):
     docket_no = models.TextField()
     case_type = models.TextChoices()
+    case_title = models.CharField()
     description = models.TextField()
+    pro_con = models.CharField()
+    decision_status = models.BooleanField()
+    decision_outcome = models.CharField()
 
     def __str__(self):
         return self.docket_no
-    
-class Opinion(models.Model):
-    case = models.ForeignKey(Case, on_delete=models.CASCADE)
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    description = models.TextField()
 
+
+class IndividualOpinion(models.Model):
+    case = models.ForeignKey(Case, on_delete=models.CASCADE)
+    tenure = models.ForeignKey(Tenure, on_delete=models.CASCADE)
+    description = models.TextField()
