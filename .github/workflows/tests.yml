@@ -1,38 +1,46 @@
-# the name of the action
+# the GitHub action is called "Tests"
 name: Tests
 
-# when the action is triggered
+# the GitHub action is triggered on push and pull requests
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
 
-# what to do when the action is triggered
+# when it's triggered, do the following
 jobs:
 
-  # a job called 'test'
+  # run a job called 'test'
   test:
     runs-on: ubuntu-latest
 
     steps:
+
+      #clone repo
       - uses: actions/checkout@v4
 
+      # set up python
       - name: Set up Python
         uses: actions/setup-python@v5
 
         with:
           python-version: "3.12"
 
+      # set up uv
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
+      # sync dependencies
       - name: Install dependencies
         run: uv sync
 
+      # make log directory
       - name: Create log directory
         run: mkdir -p _logs
 
+      # run pytest, which looks for test.py file and runs anything in
+      # it that starts with "test"
       - name: Run tests
         run: uv run pytest
         env:
