@@ -72,6 +72,7 @@ class Candidacy(models.Model):
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
 
 
+
 class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.CASCADE)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
