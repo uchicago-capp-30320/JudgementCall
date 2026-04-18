@@ -1,0 +1,84 @@
+[1mdiff --git a/apps/app_name/apps.py b/apps/app_name/apps.py[m
+[1mindex 07ad08f..1648554 100644[m
+[1m--- a/apps/app_name/apps.py[m
+[1m+++ b/apps/app_name/apps.py[m
+[36m@@ -2,5 +2,5 @@[m [mfrom django.apps import AppConfig[m
+ [m
+ [m
+ class AppNameConfig(AppConfig):[m
+[31m-    default_auto_field = 'django.db.models.BigAutoField'[m
+[31m-    name = 'app_name'[m
+[32m+[m[32m    default_auto_field = "django.db.models.BigAutoField"[m
+[32m+[m[32m    name = "app_name"[m
+[1mdiff --git a/config/settings.py b/config/settings.py[m
+[1mindex 29dbeef..23ea556 100644[m
+[1m--- a/config/settings.py[m
+[1m+++ b/config/settings.py[m
+[36m@@ -45,13 +45,13 @@[m [melse:[m
+         CSRF_COOKIE_SECURE = True[m
+         SESSION_COOKIE_SECURE = True[m
+         SECURE_SSL_REDIRECT = True[m
+[31m-        SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')[m
+[32m+[m[32m        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")[m
+         SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", 3600)[m
+ DATABASES = {"default": _DEFAULT_DB}[m
+ vars().update(EMAIL_CONFIG)[m
+ [m
+[31m-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])[m
+[31m-CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=['http://localhost:8000'])[m
+[32m+[m[32mALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])[m
+[32m+[m[32mCSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://localhost:8000"])[m
+ INTERNAL_IPS = ["127.0.0.1"][m
+ [m
+ # Debug Toolbar[m
+[1mdiff --git a/ingestion/SLRI.ipynb b/ingestion/SLRI.ipynb[m
+[1mindex 7b3aff3..5c2e55d 100644[m
+[1m--- a/ingestion/SLRI.ipynb[m
+[1m+++ b/ingestion/SLRI.ipynb[m
+[36m@@ -22,17 +22,17 @@[m
+    "outputs": [],[m
+    "source": [[m
+     "def make_request(url):\n",[m
+[31m-    "    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'\n",[m
+[31m-    "    acc = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'\n",[m
+[32m+[m[32m    "    user_agent = \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\"\n",[m
+[32m+[m[32m    "    acc = \"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\"\n",[m
+     "    headers = {\n",[m
+[31m-    "    'User-Agent': user_agent,\n",[m
+[31m-    "    'Accept': acc,\n",[m
+[31m-    "    'Accept-Language': 'en-US,en;q=0.5',\n",[m
+[31m-    "    'Accept-Encoding': 'gzip, deflate',\n",[m
+[31m-    "    'Connection': 'keep-alive',\n",[m
+[32m+[m[32m    "        \"User-Agent\": user_agent,\n",[m
+[32m+[m[32m    "        \"Accept\": acc,\n",[m
+[32m+[m[32m    "        \"Accept-Language\": \"en-US,en;q=0.5\",\n",[m
+[32m+[m[32m    "        \"Accept-Encoding\": \"gzip, deflate\",\n",[m
+[32m+[m[32m    "        \"Connection\": \"keep-alive\",\n",[m
+     "    }\n",[m
+     "\n",[m
+[31m-    "    resp = requests.get(url, headers = headers)\n",[m
+[32m+[m[32m    "    resp = requests.get(url, headers=headers)\n",[m
+     "    print(f\"Scraped with status code {resp.status_code}\")\n",[m
+     "    print(f\"Response headers: {resp.headers}\")\n",[m
+     "\n",[m
+[36m@@ -97,10 +97,7 @@[m
+     "xp3 = \"//h2[@class = 'title']/text()\"\n",[m
+     "judge_names = root.xpath(xp1 + xp2 + xp3)\n",[m
+     "\n",[m
+[31m-    "judge_pd = {\n",[m
+[31m-    "    \"JID\": [],\n",[m
+[31m-    "    \"name\": []\n",[m
+[31m-    "}"[m
+[32m+[m[32m    "judge_pd = {\"JID\": [], \"name\": []}"[m
+    ][m
+   },[m
+   {[m
+[36m@@ -820,7 +817,7 @@[m
+     "        data = judge_dic[item]\n",[m
+     "        if data is None:\n",[m
+     "            data\n",[m
+[31m-    "        if (item not in judge_pd):\n",[m
+[32m+[m[32m    "        if item not in judge_pd:\n",[m
+     "            judge_pd[item] = [judge_dic[item]]\n",[m
+     "        else:\n",[m
+     "            judge_pd[item].append(judge_dic[item])"[m
