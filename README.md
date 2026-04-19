@@ -1,6 +1,6 @@
 # Judgement Call
 
-Judgement Call is a civic education project on state-level judiciaries and judicial elections. 
+Judgement Call is a civic education project on state-level judiciaries and judicial elections.
 
 ## Getting Started
 
@@ -15,7 +15,7 @@ TODO
 
 ## File System Layout
 - `apps/` - Parent directory for project apps.
-- `apps/judgementcall/` - The main Judgement Call app directory. Contains the data models, views and tests for the web app. 
+- `apps/judgement-call/` - The main Judgement Call app directory. Contains the data models, views and tests for the web app.
 - `apps/accounts/` - An app that defines the DJOK custom user model, compatible with `allauth` and `django.contrib.admin`.
 - `config/` - Config directory for the Django project.
 - `data/` - Data directory.
