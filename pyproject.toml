@@ -12,8 +12,11 @@ dependencies = [
     "django-structlog>=9.1.0,<10",
     "django-typer>=3.1.0,<4",
     "gunicorn>=23.0.0",
+    "lxml>=6.0.4",
+    "pandas>=3.0.2",
     "pre-commit>=4.2.0",
     "pytest-django>=4.11.1,<5",
+    "requests>=2.33.1",
     "rich>=14.0.0",
     "ruff>=0.11.4",
     "whitenoise>=6.9.0,<7",
@@ -36,3 +39,5 @@ ignore = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+
