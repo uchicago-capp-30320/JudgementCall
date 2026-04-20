@@ -32,7 +32,7 @@ Run `uv sync` after the repository is added to your local machine with `git clon
 - Callie Leone
 - Alexandrea Harriott
 
-## Project Management Kanbam
+## Project Management Kanban
 Link: https://harriscapp.slack.com/lists/T0ABLBHJB/F0ASJAMQGN5
 
 ## Attribution
