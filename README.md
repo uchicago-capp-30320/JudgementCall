@@ -14,6 +14,16 @@ This repository utilizes uv to manage packages.
 
 Run `uv sync` after the repository is added to your local machine with `git clone`.
 
+## File System Layout
+- `apps/` - Parent directory for project apps.
+- `apps/judgement-call/` - The main Judgement Call app directory. Contains the data models, views and tests for the web app.
+- `apps/accounts/` - An app that defines the DJOK custom user model, compatible with `allauth` and `django.contrib.admin`.
+- `config/` - Config directory for the Django project.
+- `data/` - Data directory.
+- `ingestion/` - Backend data ingestion functions to populate the project database.
+- `static/` - Static CSS, images and JS files.
+- `templates/` - Django frontend templates.
+
 ## Team
 - Riley Morrison
 - Maggie Larson
