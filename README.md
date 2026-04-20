@@ -1,17 +1,18 @@
 # Judgement Call
 
-Judgement Call is a civic education project on state-level judiciaries and judicial elections.
+**Educational Page**:
+Judgement Call begins with an educational page that explains what judges do, how they are selected, and why their decisions matter. It’s designed to give users basic understanding of the judicial role before they explore specific judges.
 
-## Getting Started
+**Judge Lookup Page**:
+Users can enter their ZIP code to see every judge who serves their jurisdiction. Each judge’s page includes basic demographic information as well as the cases they have presided over and how they ruled, helping people understand patterns in specific judges' decision‑making.
 
-This project uses uv for virtual environment and dependency management. See https://docs.astral.sh/uv/getting-started/installation/ for setup instructions.
+**Analytics Page**:
+The analytics page zooms out to show broader trends across judges and courts. It highlights patterns in case types, outcomes, and judicial behavior across regions, giving more data‑interested users a view of how the system is functioning overall.
 
-#### Ingestion
-TO DO:
-- run a command from the command line to ingest datasets (courts, judges, cases, etc) and update table
+## Installation Instructions
+This repository utilizes uv to manage packages.
 
-#### Django Instructions
-TODO
+Run `uv sync` after the repository is added to your local machine with `git clone`.
 
 ## File System Layout
 - `apps/` - Parent directory for project apps.
@@ -23,15 +24,17 @@ TODO
 - `static/` - Static CSS, images and JS files.
 - `templates/` - Django frontend templates.
 
+## Team
+- Riley Morrison
+- Maggie Larson
+- Liberto de Pablo
+- Riley Kouns
+- Callie Leone
+- Alexandrea Harriott
+
+## Project Management Kanbam
+Link: https://harriscapp.slack.com/lists/T0ABLBHJB/F0ASJAMQGN5
 
 ## Attribution
 
 Django project template: https://codeberg.org/jpt/djok
-
-## Contributors
-- Alexandrea Harriott
-- Callie Leone
-- Liberto de Pablo
-- Maggie Larson
-- Riley Kouns
-- Riley Morrison
