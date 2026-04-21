@@ -5,89 +5,212 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Case',
+            name="Case",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('docket_no', models.TextField()),
-                ('case_type', models.CharField(choices=[('criminal', 'Crim'), ('civil', 'Civil')])),
-                ('case_title', models.CharField()),
-                ('description', models.TextField()),
-                ('pro_con', models.CharField()),
-                ('decision_status', models.BooleanField()),
-                ('decision_outcome', models.CharField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("docket_no", models.TextField()),
+                ("case_type", models.CharField(choices=[("criminal", "Crim"), ("civil", "Civil")])),
+                ("case_title", models.CharField()),
+                ("description", models.TextField()),
+                ("pro_con", models.CharField()),
+                ("decision_status", models.BooleanField()),
+                ("decision_outcome", models.CharField()),
             ],
         ),
         migrations.CreateModel(
-            name='Court',
+            name="Court",
             fields=[
-                ('org_id', models.CharField(primary_key=True, serialize=False)),
-                ('name', models.CharField()),
-                ('court_type', models.CharField(choices=[('sup', 'Supreme Court'), ('apl', 'Appellate Court'), ('lwr', 'Lower Court')])),
-                ('bench_size', models.IntegerField(blank=True)),
-                ('selection_type', models.CharField(choices=[('partisan election', 'Partisan'), ('nonpartisan election', 'Nonpartisan'), ('appointment', 'Appointment')])),
-                ('selection_method', models.TextField(blank=True)),
-                ('term_length', models.PositiveSmallIntegerField(blank=True, null=True)),
-                ('url', models.URLField(blank=True)),
+                ("org_id", models.CharField(primary_key=True, serialize=False)),
+                ("name", models.CharField()),
+                (
+                    "court_type",
+                    models.CharField(
+                        choices=[
+                            ("sup", "Supreme Court"),
+                            ("apl", "Appellate Court"),
+                            ("lwr", "Lower Court"),
+                        ]
+                    ),
+                ),
+                ("bench_size", models.IntegerField(blank=True)),
+                (
+                    "selection_type",
+                    models.CharField(
+                        choices=[
+                            ("partisan election", "Partisan"),
+                            ("nonpartisan election", "Nonpartisan"),
+                            ("appointment", "Appointment"),
+                        ]
+                    ),
+                ),
+                ("selection_method", models.TextField(blank=True)),
+                ("term_length", models.PositiveSmallIntegerField(blank=True, null=True)),
+                ("url", models.URLField(blank=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Person',
+            name="Person",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('birth_date', models.DateField(blank=True)),
-                ('gender', models.CharField(blank=True)),
-                ('race', models.CharField(blank=True)),
-                ('party_registration', models.CharField(blank=True, choices=[('Republican', 'Rep'), ('Democrat', 'Dem'), ('Independent', 'Ind'), ('Other', 'Other')])),
-                ('professional_experience', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("birth_date", models.DateField(blank=True)),
+                ("gender", models.CharField(blank=True)),
+                ("race", models.CharField(blank=True)),
+                (
+                    "party_registration",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("Republican", "Rep"),
+                            ("Democrat", "Dem"),
+                            ("Independent", "Ind"),
+                            ("Other", "Other"),
+                        ],
+                    ),
+                ),
+                ("professional_experience", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='Election',
+            name="Election",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('date', models.DateField()),
-                ('court', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.court')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("date", models.DateField()),
+                (
+                    "court",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.court"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Candidacy',
+            name="Candidacy",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('election', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.election')),
-                ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.person')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                (
+                    "election",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.election"
+                    ),
+                ),
+                (
+                    "person",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.person"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Tenure',
+            name="Tenure",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('start_date', models.DateField()),
-                ('end_date', models.DateField(blank=True)),
-                ('selection_type', models.CharField(choices=[('partisan election', 'Partisan'), ('nonpartisan election', 'Nonpartisan'), ('appointment', 'Appointment')])),
-                ('ticket_party', models.CharField(blank=True, choices=[('Republican', 'Rep'), ('Democrat', 'Dem'), ('Independent', 'Ind'), ('Other', 'Other')])),
-                ('appointer_name', models.CharField(blank=True)),
-                ('appointer_party', models.CharField(blank=True, choices=[('Republican', 'Rep'), ('Democrat', 'Dem'), ('Independent', 'Ind'), ('Other', 'Other')])),
-                ('chief_justice', models.BooleanField(default=False)),
-                ('court', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.court')),
-                ('person', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.person')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("start_date", models.DateField()),
+                ("end_date", models.DateField(blank=True)),
+                (
+                    "selection_type",
+                    models.CharField(
+                        choices=[
+                            ("partisan election", "Partisan"),
+                            ("nonpartisan election", "Nonpartisan"),
+                            ("appointment", "Appointment"),
+                        ]
+                    ),
+                ),
+                (
+                    "ticket_party",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("Republican", "Rep"),
+                            ("Democrat", "Dem"),
+                            ("Independent", "Ind"),
+                            ("Other", "Other"),
+                        ],
+                    ),
+                ),
+                ("appointer_name", models.CharField(blank=True)),
+                (
+                    "appointer_party",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("Republican", "Rep"),
+                            ("Democrat", "Dem"),
+                            ("Independent", "Ind"),
+                            ("Other", "Other"),
+                        ],
+                    ),
+                ),
+                ("chief_justice", models.BooleanField(default=False)),
+                (
+                    "court",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.court"
+                    ),
+                ),
+                (
+                    "person",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.person"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='IndividualOpinion',
+            name="IndividualOpinion",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('description', models.TextField()),
-                ('case', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.case')),
-                ('tenure', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='judgement_call.tenure')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("description", models.TextField()),
+                (
+                    "case",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.case"
+                    ),
+                ),
+                (
+                    "tenure",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="judgement_call.tenure"
+                    ),
+                ),
             ],
         ),
     ]
