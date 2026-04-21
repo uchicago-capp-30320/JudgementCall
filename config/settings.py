@@ -71,13 +71,14 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "allauth",
-    "allauth.account",
+    # "allauth",
+    # "allauth.account",
     # Uncomment for MFA/Webauthn
     # "allauth.mfa",
-    "django_structlog",
-    "django_typer",
-    "apps.accounts",
+    # "django_structlog",
+    # "django_typer",
+    # "apps.accounts",
+    "apps.judgement_call"
 ]
 
 MIDDLEWARE = [
@@ -89,8 +90,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django_structlog.middlewares.RequestMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
+    # "django_structlog.middlewares.RequestMiddleware",
+    # "allauth.account.middleware.AccountMiddleware",
 ]
 
 # Debug Toolbar needs to be configured after INSTALLED_APPS
@@ -126,8 +127,6 @@ USE_TZ = True
 
 
 # Authentication -----
-
-AUTH_USER_MODEL = "accounts.User"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
