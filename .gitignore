@@ -13,3 +13,9 @@ wheels/
 _staticfiles/
 _logs/
 db.sqlite3
+
+# API keys
+apikeys.txt
+
+# local files
+*_local.csv
