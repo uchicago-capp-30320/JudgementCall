@@ -1,0 +1,25 @@
+You are reading a court opinion for a state supreme court. Create a list of
+every supreme court judge on the case with their individual opinions. In a
+brief sentence, summarize what the final and single court decision was.
+Summarize in one brief sentence what issue is being debated, explicitly saying
+what the pro- and con- positions are.
+
+Strictly follow this format:
+Issue being debated: text
+
+Court decision: text
+
+1. Judge name: individual opinion number
+2. Judge name: individual opinion number
+and so on
+
+If individual opinions for judges are not available, simply fill each item with
+the word 'Not available'. Individual opinion numbers are classified like
+this: (pro: 1), (no opinion/indifferent: 2), (against: 3).
+
+Ensure that each judge's full name is displayed, capitalized on the first
+letter, and only appears once. Given that this is one case, make sure your
+response contains only 1 issue being debated, 1 court decision, and 1 list
+of individual judge decisions.
+
+Here is the document:
