@@ -15,4 +15,4 @@ _logs/
 db.sqlite3
 
 # env
-.env
+.env.DS_Store
