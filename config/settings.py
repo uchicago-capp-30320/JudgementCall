@@ -71,13 +71,13 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "allauth",
-    "allauth.account",
+    # "allauth",
+    # "allauth.account",
     # Uncomment for MFA/Webauthn
     # "allauth.mfa",
     "django_structlog",
     "django_typer",
-    "apps.accounts",
+    # "apps.accounts",
 ]
 
 MIDDLEWARE = [
@@ -90,7 +90,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_structlog.middlewares.RequestMiddleware",
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # Debug Toolbar needs to be configured after INSTALLED_APPS
@@ -127,11 +126,10 @@ USE_TZ = True
 
 # Authentication -----
 
-AUTH_USER_MODEL = "accounts.User"
+# AUTH_USER_MODEL = "accounts.User"
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
-    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -178,17 +176,17 @@ ACCOUNT_USERNAME_BLACKLIST = ["admin"]
 # ACCOUNT_LOGIN_BY_CODE_REQUIRED = False
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 
-if DJOK_USER_TYPE in ("email", "email+username"):
-    ACCOUNT_LOGIN_METHODS = {"email"}
-    ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
-    ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-    ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
-    if DJOK_USER_TYPE == "email":
-        ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-        ACCOUNT_SIGNUP_FIELDS = ["email*"] + _PASSWORDS
-    else:
-        ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
-        ACCOUNT_SIGNUP_FIELDS = ["email*", "username"] + _PASSWORDS
+# if DJOK_USER_TYPE in ("email", "email+username"):
+#     ACCOUNT_LOGIN_METHODS = {"email"}
+#     ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
+#     ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+#     ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+#     if DJOK_USER_TYPE == "email":
+#         ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+#         ACCOUNT_SIGNUP_FIELDS = ["email*"] + _PASSWORDS
+#     else:
+#         ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
+#         ACCOUNT_SIGNUP_FIELDS = ["email*", "username"] + _PASSWORDS
 
 # Uncomment for Webauthnn
 # MFA_SUPPORTED_TYPES = ["webauthn"]

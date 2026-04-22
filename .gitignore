@@ -19,3 +19,5 @@ apikeys.txt
 
 # local files
 *_local.csv
+# env
+.env
