@@ -3,4 +3,4 @@ from django.apps import AppConfig
 
 class AppNameConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "judgement_call"
+    name = "apps.judgement_call"
