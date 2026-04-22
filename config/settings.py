@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "django_structlog",
     "django_typer",
     # "apps.accounts",
+    "apps.judgement_call",
 ]
 
 MIDDLEWARE = [
