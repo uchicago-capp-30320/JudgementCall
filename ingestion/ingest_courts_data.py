@@ -51,9 +51,10 @@ def scrape_ncsc_archive():
                 info_value = state_data_list[i + 1]
                 state_data_dict[state_str][court][info_key] = info_value
                 i += 2
-        
+
         elif item.tag == "p":
-            state_source_dict[state_str].append(item.text_content())
+            note = item.text_content()
+            state_source_dict[state_str].append(note.replace("\n", "").replace("\xa0", ""))
 
     state_data_flat_list = []
     for state, court_dict in state_data_dict.items():
@@ -98,9 +99,11 @@ def main():
             else:
                 print("API key ?")
 
-    print("This is the main function for ingest_courts_data.py.\n"
-    "Run 'ingest_courts_data.py to_csv ncsc' to create NCSC CSV file.\n"
-    "Run 'ingest_courts_data.py to_csv cl YOUR_API_KEY' to create CL CSV file.")
+    print(
+        "This is the main function for ingest_courts_data.py.\n"
+        "Run 'ingest_courts_data.py to_csv ncsc' to create NCSC CSV file.\n"
+        "Run 'ingest_courts_data.py to_csv cl YOUR_API_KEY' to create CL CSV file."
+    )
 
 
 if __name__ == "__main__":
