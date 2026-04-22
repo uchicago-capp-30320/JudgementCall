@@ -238,5 +238,4 @@ def scrape_main(url):
 cases_pd = scrape_main("https://statecourtreport.org/state-case-database")
 
 case_df = pd.DataFrame(cases_pd)
-case_df = case_df[not case_df["pending"]]
 case_df = case_df.drop_duplicates().reset_index(drop=True)
