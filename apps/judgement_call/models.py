@@ -39,7 +39,7 @@ class Court(models.Model):
         choices=SelectionType
     )  # limit selection type to election/appointment, further explanation in selection method
     selection_method = models.TextField(blank=True)
-    term_length = models.PositiveSmallIntegerField(choices=range(20), blank=True)
+    term_length = models.PositiveSmallIntegerField(blank=True, null=True)
     url = models.URLField(blank=True)
     # can add more fields from NCSC data and/or courtlistener data as needed
 
@@ -89,7 +89,7 @@ class Tenure(models.Model):
 
 class Case(models.Model):
     docket_no = models.TextField()
-    case_type = models.TextChoices()
+    case_type = models.CharField(choices=CaseType)
     case_title = models.CharField()
     description = models.TextField()
     pro_con = models.CharField()
