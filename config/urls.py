@@ -1,12 +1,11 @@
 from django.conf import settings
 from django.contrib import admin
 from django.urls import path, include
-from apps.judgement-call import views as judge_views
+# from apps.judgement_call import views as judge_views
 
 urlpatterns = [
     path("djadmin/", admin.site.urls),
-    path("accounts/", include("allauth.urls")),
-    path("", judge_views.index)
+    # path("", judge_views.index),
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:
