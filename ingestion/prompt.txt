@@ -21,13 +21,13 @@ Strictly follow this format:
     ]
 }
 
-If individual opinions for judges are not available, simply fill each item with
-the word 'Not available'.
+You will receive a dataframe containing the name of every state supreme court
+judge you are dealing with in this case. Do no include judge names not in this
+dataframe. The dataframe will be provided after the document after the
+$DATAFRAME$.
 
-You will also receive a dataframe containing the name of every state
-supreme court judge you are dealing with in this case. Do no include judge names
-not in this dataframe. The dataframe will be provided after the document after
-the $DATAFRAME$.
+If individual opinions for judges are not available, do not include them in
+the response.
 
 Ensure that each judge's full name is displayed, capitalized on the first
 letter, and only appears once. Given that this is one case, make sure your
