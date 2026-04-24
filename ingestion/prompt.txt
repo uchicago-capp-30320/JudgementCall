@@ -1,25 +1,37 @@
-You are reading a court opinion for a state supreme court. Create a list of
-every supreme court judge on the case with their individual opinions. In a
+You are reading a court opinion for a state supreme court. In a
 brief sentence, summarize what the final and single court decision was.
 Summarize in one brief sentence what issue is being debated, explicitly saying
-what the pro- and con- positions are.
+what the pro- and con- positions are. Generate a list of every state supreme
+court judge on the case with their individual opinions.
 
 Strictly follow this format:
-Issue being debated: text
+{
+    case_title: The title of the case,
+    decision: The final decision that was made for the case,
+    issue_debate: The main issue being debated in the case,
+    judge_opinions: [
+        {
+            judge_name: The full name of the judge giving an opinion,
+            opinion_summary: An extremely brief description of the judge's opinion on the case
+        },
+        {
+            judge_name: The full name of the judge giving an opinion,
+            opinion_summary: An extremely brief description of the judge's opinion on the case
+        }
+    ]
+}
 
-Court decision: text
+You will receive a dataframe containing the name of every state supreme court
+judge you are dealing with in this case. Do no include judge names not in this
+dataframe. The dataframe will be provided after the document after the
+$DATAFRAME$.
 
-1. Judge name: individual opinion number
-2. Judge name: individual opinion number
-and so on
-
-If individual opinions for judges are not available, simply fill each item with
-the word 'Not available'. Individual opinion numbers are classified like
-this: (pro: 1), (no opinion/indifferent: 2), (against: 3).
+If individual opinions for judges are not available, do not include them in
+the response.
 
 Ensure that each judge's full name is displayed, capitalized on the first
 letter, and only appears once. Given that this is one case, make sure your
 response contains only 1 issue being debated, 1 court decision, and 1 list
 of individual judge decisions.
 
-Here is the document:
+Here is the opinion document and dataframe you need to analyze:

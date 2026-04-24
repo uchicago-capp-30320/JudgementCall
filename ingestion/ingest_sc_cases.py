@@ -40,6 +40,7 @@ def scrape_case(case_url):
     rd = {
         "docket_no": None,
         "title": None,
+        "state": None,
         "date": None,
         "type": None,
         "pending": None,
@@ -57,6 +58,12 @@ def scrape_case(case_url):
     xp3 = "//h1[@class = 'h1']//span/text()"
     title = root.xpath(xp1 + xp2 + xp3)[0]
     rd["title"] = title
+
+    xp1 = "//div[@class = 'state-icon__icon-tooltip'"
+    xp2 = " and @role = 'tooltip']/text()"
+    state = root.xpath(xp1 + xp2)
+    if state != []:
+        rd["state"] = state[0].replace("\n", "").strip()
 
     xp1 = "//div[@class = 'field field--name-field-date "
     xp2 = "field--type-datetime field--label-inline clearfix']"
@@ -163,7 +170,15 @@ def multi_page(start_url):
     url = start_url
     url_base = "https://statecourtreport.org/state-case-database"
 
-    rd = {"docket_no": [], "title": [], "date": [], "type": [], "pending": [], "opinion_link": []}
+    rd = {
+        "docket_no": [],
+        "title": [],
+        "state": [],
+        "date": [],
+        "type": [],
+        "pending": [],
+        "opinion_link": [],
+    }
 
     while True:
         page_info = scrape_page(url, rd)
@@ -177,65 +192,7 @@ def multi_page(start_url):
     return rd
 
 
-def scrape_main(url):
-    """
-    Given the base url for State Search Database the function requests the url
-    and uses lxml.html to extract the names and the codes for every case.
-    It then generates an initial for each state using the state codes, and
-    extracts all of the case information for each case's supreme court. At the
-    end it returns a dictionary:
+cases_pd = multi_page("https://statecourtreport.org/state-case-database")
 
-    rd = {
-        "docket_no": [],
-        "state": [],
-        "title": [],
-        "date": [],
-        "type": [],
-        "pending": [],
-        "opinion_link": []
-    }
-
-    It is essentially the same data format as each case, except it adds a
-    'state' field.
-    """
-    root = lxml.html.fromstring(make_request(url).text)
-    url_base = "https://statecourtreport.org/state-case-database"
-
-    xp1 = "//select[@id = 'edit-state']"
-    xp2 = "//option[not(contains(@value, 'All'))]/@value"
-    state_nos = root.xpath(xp1 + xp2)
-
-    xp2 = "//option[not(contains(@value, 'All'))]/text()"
-    state_names = root.xpath(xp1 + xp2)
-
-    rd = {
-        "docket_no": [],
-        "state": [],
-        "title": [],
-        "date": [],
-        "type": [],
-        "pending": [],
-        "opinion_link": [],
-    }
-
-    for i, state_code in enumerate(state_nos):
-        length = 0
-        state_url = url_base + f"?state={state_code}&issue=All&year=All"
-        state_info = multi_page(state_url)
-
-        for field in rd.keys():
-            if field == "state":
-                continue
-            else:
-                rd[field] += state_info[field]
-                length = len(state_info[field])
-
-        rd["state"] += [state_names[i]] * length
-
-    return rd
-
-
-cases_pd = scrape_main("https://statecourtreport.org/state-case-database")
-
-case_df = pd.DataFrame(cases_pd)
-case_df = case_df.drop_duplicates().reset_index(drop=True)
+case_df = pd.DataFrame(cases_pd).drop_duplicates(keep=False)
+case_df = case_df[~case_df["pending"]].reset_index(drop=True)
