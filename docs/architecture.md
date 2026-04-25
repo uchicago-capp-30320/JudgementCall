@@ -4,7 +4,7 @@ The Judgement Call project pulls data from a variety of sources to provide a cen
 
 ### Data flow
 
-INSERT FLOW CHART HERE
+Flow chart: https://canva.link/pjkpe01xag0fime
 
 Some tables contain long-lived data, i.e. existing state courts, and will be constructed once and updated rarely. Tenure and person tables will be updated to fill in missing data and as a result of new elections and appointment. The primary flow of information through the project will be case and opinion data, which will be updated daily.
 
@@ -22,24 +22,37 @@ The ingestion module contains both one-off scrapers used to create our long-live
 - Case / Opinion
     -	CourtListener
     -	[State Case Database](https://statecourtreport.org/state-case-database)
-        - `ingest_sc_cases.py` - one-off ingestion
+        - `ingest_sc_cases.py` - daily ingestion
 
 - Tenure / Person
     -	Wikipedia
         - to be implemented
     -	Ballotpedia
         - to be implemented
+    -   [State Law Research Initiative](https://state-law-research.org/state-justices/)
+        - `ingest_sc_judges.py` - low-frequency ingestion
 
 - Court
-    - CourtListener: authoritative source for existing state level courts
-    - [Web archive of National Center for State Courts](http://web.archive.org/web/20211129172422/http://judicialselection.us/judicial_selection/methods/selection_of_judges.cfm?state="): one-off ingestion of court type, bench size, selection and retention methods
+    -   CourtListener: authoritative source for existing state level courts
+    -   [Web archive of National Center for State Courts](http://web.archive.org/web/20211129172422/http://judicialselection.us/judicial_selection/methods/selection_of_judges.cfm?state="): one-off ingestion of court type, bench size, selection and retention methods
         - `ingest_courts_data.py`
         - `merge_courts_data.py`
     - Authoritative source: state constitutions
 
 - Election / Candidacy
-    -  There is no authoritative source on all state court elections; we can "guess" from tenure end dates and selection methods which courts have upcoming elections, and manually verify
-    - As a starting point, we have a list of upcoming elections sourced from Ballotpedia
+    -   There is no authoritative source on all state court elections; we can "guess" from tenure end dates and selection methods which courts have upcoming elections, and manually verify
+    -   As a starting point, we have a list of upcoming elections sourced from Ballotpedia
+
+Ingestion will also rely on merging data sources and processing tables:
+
+-   Use of LLM tools (analyze court documents and extract information) to generate case and opinion tables
+    - Currently being developed in `llm_processing.ipynb`
+
+-   Generating tenure tables
+    - To be implemented
+
+-   Generating election and candidacy tables
+    - To be implemented
 
 #### Analysis
 
