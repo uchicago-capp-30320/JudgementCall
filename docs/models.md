@@ -1,4 +1,4 @@
-This is a guide (data dictionary) to JudgementCall's database.
+This is a guide (data dictionary) to JudgementCall's data tables.
 
 **Legend**
 * PK: Primary key
@@ -16,24 +16,22 @@ The tables are as follows.
 - [IndividualOpinion](#individualopinion)
 - [Election](#election)
 - [Candidacy](#candidacy)
-- [Jurisdiction](#jurisdiction)
-
 
 # Court
 
 This contains the current, mostly immutable characteristics of each Court in the US. The table *does not* account for or track historic changes to court structure (e.g. a Constitutional Initiative changes Montana State Supreme Court elections from non-partisan to partisan.) Historic changes such as these are few and far between, enough so that they can be addressed *ad hoc* between election cycles.
 
 | Name             | Type                   | Description                                                                                            |
-| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| org_id           | String (PK)            | Abbreviated identifier, composed of state and level of court                                             |
+|------------------|------------------------|--------------------------------------------------------------------------------------------------------|
+| org_id           | String (PK)            | Abbreviated identifier, composed of state and level of court                                           |
 | name             | String (R)             | Full, readable name of court                                                                           |
-| geo_identifier   | Int (FK Jurisdiction)  | Identifier for court's geographical jurisdiction                                                       |
+| geo_identifier   | String (R)             | Identifier for court's geographical jurisdiction; for use with external geo-lookup                     |
 | court_type       | String (R, enumerated) | Supreme (`sup`), Appellate (`apl`), or Lower (`lwr`)                                                   |
 | bench_size       | Int                    | Number of judges sitting on this court                                                                 |
 | selection_type   | String (R, enumerated) | Broadly, how judges get into this court: `partisan election`, `nonpartisan election`, or `appointment` |
 | selection_method | String                 | Details on how this court's `selection_type` is implemented                                            |
 | term_length      | Int                    | Number of years a judge serves in a full term                                                          |
-| url              | String                 | Link to court's official website |
+| url              | String                 | Link to court's official website                                                                       |
 
 # Tenure
 
@@ -42,7 +40,7 @@ This contains information on individual tenures, or "judgeships." A Tenure is co
 Note that `start_date` is the only required date, as some Tenures are historical (completed) and others are current (no `end_date` yet).
 
 | Name            | Type                   | Description                                                             |
-| --------------- | ---------------------- | ----------------------------------------------------------------------- |
+|-----------------|------------------------|-------------------------------------------------------------------------|
 | court           | String (FK Court)      | Court at which this Tenure worked                                       |
 | person          | Int (FK Person)        | Person who held this Tenure                                             |
 | start_date      | Date (R)               | Date on which this Tenure took office                                   |
@@ -58,7 +56,7 @@ Note that `start_date` is the only required date, as some Tenures are historical
 This contains mostly immutable characteristics of a Person, whether they are a judge or not. A Person's `party_registration` reflects their current affiliation as a voter, so it does not necessarily match every `ticket_party` record in their Tenure history.
 
 | Name                    | Type       | Description                                                              |
-| ----------------------- | ---------- | ------------------------------------------------------------------------ |
+|-------------------------|------------|--------------------------------------------------------------------------|
 | name                    | String (R) | Full name of person                                                      |
 | birth_date              | Date       | Date of birth                                                            |
 | gender                  | String     | Stated gender                                                            |
@@ -68,10 +66,49 @@ This contains mostly immutable characteristics of a Person, whether they are a j
 
 # Case
 
+This contains descriptions of court cases, possibly some of the most nuanced data in the project. In order to quantify judges' ruling behavior, analysis techniques only really need how often judges rule the same as one another. However, to analyze how judges rule on *certain subject matters*, the data must include some information on whether a case succeeding advances or hinders a certain political agenda. To encode this information, fields such as `pro_con` must make value judgements about what it means for a given political agenda to succeed of the court rules in favor of the plaintiff.
+
+| Name             | Type                   | Description                                                                                                            |
+|------------------|------------------------|------------------------------------------------------------------------------------------------------------------------|
+| docket_no        | String (R)             | Identifying string unique to Case within its Court                                                                     |
+| case_type        | String (R, enumerated) | `criminal` or `civil`                                                                                                  |
+| case_title       | String (R)             | Standard case title in form "\<Plaintiff\> vs. <Defendant\>"                                                           |
+| description      | String (R)             | Summary of the complaint before the court                                                                              |
+| subject_matter   | String (R)             | General topic area of the complaint                                                                                    |
+| pro_con          | String (R)             | Indicator, whether siding with plaintiff takes conventionally `pro`, `con`, or other position on this `subject_matter` |
+| decision_status  | Boolean (R)            | Whether Court has issued an Opinion                                                                                    |
+| decision_date    | Date                   | Date final Opinion was issued                                                                                          |
+| decision_outcome | String                 | Summary, whether Court ruled with plaintiff, defendant, or otherwise                                                   |
+
 # IndividualOpinion
+
+This contains information on how an individual judge ruled in a Case. The term "opinion" is technically reserved for the opinion of the entire Court's majority ruling. A single judge's `ruling` here can be combined with the context in the Case table to fully recover which stance each judge defended on the Case's subject matter. Additionally, the `description` field allows for reporting further nuance, such as when a judge concurs, but issues their own argument that differs from their peers' argument.
+
+| Name        | Type                   | Description                                                                              |
+|-------------|------------------------|------------------------------------------------------------------------------------------|
+| case        | Int (FK Case)          | Key to join individual ruling with its Case context                                      |
+| tenure      | Int (FK Tenure)        | Key to join individual ruling with Judge that made it                                    |
+| description | String (R)             | Text of judge's opinion                                                                  |
+| ruling      | String (R, enumerated) | How judge ruled in terms of full court's opinion: `concur`, `dissent`, `other` (recusal) |
+
 
 # Election
 
+This contains the bare minimum of information to report that an election is happening. Election winners are encoded in the Tenure table by matching with `date_take_office` here.
+
+| Name             | Type              | Description                            |
+|------------------|-------------------|----------------------------------------|
+| court            | String (FK Court) | Key to join judicial race to its Court |
+| date             | Date (R)          | Election day                           |
+| num_seats        | Int (R)           | Number of seats up for election        |
+| date_take_office | Date (R)          | Date that winner begins their Tenure   |
+
 # Candidacy
 
-# Jurisdiction
+This contains information on a Person's bids for judicial office. This table is similar to the Tenure table, as
+one Person can have many Candidacies or even none (e.g. if they were appointed, or if they joined the court before our data collection began).
+
+| Name     | Type              | Description                                       |
+|----------|-------------------|---------------------------------------------------|
+| person   | Int (FK Person)   | Key to join a person to their candidacies         |
+| election | Int (FK Election) | Key to join an election to the candidates running |
