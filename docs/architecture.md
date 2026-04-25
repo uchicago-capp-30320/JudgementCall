@@ -45,7 +45,7 @@ The ingestion module contains both one-off scrapers used to create our long-live
     -   There is no authoritative source on all state court elections; we can "guess" from tenure end dates and selection methods which courts have upcoming elections, and manually verify
     -   As a starting point, we have a list of upcoming elections sourced from Ballotpedia
 
-Ingestion will also rely on merging data sources and processing tables:
+Next in the ingestion process, also rely on merging data sources and processing tables:
 
 -   Use of LLM tools (analyze court documents and extract information) to generate case and opinion tables
     - Currently being developed in `llm_processing.ipynb`
@@ -55,6 +55,9 @@ Ingestion will also rely on merging data sources and processing tables:
 
 -   Generating election and candidacy tables
     - To be implemented
+
+A final step in ingestion will centralize the generation of every table except for cases and
+opinions, which are updated daily, into a single script that can be run in the command line.
 
 #### Analysis
 
