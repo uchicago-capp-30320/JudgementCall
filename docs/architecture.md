@@ -1,6 +1,8 @@
 ## Architecture
 
-The Judgement Call project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections. Our primary source for continuous data ingestion source is [CourtListener](https://www.courtlistener.com/), a legal research resource provided by [Free Law Project](https://free.law/).
+The Judgement Call project is aimed at informing voters about their judges by centralizing and synthesizing relevant information about existing judges, and candidates in judicial elections.
+
+The project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections. Our primary source for continuous data ingestion source is [CourtListener](https://www.courtlistener.com/), a legal research resource provided by [Free Law Project](https://free.law/).
 
 ### Data flow
 
@@ -57,3 +59,7 @@ Ingestion will also rely on merging data sources and processing tables:
 #### Analysis
 
 The analysis module will contain any functionality related to analysis of stored data, including calculation of judge similarity scores.
+
+#### Front end
+
+The website will create speed views using the generated tables through ingestion and back end analysis to respond to user queries on the front end.
