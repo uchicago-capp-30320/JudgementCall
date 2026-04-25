@@ -1,12 +1,12 @@
 ## Architecture
 
-The Judgement Call project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections. Our primary source for continuous data ingestion source is [CourtListener](https://www.courtlistener.com/), a legal research resource provided by [Free Law Project](https://free.law/). 
+The Judgement Call project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections. Our primary source for continuous data ingestion source is [CourtListener](https://www.courtlistener.com/), a legal research resource provided by [Free Law Project](https://free.law/).
 
 ### Data flow
 
 INSERT FLOW CHART HERE
 
-Some tables contain long-lived data, i.e. existing state courts, and will be constructed once and updated rarely. Tenure and person tables will be updated to fill in missing data and as a result of new elections and appointment. The primary flow of information through the project will be case and opinion data, which will be updated daily. 
+Some tables contain long-lived data, i.e. existing state courts, and will be constructed once and updated rarely. Tenure and person tables will be updated to fill in missing data and as a result of new elections and appointment. The primary flow of information through the project will be case and opinion data, which will be updated daily.
 
 The flow of case and opinion data will be approximately:
 Daily case scraper -> identify new cases -> match judges to existing tenure records -> use LLM to parse topic & individual judge opinions -> create case and opinion records
@@ -20,7 +20,7 @@ Our main educational page and “who are my judges?” page will query the table
 The ingestion module contains both one-off scrapers used to create our long-lived datasets and continuous ingestion scrapers which (will) run nightly to update our case and opinion data.
 
 - Case / Opinion
-    -	CourtListener 
+    -	CourtListener
     -	[State Case Database](https://statecourtreport.org/state-case-database)
         - `ingest_sc_cases.py` - one-off ingestion
 
