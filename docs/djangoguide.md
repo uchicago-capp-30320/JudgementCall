@@ -2,7 +2,7 @@
 
 Note: if running into a SECRET_KEY error in development, make sure to set the DEBUG environment variable to True.
 - Windows/Powershell: `$env:DEBUG=$true`
-- Mac: 
+- Mac:
 
 ### Set up to use the Django admin view
 #### First time
