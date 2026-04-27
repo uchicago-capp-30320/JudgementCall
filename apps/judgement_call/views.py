@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import (
@@ -17,6 +16,9 @@ from .models import (
 from datetime import date
 import random
 from faker import Faker
+from django.db.models import Q
+from django.core.paginator import Paginator
+from urllib.parse import urlparse
 
 
 def add_fake_data(request):
@@ -180,12 +182,6 @@ def add_fake_data(request):
             )
 
     return HttpResponse("Done!")
-=======
-from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
-from django.core.paginator import Paginator
-from .models import DataSet, Publisher, Region, DataSetFile
-from urllib.parse import urlparse
 
 
 def landing(request):
@@ -195,4 +191,3 @@ def landing(request):
     }
 
     return render(request, "home.html", context)
->>>>>>> 37e0d64 (commit needed to pull?)
