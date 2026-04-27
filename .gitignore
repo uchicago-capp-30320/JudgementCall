@@ -14,6 +14,11 @@ _staticfiles/
 _logs/
 db.sqlite3
 
-# .env
-.env
+# API keys
+apikeys.txt
 
+# local files
+*_local.csv
+# env
+.env
+.DS_Store
