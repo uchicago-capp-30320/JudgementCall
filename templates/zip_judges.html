@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Judges near {{ zip_code }}</title>
+</head>
+<body>
+    <h1>Judges near {{ zip_code }}
+
+    {% for name, info in judges.items %}
+        <div style="border: 2px solid #ccc; padding: 10px; margin: 10px 0;">
+            <h2>{{ name }}</h2>
+            <p>Party: {{ info.party_registration }}</p>
+            <p>Gender: {{ info.gender }}</p>
+            <p>Selection: {{ info.selection_type }}</p>
+            <p>Served: {{ info.start_date }} to {{ info.end_date }}</p>
+            {% if info.chief_justice %}
+                <p>Chief Justice</p>
+            {% endif %}
+            <p>Professional Experience: {{ info.professional_experience }}</p>
+            {% if info.ticket_party %}
+                <p>Ticket Party: {{ info.ticket_party }}</p>
+            {% endif %}
+            {% if info.appointer_name %}
+                <p>Appointer Name: {{ info.appointer_name }}</p>
+            {% endif %}
+            {% if info.appointer_name %}
+                <p>Appointer Party: {{ info.appointer_party }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+</body>
+</html>

@@ -17,6 +17,27 @@ from datetime import date
 import random
 from faker import Faker
 
+def zip_judge(request, zip_code):
+    tenures = Tenure.objects.all()
+    judges = {}
+    for tenure in tenures:
+        judges[tenure.person.name] = {
+            "name": tenure.person.name,
+            "birth_date": tenure.person.birth_date,
+            "gender": tenure.person.gender,
+            "race": tenure.person.race,
+            "party_registration": tenure.person.party_registration,
+            "professional_experience": tenure.person.professional_experience,
+            "start_date": tenure.start_date,
+            "end_date": tenure.end_date,
+            "selection_type": tenure.selection_type,
+            "ticket_party": tenure.ticket_party,
+            "appointer_name": tenure.appointer_name,
+            "appointer_party": tenure.appointer_party,
+            "chief_justice": tenure.chief_justice
+        }
+
+    return render(request, "zip_judges.html", {"judges": judges, "zip_code": zip_code})
 
 def add_fake_data(request):
     fake = Faker("en_US")
@@ -42,8 +63,8 @@ def add_fake_data(request):
             "selection_type": SelectionType.PARTISAN,
             "selection_method": "Partisan election with retention votes",
             "term_length": 10,
-            "url": "https://www.illinoiscourts.gov",
-        },
+            "url": "https://www.illinoiscourts.gov",}
+        ,
         {
             "org_id": "AZSUP",
             "name": "Arizona Supreme Court",
@@ -52,8 +73,8 @@ def add_fake_data(request):
             "selection_type": SelectionType.APPOINTMENT,
             "selection_method": "Merit selection with retention election",
             "term_length": 6,
-            "url": "https://www.azcourts.gov",
-        },
+            "url": "https://www.azcourts.gov",}
+        ,
         {
             "org_id": "ILAPP1",
             "name": "Illinois Appellate Court First District",
@@ -62,8 +83,8 @@ def add_fake_data(request):
             "selection_type": SelectionType.PARTISAN,
             "selection_method": "Partisan election with retention votes",
             "term_length": 10,
-            "url": "https://www.illinoiscourts.gov",
-        },
+            "url": "https://www.illinoiscourts.gov",}
+        ,
     ]
 
     for court_data in courts:
@@ -79,28 +100,28 @@ def add_fake_data(request):
     elections = [
         {
             "court": court_objects["ILSUP"],
-            "date": date(2028, 11, 7),
-        },
+            "date": date(2028, 11, 7),}
+        ,
         {
             "court": court_objects["AZSUP"],
-            "date": date(2028, 11, 7),
-        },
+            "date": date(2028, 11, 7),}
+        ,
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2028, 11, 7),
-        },
+            "date": date(2028, 11, 7),}
+        ,
         {
             "court": court_objects["ILSUP"],
-            "date": date(2024, 11, 7),
-        },
+            "date": date(2024, 11, 7),}
+        ,
         {
             "court": court_objects["AZSUP"],
-            "date": date(2024, 11, 7),
-        },
+            "date": date(2024, 11, 7),}
+        ,
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2024, 11, 7),
-        },
+            "date": date(2024, 11, 7),}
+        ,
     ]
 
     for election_data in elections:
@@ -131,7 +152,7 @@ def add_fake_data(request):
             Tenure.objects.get_or_create(
                 court=court,
                 person=person,
-                defaults={
+                defaults= {
                     "start_date": start,
                     "end_date": end,
                     "selection_type": selection,
