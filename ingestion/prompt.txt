@@ -9,7 +9,7 @@ Strictly follow this format:
     case_title: The title of the case,
     issue_debate: The main issue being debated in the case,
     plaintiff_argument: The plaintiff's stance on the debate issue,
-    plaintiff_pro_con: Whether the plaintiff's argument is pro or con for the debate issue,
+    plaintiff_pro_con: Whether the plaintiff's argument is generally pro or con for the debate issue,
     decision: The court's final decision for the case,
     judge_opinions: [
         {
@@ -25,20 +25,19 @@ Strictly follow this format:
     ]
 }
 
-VERY IMPORTANT:
 You will receive a dataframe containing the name of every state supreme court
-judge on the court handling this case. Match the names in the dataframe with
+judge you are dealing with in this case. Match the names in the dataframe with
 those in the court document. Make sure that the judge names in your output are
 EXACTLY as they appear in the dataframe. Including middle initials, and turning
-upper case names into lower case capizalized.
+upper case names into lower case capitalized. The dataframe will be provided after the document after the
+$DATAFRAME$.
 
 If individual opinions for judges are not available, do not include them in
 the response.
 
-Given that this is one case, make sure your response contains only 1 issue
-being debated, 1 court decision, and 1 list of individual judge decisions.
-
-The dataframe will be provided after the document after the
-$DATAFRAME$.
+Ensure that each judge's full name is displayed, capitalized on the first
+letter, and only appears once. Given that this is one case, make sure your
+response contains only 1 issue being debated, 1 court decision, and 1 list
+of individual judge decisions.
 
 Here is the opinion document and dataframe you need to analyze:
