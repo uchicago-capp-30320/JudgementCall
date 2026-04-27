@@ -14,7 +14,7 @@ Note: if running into a SECRET_KEY error in development, make sure to set the DE
 2. Create superuser
 - Run `uv run python manage.py createsuperuser`
 - Enter your username, email and password
-- For now, this is
+- For now, this is stored in db.sqlite3, so will be deleted if you delete your local version of the database
 
 3. Try running server
 - Run `uv run python manage.py runserver`
