@@ -6,6 +6,11 @@ import pandas as pd
 
 
 def make_request(url):
+    """
+    Function makes request to url. If the request responds with a 429 status
+    code, the request is made again after 2.5 seconds until. The process
+    repeats until the response responds with a 200 code.
+    """
     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     acc = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
     headers = {
@@ -82,7 +87,6 @@ def scrape_main(url):
         judge_pd["state"].append(judge_states[i])
 
         judge_dic = scrape_judge(judge_links[i])
-        print(f"Scraped judge: {name}")
 
         if judge_dic == {}:
             break

@@ -25,17 +25,20 @@ Strictly follow this format:
     ]
 }
 
+VERY IMPORTANT:
 You will receive a dataframe containing the name of every state supreme court
-judge you are dealing with in this case. Do not include judge names from outside this
-dataframe. The dataframe will be provided after the document after the
-$DATAFRAME$.
+judge on the court handling this case. Match the names in the dataframe with
+those in the court document. Make sure that the judge names in your output are
+EXACTLY as they appear in the dataframe. Including middle initials, and turning
+upper case names into lower case capizalized.
 
 If individual opinions for judges are not available, do not include them in
 the response.
 
-Ensure that each judge's full name is displayed, capitalized on the first
-letter, and only appears once. Given that this is one case, make sure your
-response contains only 1 issue being debated, 1 court decision, and 1 list
-of individual judge decisions.
+Given that this is one case, make sure your response contains only 1 issue
+being debated, 1 court decision, and 1 list of individual judge decisions.
+
+The dataframe will be provided after the document after the
+$DATAFRAME$.
 
 Here is the opinion document and dataframe you need to analyze:
