@@ -1,5 +1,5 @@
 import ingestion
-from apps.app_name.models import Court
+from apps.judgement_call.models import Court
 
 """
 TO DO: decide how to format this - one ingest function to be called

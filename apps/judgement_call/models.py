@@ -10,7 +10,7 @@ class SelectionType(models.TextChoices):
 
 
 class CaseType(models.TextChoices):
-    CRIM = "criminal"
+    CRIMINAL = "criminal"
     CIVIL = "civil"
 
 
@@ -31,7 +31,7 @@ class PartyAffiliation(models.TextChoices):
 # Create your models here.
 class Court(models.Model):
     # want to define an intelligible key for courts, eg AZSUP, ILAPP1
-    org_id = models.CharField(primary_key=True)
+    court_id = models.CharField(primary_key=True)
     name = models.CharField()
     court_type = models.CharField(choices=CourtType)
     bench_size = models.IntegerField(blank=True)
@@ -60,7 +60,7 @@ class Person(models.Model):
 
 
 class Election(models.Model):
-    court = models.ForeignKey(Court, on_delete=models.CASCADE)
+    court = models.ForeignKey(Court, on_delete=models.PROTECT)
     date = models.DateField()
 
     def __str__(self):

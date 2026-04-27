@@ -21,4 +21,4 @@ repos:
     - id: debug-statements
     - id: forbid-submodules
     - id: mixed-line-ending
-    #- id: no-commit-to-branch
+    - id: no-commit-to-branch
