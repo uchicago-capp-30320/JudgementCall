@@ -21,10 +21,12 @@ Strictly follow this format:
     ]
 }
 
+VERY IMPORTANT:
 You will receive a dataframe containing the name of every state supreme court
-judge you are dealing with in this case. Match the names in the dataframe with
-those in the court document. Make sure that the names for the a judge are shown
-as they appear in the dataframe.
+judge on the court handling this case. Match the names in the dataframe with
+those in the court document. Make sure that the judge names in your output are
+EXACTLY as they appear in the dataframe. Including middle initials, and turning
+upper case names into lower case capizalized.
 
 If individual opinions for judges are not available, do not include them in
 the response.
