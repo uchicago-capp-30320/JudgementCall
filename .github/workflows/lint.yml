@@ -18,5 +18,6 @@ jobs:
       - name: Install the project
         run: uv sync --locked --all-extras --dev
 
+      # I think this will fix the linter merging issue
       - name: Run lint / precommit
-        run: uv run pre-commit run --all-files
+        run: SKIP=no-commit-to-branch uv run pre-commit run --all-files
