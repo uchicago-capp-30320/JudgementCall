@@ -17,27 +17,56 @@ from datetime import date
 import random
 from faker import Faker
 
-def zip_judge(request, zip_code):
+def judges_state_county(request, state, county):
+    # need to add logic here for filtering by state and county
+
+    # iterate through all the tenures and courts associated with them
+    # when we get to a new court add it to the dict of courts and add that
     tenures = Tenure.objects.all()
-    judges = {}
+    courts = {}
     for tenure in tenures:
-        judges[tenure.person.name] = {
+        court_name = tenure.court.name
+        if court_name not in courts:
+            courts[court_name] = []
+        courts[court_name].append({
             "name": tenure.person.name,
-            "birth_date": tenure.person.birth_date,
-            "gender": tenure.person.gender,
-            "race": tenure.person.race,
             "party_registration": tenure.person.party_registration,
-            "professional_experience": tenure.person.professional_experience,
+            "more_info": f"/judgement_call/people/{tenure.person.id}/",
+            "start_date": tenure.start_date,
+            "end_date": tenure.end_date,
+        })
+    return render(request, "judges_state_county.html", {"courts": courts, "state": state, "county": county})
+
+def show_person(request, person_id):
+    person = Person.objects.get(id=person_id)
+    tenures = Tenure.objects.filter(person=person)
+
+    person_info = {
+        "name": person.name,
+        "birth_date": person.birth_date,
+        "gender": person.gender,
+        "race": person.race,
+        "party_registration": person.party_registration,
+        "professional_experience": person.professional_experience,
+    }
+
+    person_tenures = []
+    for tenure in tenures:
+        person_tenures.append({
+            "court": tenure.court.name,
             "start_date": tenure.start_date,
             "end_date": tenure.end_date,
             "selection_type": tenure.selection_type,
             "ticket_party": tenure.ticket_party,
             "appointer_name": tenure.appointer_name,
             "appointer_party": tenure.appointer_party,
-            "chief_justice": tenure.chief_justice
-        }
+            "chief_justice": tenure.chief_justice,
+        })
 
-    return render(request, "zip_judges.html", {"judges": judges, "zip_code": zip_code})
+    return render(request, "person.html", {
+        "person": person_info,
+        "tenures": person_tenures,
+    })
 
 def add_fake_data(request):
     fake = Faker("en_US")
