@@ -5,7 +5,7 @@ Will probably combine this with ingest_courts_data.py, keeping separate for now!
 
 import pandas as pd
 import us
-import ingest_courts_data
+from ingestion import ingest_courts_data
 
 CL_DF = pd.read_csv("courts_cl_local.csv")
 NCSC_DF = pd.read_csv("courts_ncsc_local.csv")

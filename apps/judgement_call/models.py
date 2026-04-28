@@ -53,6 +53,7 @@ class PersonRace(models.TextChoices):
     AMIN = "American Indian or Alaska Native"
     ASIAN = "Asian"
     NHPI = "Native Hawaiian or Other Pacific Islander"
+    OTHER = "Other"
 
 
 # Create your models here.
@@ -75,6 +76,13 @@ class Court(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CountyToCourt(models.Model):
+    court = models.ForeignKey(Court)
+    state = USStateField()
+    county = models.CharField()
+    fips = models.CharField()
 
 
 class Person(models.Model):
