@@ -14,7 +14,7 @@ Strictly follow this format:
     judge_opinions: [
         {
             judge_name: The full name of the judge giving an opinion,
-            ruling: "concur" or "dissent" or "other" based on how this judge ruled,
+            ruling: "concur" or "dissent" or "other" based on how this judge ruled (delivering opinion is "concur"),
             description: An extremely brief description of the judge's own opinion on the case
         },
         {
