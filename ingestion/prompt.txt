@@ -6,21 +6,20 @@ court judge on the case with their individual concurrence or dissent, and their 
 
 Strictly follow this format:
 {
-    case_title: The title of the case,
     issue_debate: The main issue being debated in the case,
     plaintiff_argument: The plaintiff's stance on the debate issue,
     plaintiff_pro_con: Whether the plaintiff's argument is generally pro or con for the debate issue,
-    decision: The court's final decision for the case,
+    decision: The court's final decision for the case whether they ruled with the plaintiff or not,
     judge_opinions: [
         {
             judge_name: The full name of the judge giving an opinion,
-            concurred: True/False depending on whether the judge decided with the majority of the court or Other if recused,
-            opinion_summary: An extremely brief description of the judge's opinion on the case
+            concurred: True/False whether the judge decided with court majority or Other if recused,
+            opinion_summary: An extremely brief description of the judge's own opinion on the case
         },
         {
             judge_name: The full name of the judge giving an opinion,
-            concurred: True/False depending on whether the judge decided with the majority of the court or Other if recused,
-            opinion_summary: An extremely brief description of the judge's opinion on the case
+            concurred: True/False whether the judge decided with court majority or Other if recused,
+            opinion_summary: An extremely brief description of the judge's own opinion on the case
         }
     ]
 }

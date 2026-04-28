@@ -196,3 +196,5 @@ cases_pd = multi_page("https://statecourtreport.org/state-case-database")
 
 case_df = pd.DataFrame(cases_pd).drop_duplicates(keep=False)
 case_df = case_df[~case_df["pending"]].reset_index(drop=True)
+
+case_df.to_csv("../data/cases_scdb.csv")

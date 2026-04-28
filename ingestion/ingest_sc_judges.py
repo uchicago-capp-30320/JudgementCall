@@ -105,3 +105,5 @@ def scrape_main(url):
 url = "https://state-law-research.org/state-justices/"
 
 judge_pd = scrape_main(url)
+
+judge_pd.to_csv("../data/judges_slri.csv")
