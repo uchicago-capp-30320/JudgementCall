@@ -10,16 +10,38 @@ from apps.judgement_call.models import (
 )
 
 
+class TenureInline(admin.TabularInline):
+    model = Tenure
+
+
+class ElectionInline(admin.TabularInline):
+    model = Election
+
+
+class IndividualOpinionInline(admin.TabularInline):
+    model = IndividualOpinion
+
+
+class CandidacyInline(admin.TabularInline):
+    model = Candidacy
+
+
 # Register your models here.
 class CourtAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ["state", "court_level"]
+    inlines = [
+        ElectionInline,
+        TenureInline,
+    ]
 
 
 admin.site.register(Court, CourtAdmin)
 
 
 class PersonAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        TenureInline,
+    ]
 
 
 admin.site.register(Person, PersonAdmin)
@@ -33,7 +55,9 @@ admin.site.register(Tenure, TenureAdmin)
 
 
 class ElectionAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        CandidacyInline,
+    ]
 
 
 admin.site.register(Election, ElectionAdmin)
@@ -47,7 +71,9 @@ admin.site.register(Candidacy, CandidacyAdmin)
 
 
 class CaseAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        IndividualOpinionInline,
+    ]
 
 
 admin.site.register(Case, CaseAdmin)

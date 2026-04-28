@@ -20,7 +20,7 @@ def command(self, data: str):
     print("Hello world")
 
     if data == "courts":
-        with open("ingestion/merged_courts.csv", encoding="utf-8") as file:
+        with open("ingestion/merged_courts_local.csv", encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
                 headers = row

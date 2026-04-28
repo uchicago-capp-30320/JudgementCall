@@ -79,15 +79,15 @@ class Court(models.Model):
 
 
 class CountyToCourt(models.Model):
-    court = models.ForeignKey(Court)
+    court = models.ForeignKey(Court, on_delete=models.CASCADE)
     state = USStateField()
     county = models.CharField()
     fips = models.CharField()
 
 
 class Person(models.Model):
-    name_canonical = models.TextField()
-    name_alias = models.TextField()
+    name_canonical = models.CharField()
+    name_alias = models.CharField()
     birth_date = models.DateField(blank=True)
     gender = models.CharField(choices=PersonGender, blank=True)
     race = models.CharField(choices=PersonRace, blank=True)
