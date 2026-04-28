@@ -2,7 +2,8 @@ You are reading a court opinion for a state supreme court. In a
 brief sentence, summarize what the final and single court decision was.
 Summarize in one brief sentence what issue is being debated, explicitly saying
 what the pro and con positions are. Generate a list of every state supreme
-court judge on the case with their individual concurrence or dissent, and their individual opinion if they had one.
+court judge on the case with their individual concurrence or dissent, and their
+individual opinion if they had one.
 
 Strictly follow this format:
 {
@@ -11,19 +12,23 @@ Strictly follow this format:
     plaintiff_pro_con: Whether the plaintiff's argument is generally pro or con for the debate issue,
     defendant_argument: Briefly, the defendant's stance on the debate issue,
     decision_outcome: The court's final decision for the case whether they ruled with the plaintiff or not,
+    decision_winner: The party that the court sided with ("plaintiff","defendant","other"),
     judge_opinions: [
         {
             judge_name: The full name of the judge giving an opinion,
             ruling: Choose from ["concur","dissent","other"] based on how this judge ruled (delivering opinion is to concur),
-            description: An extremely brief description of the judge's own opinion on the case
+            description: An extremely brief description of the judge's own opinion on the case taking the format "<Concurred/Dissented>, argued that <argument goes here>."
         },
         {
             judge_name: The full name of the judge giving an opinion,
             ruling: Choose from ["concur","dissent","other"] based on how this judge ruled (delivering opinion is to concur),
-            description: An extremely brief description of the judge's own opinion on the case
+            description: An extremely brief description of the judge's own opinion on the case taking the format "<Concurred/Dissented>, argued that <argument goes here>."
         }
     ]
 }
+
+For individual judge opinions, only set the "ruling" to "other" when they recuse or have some procedural reason
+not to concur or dissent. Individual judges may disagree on parts of an argument but ultimately still agree with it.
 
 You will receive a dataframe containing the name of every state supreme court
 judge you are dealing with in this case. Match the names in the dataframe with
@@ -33,7 +38,10 @@ upper case names into lower case capitalized. The dataframe will be provided aft
 $DATAFRAME$.
 
 If individual opinions for judges are not available, do not include them in
-the response.
+the response. If individual opinions for judges are just a ruling without
+a unique opinion argument, set the "description" to "<Concurred/Dissented> with majority opinion".
+Ensure that the individual opinion "description" for judges is written in plain, accessible, and brief
+English as much as possible. Avoid excessive legalese.
 
 Ensure that each judge's full name is displayed, capitalized on the first
 letter, and only appears once. Given that this is one case, make sure your
