@@ -5,12 +5,12 @@ Will probably combine this with ingest_courts_data.py, keeping separate for now!
 
 import pandas as pd
 import us
-import ingest_courts_data
+from ingestion import ingest_courts_data
 
-CL_DF = pd.read_csv("courts_cl.csv")
-NCSC_DF = pd.read_csv("courts_ncsc.csv")
+CL_DF = pd.read_csv("courts_cl_local.csv")
+NCSC_DF = pd.read_csv("courts_ncsc_local.csv")
 # CL_DF = ingest_courts_data.ingest_courtlistener()
-# NCSC_DF = ingest_courts_data.scrape_ncsc_archive()
+NCSC_DF = ingest_courts_data.scrape_ncsc_archive()
 
 
 def prep_ncsc_df(ncsc_df):
@@ -123,8 +123,30 @@ def merge_ncsc_to_cl_df():
     ncsc_data = prep_ncsc_df(NCSC_DF)
     merged_df = state_courts_db_cols.merge(ncsc_data, how="left", on=["state", "court_type"])
     merged_df = merged_df.drop(["State", "Court"], axis=1)
-    merged_df = merged_df.set_index("id")
-    return merged_df
+    # merged_df = merged_df.set_index("id")
+    rename = {
+        "id": "court_id",
+        "full_name": "name",
+        "Number of Judgeships": "bench_size",
+        "Geographic Basis for Selection": "selection_jurisdiction",
+        "Method of Selection (full term)": "selection_method",
+        "Length of Subsequent Terms": "term_length",
+    }
+    merged_df = merged_df.rename(columns=rename)
+    merged_df = merged_df.set_index("court_id")
+    return merged_df[
+        [
+            "name",
+            "state",
+            "court_level",
+            "court_type",
+            "bench_size",
+            "selection_jurisdiction",
+            "selection_method",
+            "term_length",
+            "url",
+        ]
+    ]
 
 
 def main():
