@@ -13,6 +13,20 @@ Strictly follow this format:
     defendant_argument: Briefly, the defendant's stance on the debate issue,
     decision_outcome: The court's final decision for the case whether they ruled with the plaintiff or not,
     decision_winner: The party that the court sided with ("plaintiff","defendant","other"),
+    rights_affected: {
+        environment: The effect of the court's decision on environmental rights,
+        consumers: The effect of the court's decision on consumer rights,
+        reproductive_rights: The effect of the court's decision on reproductive rights,
+        democratic_norms: The effect of the court's decision on democratic norms,
+        free_press: The effect of the court's decision on the right to free press,
+        public_health: The effect of the court's decision on public health,
+        separation_church_state: The effect of the court's decision on separation of church and state,
+        voting_access: The effect of the court's decision on voting rights,
+        public_education: The effect of the court's decision on the right to public education,
+        free_speech: The effect of the court's decision on the right to free speech,
+        privacy: The effect of the court's decision on privacy rights,
+        worker_rights: The effect of the court's decision on worker rights,
+    },
     judge_opinions: [
         {
             judge_name: The full name of the judge giving an opinion,
@@ -26,6 +40,9 @@ Strictly follow this format:
         }
     ]
 }
+
+For "rights_affected", set each item only to one of ["protected","infringed","NA"] depending on how the court's decision
+affected that item as a legal right.
 
 For individual judge opinions, only set the "ruling" to "other" when they recuse or have some procedural reason
 not to concur or dissent. Individual judges may disagree on parts of an argument but ultimately still agree with it.
