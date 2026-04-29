@@ -8,7 +8,7 @@ from .models import (
     Tenure,
     Case,
     IndividualOpinion,
-    CourtType,
+    CourtLevel,
     SelectionType,
     CaseType,
     PartyAffiliation,
@@ -100,7 +100,7 @@ def add_fake_data(request):
         {
             "org_id": "ILSUP",
             "name": "Illinois Supreme Court",
-            "court_type": CourtType.SUPREME,
+            "court_type": CourtLevel.SUPREME,
             "bench_size": 7,
             "selection_type": SelectionType.PARTISAN,
             "selection_method": "Partisan election with retention votes",
@@ -110,7 +110,7 @@ def add_fake_data(request):
         {
             "org_id": "AZSUP",
             "name": "Arizona Supreme Court",
-            "court_type": CourtType.SUPREME,
+            "court_type": CourtLevel.SUPREME,
             "bench_size": 5,
             "selection_type": SelectionType.APPOINTMENT,
             "selection_method": "Merit selection with retention election",
@@ -120,7 +120,7 @@ def add_fake_data(request):
         {
             "org_id": "ILAPP1",
             "name": "Illinois Appellate Court First District",
-            "court_type": CourtType.APPELLATE,
+            "court_type": CourtLevel.APPELLATE,
             "bench_size": 24,
             "selection_type": SelectionType.PARTISAN,
             "selection_method": "Partisan election with retention votes",
