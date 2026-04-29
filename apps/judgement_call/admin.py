@@ -28,7 +28,7 @@ class CandidacyInline(admin.TabularInline):
 
 # Register your models here.
 class CourtAdmin(admin.ModelAdmin):
-    list_filter = ["state", "court_level"]
+    list_filter = ["court_level"]
     inlines = [
         ElectionInline,
         TenureInline,
