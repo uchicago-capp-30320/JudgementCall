@@ -58,10 +58,8 @@ class PersonRace(models.TextChoices):
 
 # Create your models here.
 class Court(models.Model):
-    # want to define an intelligible key for courts, eg AZSUP, ILAPP1
     court_id = models.CharField()
     name = models.CharField()
-    state = USStateField()
     court_level = models.CharField(choices=CourtLevel, null=True)
     court_type = models.CharField()
     bench_size = models.IntegerField(blank=True, null=True)
