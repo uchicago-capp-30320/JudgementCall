@@ -5,6 +5,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path("djadmin/", admin.site.urls),
+    path("judgement_call/", include("apps.judgement_call.urls")),
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:
