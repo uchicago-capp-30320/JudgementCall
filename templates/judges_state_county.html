@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Judges near {{ county }}, {{ state }}</title>
+    <style>
+        body {
+            font-family: Inter, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .judge-card {
+            border: 2px solid #3e6297;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        a {
+            color: #3e6297;
+        }
+        h2 {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Judges near {{ county }}, {{ state }} </h1>
+    {% for court_name, judges in courts.items %}
+        <h2>{{ court_name }}</h2>
+        {% for judge in judges %}
+            <div class="judge-card">
+                <h3>{{ judge.name }} ({{ judge.start_date.year }} - {{ judge.end_date.year }}) </h3>
+                {% if judge.party_registration == "Republican" %}
+                    <p style="color: red;"> {{ judge.party_registration }}</p>
+                {% elif judge.party_registration == "Democrat" %}
+                    <p style="color: blue;"> {{ judge.party_registration }}</p>
+                {% else %}
+                    <p> {{ judge.party_registration }}</p>
+                {% endif %}
+                <p> <a href="{{ judge.more_info }}">more details</a> </p>
+            </div>
+        {% empty %}
+            <p>No judges found.</p>
+        {% endfor %}
+    {% empty %}
+        <p>No courts found for {{ county }}, {{ state }}.</p>
+    {% endfor %}
+</body>
+</html>
