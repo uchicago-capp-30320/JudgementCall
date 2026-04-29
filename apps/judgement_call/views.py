@@ -191,3 +191,40 @@ def landing(request):
     }
 
     return render(request, "home.html", context)
+
+
+def about(request):
+    """About page, also to test if base.html is working."""
+    context = {"msg": "<Insert heartfelt story about the creation of this project.>"}
+
+    return render(request, "about.html", context)
+
+
+def elections(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending",
+        "header": "Elections",
+        "preamble": """Informed voting is important. Please select your state
+        and county to learn about any upcoming judicial elections.""",
+    }
+
+    return render(request, "dropdown.html", context)
+
+
+def candidates(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending",
+    }
+
+    return render(request, "dropdown.html", context)
+
+
+def analysis(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending!",
+    }
+
+    return render(request, "analysis.html", context)

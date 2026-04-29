@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<h2 class="sub-header">{{ header }}</h2>
+
+<p>{{ preamble }}</p>
+
+<div class="dropdown-container">
+    <select class="regional-dropdown">
+        <option value="">--Please select your state--</option>
+        <option value="dog">Illinois</option>
+        <option value="cat">North Dakota</option>
+        <option value="hamster">Wyoming</option>
+    </select>
+
+    <!-- want to use JavaScript to load/populate county dropdown -->
+    <select class="regional-dropdown">
+        <option value="">--Please select your county--</option>
+        <option value="dog">Illinois</option>
+        <option value="cat">North Dakota</option>
+        <option value="hamster">Wyoming</option>
+    </select>
+</div>
+
+{% endblock %}

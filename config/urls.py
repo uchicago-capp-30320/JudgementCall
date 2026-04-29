@@ -7,6 +7,11 @@ from apps.judgement_call import views as judge_views
 urlpatterns = [
     path("djadmin/", admin.site.urls),
     path("", judge_views.landing),
+    path("about/", judge_views.about),
+    path("elections/", judge_views.elections),
+    path("candidates/<str:state>/<str:county>/", judge_views.candidates),
+    # should we change analysis to analytics?
+    path("analysis/", judge_views.analysis),
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:

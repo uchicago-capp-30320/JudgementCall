@@ -1,17 +1,61 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light dark">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="{% static 'css/pico.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display+SC:wght@400;700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
     <title>{% block title %}{% endblock %}</title>
-  </head>
-  <body>
-    <main class="container">
-    {% block content %}
-    {% endblock %}
-    </main>
-  </body>
+</head>
+
+<body>
+    <div class="main-content">
+        <nav class="navbar" role="navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">
+                    <h2 class="home-logo">Judgement Call <span class="material-icons">gavel</span></h2>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <div class="navbar-end">
+                    <a class="navbar-item" a href="/search/">
+                        Search
+                    </a>
+                    <a class="navbar-item" a href="/about/">
+                        About
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content-body">
+            <div class="container">
+                {% block content%}
+                {% endblock %}
+            </div>
+        </div>
+
+        <footer class="footer">
+            <div>
+                <p>
+                    <strong>Judgement Call</strong> is a project developed by <a
+                        href="https://capp.uchicago.edu/">MSCAPP</a> students.
+                    <br>
+                    Disclaimers would go here.
+                </p>
+            </div>
+        </footer>
+    </div>
+</body>
+
+
 </html>

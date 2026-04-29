@@ -1,0 +1,99 @@
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+.playfair-display-sc-regular {
+    font-family: "Playfair Display SC", serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.playfair-display-sc-bold {
+    font-family: "Playfair Display SC", serif;
+    font-weight: 700;
+    font-style: normal;
+}
+
+.navbar {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    background-color: #4a3a8c;
+}
+
+.home-logo {
+    color: #f9fbff;
+    text-decoration: none;
+    font-family: "Playfair Display SC", serif;
+}
+
+.navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar-item {
+    color: #f9fbff;
+    text-decoration: none;
+}
+
+.service {
+    color: #f9fbff;
+    text-decoration: none;
+}
+
+.centerpiece {
+    padding-top: 5%;
+}
+
+.services {
+    display: flex;
+    gap: 20px;
+    /* align-items: center; */
+}
+
+.elaboration {
+    flex: 1;
+    text-align: center;
+}
+
+.big-button-item {
+    display: block;
+    width: 100%;
+    /* padding: 15px; */
+    padding-top: 60px;
+    padding-bottom: 60px;
+    text-align: center;
+    justify-content: center;
+    font-size: 24px;
+    text-decoration: none;
+    /* background-color: #4a3a8c; */
+    background-image: linear-gradient(#6557a4, #4a3a8c);
+    color: white;
+    border-radius: 25px;
+
+}
+
+.eventual-hover-details {
+    padding-top: 10px;
+}
+
+footer {
+    background-color: #acabaf;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    font-size: small;
+}
+
+.sub-header {
+    padding-top: 10px;
+}
+
+.dropdown-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
