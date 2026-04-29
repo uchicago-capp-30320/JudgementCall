@@ -94,6 +94,26 @@ footer {
 
 .dropdown-container {
     display: flex;
-    justify-content: center;
+    justify-content: left;
     gap: 10px;
 }
+
+.regional-dropdown {
+    width: 400px;
+}
+
+/* #county-dropdown {
+    display: none;
+} */
+
+.reg-button {
+    width: 100px;
+    background-image: linear-gradient(#6557a4, #4a3a8c);
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+}
+
+/* #geosubmit-button {
+    display: none;
+} */

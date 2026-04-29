@@ -11,21 +11,49 @@ Judgement Call
 
 <p>{{ preamble }}</p>
 
-<div class="dropdown-container">
-    <select class="regional-dropdown">
-        <option value="">--Please select your state--</option>
-        <option value="dog">Illinois</option>
-        <option value="cat">North Dakota</option>
-        <option value="hamster">Wyoming</option>
-    </select>
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const triggerSelect = document.getElementById('state-dropdown');
+        const countyDrop = document.getElementById('county-dropdown');
+        const geoSubmitButton = document.getElementById('geosubmit-button');
 
-    <!-- want to use JavaScript to load/populate county dropdown -->
-    <select class="regional-dropdown">
-        <option value="">--Please select your county--</option>
-        <option value="dog">Illinois</option>
-        <option value="cat">North Dakota</option>
-        <option value="hamster">Wyoming</option>
-    </select>
+        triggerSelect.addEventListener('click', function () {
+            if (countyDrop.style.display === 'none') {
+                countyDrop.style.display = 'block';
+            } else {
+                countyDrop.style.display = 'none';
+            }
+        });
+        countyDrop.addEventListener('click', function () {
+            if (geoSubmitButton.style.display === 'none') {
+                geoSubmitButton.style.display = 'block';
+            } else {
+                geoSubmitButton.style.display = 'none';
+            }
+        });
+    });
+</script> -->
+
+<div class="dropdown-bundle">
+    <form action="" method="get">
+        <div class="dropdown-container">
+            <select id="state-dropdown" class="regional-dropdown">
+                <option value="">--Please select your state--</option>
+                <option value="dog">Illinois</option>
+                <option value="cat">North Dakota</option>
+                <option value="hamster">Wyoming</option>
+            </select>
+
+            <!-- want to use JavaScript to load/populate county dropdown -->
+            <select id="county-dropdown" class="regional-dropdown">
+                <option value="">--Please select your county--</option>
+                <option value="dog">Illinois</option>
+                <option value="cat">North Dakota</option>
+                <option value="hamster">Wyoming</option>
+            </select>
+        </div>
+        <input id="geosubmit-button" class="reg-button" type="submit" value="Find Judges">
+    </form>
 </div>
 
 {% endblock %}
