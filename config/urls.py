@@ -12,6 +12,7 @@ urlpatterns = [
     path("candidates/<str:state>/<str:county>/", judge_views.candidates),
     # should we change analysis to analytics?
     path("analysis/", judge_views.analysis),
+    path("judgement_call/", include("apps.judgement_call.urls")),
 ]
 
 if settings.DEBUG and not settings.IS_TESTING:
