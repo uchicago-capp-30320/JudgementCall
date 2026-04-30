@@ -5,6 +5,7 @@ description = "A civic education web app for judges and judicial elections."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "cssselect>=1.4.0",
     "django>=5.2,<6",
     "django-debug-toolbar>=5.1.0",
     "django-environ>=0.12.0,<1",
@@ -13,6 +14,7 @@ dependencies = [
     "django-typer>=3.1.0,<4",
     "faker>=40.15.0",
     "gunicorn>=23.0.0",
+    "httpx>=0.28.1",
     "lxml>=6.0.4",
     "pandas>=3.0.2",
     "pre-commit>=4.2.0",
