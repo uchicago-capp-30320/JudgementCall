@@ -17,11 +17,34 @@ class SelectionJurisdictionType(models.TextChoices):
 
 
 class CaseType(models.TextChoices):
-    CRIMINAL = "criminal"
-    CIVIL = "civil"
+    CIVIL_RIGHTS = "Civil Rights"
+    GOV_STRUCTURE = "Government Structure"
+    ECON_LABOR = "Economic and Labor Rights"
+    VOTING_ELECTIONS = "Voting Rights and Elections"
+    CRIMINAL_LAW = "Criminal Law"
+    ENVIRONMENT = "Environment"
+    JUDICIAL_SELECTION = "Judicial Selection and Administration"
+    EDUCATION = "Education"
+    SPEECH_RELIGION = "Speech and Religion"
+    DUE_PROCESS = "Civil Due Process"
+    REPRODUCTIVE_RIGHTS = "Reproductive Rights"
+    TORTS = "Torts and Liability"
+    JUDICIAL_INTERPRETATION = "Judicial Interpretation"
+    ELECTION2024 = "Election 2024"
 
 
-# provisional
+class CaseParticipant(models.TextChoices):
+    PLAINTIFF = "plaintiff"
+    DEFENDANT = "defendant"
+    OTHER = "other"
+
+
+class TopicAlignment(models.TextChoices):
+    PROTECTED = "protected"
+    INFRINGED = "infringed"
+    NA = "NA"
+
+
 class CourtLevel(models.TextChoices):
     SUPREME = "sup", _("Supreme Court")
     APPELLATE = "apl", _("Appellate Court")
@@ -125,17 +148,40 @@ class Tenure(models.Model):
         return f"{self.person} - {self.court}"
 
 
+class Alias(models.Model):
+    alias = models.CharField()
+    # manual linking of alias to tenure
+    tenure = models.ForeignKey(Tenure, on_delete=models.PROTECT, blank=True, null=True)
+    # the court the case which generated the alias came from
+    court = models.ForeignKey(Court, on_delete=models.PROTECT)
+
+
 class Case(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
-    docket_no = models.TextField()
-    case_type = models.CharField(choices=CaseType)
+    docket_no = models.CharField()
+    case_type = models.CharField(choices=CaseType, blank=True, null=True)
     case_title = models.CharField()
     description = models.TextField()
-    subject_matter = models.CharField()
-    pro_con = models.CharField()
-    decision_status = models.BooleanField()  # whether court has issued an opinion
+    decision_status = models.BooleanField(default=True)  # whether court has issued an opinion
     decision_outcome = models.CharField(blank=True, null=True)  # opinion issued
     decision_date = models.DateField(blank=True, null=True)  # date opinion was issued
+    # added 4/30:
+    decision_winner = models.CharField(choices=CaseParticipant, blank=True, null=True)
+    plaintiff_argument = models.TextField(blank=True, null=True)
+    defendant_argument = models.TextField(blank=True, null=True)
+    # topic flags
+    environment = models.CharField(choices=TopicAlignment, blank=True)
+    consumers = models.CharField(choices=TopicAlignment, blank=True)
+    reproductive_rights = models.CharField(choices=TopicAlignment, blank=True)
+    democratic_norms = models.CharField(choices=TopicAlignment, blank=True)
+    free_press = models.CharField(choices=TopicAlignment, blank=True)
+    public_health = models.CharField(choices=TopicAlignment, blank=True)
+    separation_church_state = models.CharField(choices=TopicAlignment, blank=True)
+    voting_access = models.CharField(choices=TopicAlignment, blank=True)
+    public_education = models.CharField(choices=TopicAlignment, blank=True)
+    free_speech = models.CharField(choices=TopicAlignment, blank=True)
+    privacy = models.CharField(choices=TopicAlignment, blank=True)
+    worker_rights = models.CharField(choices=TopicAlignment, blank=True)
 
     def __str__(self):
         return self.docket_no
@@ -143,6 +189,7 @@ class Case(models.Model):
 
 class IndividualOpinion(models.Model):
     case = models.ForeignKey(Case, on_delete=models.CASCADE)
-    tenure = models.ForeignKey(Tenure, on_delete=models.CASCADE)
+    # alias comes directly from case data; connects to tenure via alias table
+    judge_alias = models.ForeignKey(Alias, on_delete=models.PROTECT)
     description = models.TextField()
     ruling = models.CharField(choices=RulingType)
