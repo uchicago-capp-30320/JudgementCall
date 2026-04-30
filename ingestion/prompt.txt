@@ -9,7 +9,6 @@ Strictly follow this format:
 {
     issue_debate: A phrase starting with "Whether" that summarizes the main issue being debated in the case,
     plaintiff_argument: Briefly, the plaintiff's stance on the debate issue,
-    plaintiff_pro_con: Whether the plaintiff's argument is generally pro or con for the debate issue,
     defendant_argument: Briefly, the defendant's stance on the debate issue,
     decision_outcome: The court's final decision for the case whether they ruled with the plaintiff or not,
     decision_winner: The party that the court sided with ("plaintiff","defendant","other"),
