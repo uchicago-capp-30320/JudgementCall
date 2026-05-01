@@ -1,8 +1,10 @@
 from django.contrib import admin
 from apps.judgement_call.models import (
     Court,
+    CountyToCourt,
     Person,
     Tenure,
+    Alias,
     Election,
     Candidacy,
     Case,
@@ -28,7 +30,7 @@ class CandidacyInline(admin.TabularInline):
 
 # Register your models here.
 class CourtAdmin(admin.ModelAdmin):
-    list_filter = ["state", "court_level"]
+    list_filter = ["court_level"]
     inlines = [
         ElectionInline,
         TenureInline,
@@ -38,6 +40,13 @@ class CourtAdmin(admin.ModelAdmin):
 admin.site.register(Court, CourtAdmin)
 
 
+class CountyToCourtAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(CountyToCourt, CountyToCourtAdmin)
+
+
 class PersonAdmin(admin.ModelAdmin):
     inlines = [
         TenureInline,
@@ -45,6 +54,13 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Person, PersonAdmin)
+
+
+class AliasAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Alias, AliasAdmin)
 
 
 class TenureAdmin(admin.ModelAdmin):
