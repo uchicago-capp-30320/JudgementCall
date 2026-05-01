@@ -100,7 +100,7 @@ class Court(models.Model):
 
 
 class CountyToCourt(models.Model):
-    court = models.ForeignKey(Court, on_delete=models.CASCADE)
+    court = models.ManyToManyField(Court)
     state = USStateField()
     county = models.CharField()
     fips = models.CharField()
@@ -132,6 +132,9 @@ class Candidacy(models.Model):
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     election = models.ForeignKey(Election, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name_plural = "Candidacies"
+
 
 class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
@@ -154,6 +157,9 @@ class Alias(models.Model):
     tenure = models.ForeignKey(Tenure, on_delete=models.PROTECT, blank=True, null=True)
     # the court the case which generated the alias came from
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
+
+    class Meta:
+        verbose_name_plural = "Aliases"
 
 
 class Case(models.Model):
@@ -190,6 +196,6 @@ class Case(models.Model):
 class IndividualOpinion(models.Model):
     case = models.ForeignKey(Case, on_delete=models.CASCADE)
     # alias comes directly from case data; connects to tenure via alias table
-    judge_alias = models.ForeignKey(Alias, on_delete=models.PROTECT)
+    judge_alias = models.ForeignKey(Alias, on_delete=models.PROTECT, null=True)
     description = models.TextField()
     ruling = models.CharField(choices=RulingType)
