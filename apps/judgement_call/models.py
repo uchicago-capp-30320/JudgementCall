@@ -108,7 +108,6 @@ class CountyToCourt(models.Model):
 
 class Person(models.Model):
     name_canonical = models.CharField()
-    name_alias = models.CharField()
     birth_date = models.DateField(blank=True)
     gender = models.CharField(choices=PersonGender, blank=True)
     race = models.CharField(choices=PersonRace, blank=True)
