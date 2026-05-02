@@ -11,6 +11,14 @@ from .models import (
     CourtLevel,
     SelectionType,
     CaseType,
+    SelectionJurisdictionType,
+    Alias,
+    CaseParticipant,
+    TopicAlignment,
+    RulingType,
+    CountyToCourt,
+    PersonGender,
+    PersonRace,
     PartyAffiliation,
 )
 from datetime import date
@@ -19,6 +27,7 @@ from faker import Faker
 from django.db.models import Q
 from django.core.paginator import Paginator
 from urllib.parse import urlparse
+from localflavor.us.us_states import US_STATES
 
 
 def judges_state_county(request, state, county):
@@ -34,7 +43,7 @@ def judges_state_county(request, state, county):
             courts[court_name] = []
         courts[court_name].append(
             {
-                "name": tenure.person.name,
+                "name": tenure.person.name_canonical,
                 "party_registration": tenure.person.party_registration,
                 "more_info": f"/judgement_call/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
@@ -51,7 +60,7 @@ def show_person(request, person_id):
     tenures = Tenure.objects.filter(person=person)
 
     person_info = {
-        "name": person.name,
+        "name": person.name_canonical,
         "birth_date": person.birth_date,
         "gender": person.gender,
         "race": person.race,
@@ -90,57 +99,83 @@ def add_fake_data(request):
     # create Persons
     for _ in range(10):
         Person.objects.create(
-            name=fake.name(),
+            name_canonical=fake.name(),
             birth_date=fake.date_between(start_date="-150y", end_date="-22y"),
-            gender=fake.passport_gender(),
-            race=random.choice(["White", "Black", "Asian"]),
-            party_registration=random.choice(["Republican", "Democrat", "Independent", "Other"]),
+            gender=random.choice(PersonGender.values),
+            race=random.choice(PersonRace.values),
+            party_registration=random.choice(PartyAffiliation.values),
             professional_experience=fake.text(),
+            law_school=fake.text(),
         )
 
     # create courts
     courts = [
         {
-            "org_id": "ILSUP",
+            "court_id": "ILSUP",
             "name": "Illinois Supreme Court",
-            "court_type": CourtLevel.SUPREME,
+            "court_level": CourtLevel.SUPREME,
+            "court_type": "Supreme Court",
             "bench_size": 7,
             "selection_type": SelectionType.PARTISAN,
             "selection_method": "Partisan election with retention votes",
+            "selection_jurisdiction": SelectionJurisdictionType.STATEWIDE,
             "term_length": 10,
             "url": "https://www.illinoiscourts.gov",
+            "counties": [
+                {"state": "IL", "county": "Cook", "fips": "17031"},
+                {"state": "IL", "county": "DuPage", "fips": "17043"},
+            ],
         },
         {
-            "org_id": "AZSUP",
+            "court_id": "AZSUP",
             "name": "Arizona Supreme Court",
-            "court_type": CourtLevel.SUPREME,
+            "court_level": CourtLevel.SUPREME,
+            "court_type": "Supreme Court",
             "bench_size": 5,
             "selection_type": SelectionType.APPOINTMENT,
             "selection_method": "Merit selection with retention election",
+            "selection_jurisdiction": SelectionJurisdictionType.STATEWIDE,
             "term_length": 6,
             "url": "https://www.azcourts.gov",
+            "counties": [
+                {"state": "AZ", "county": "Maricopa", "fips": "04013"},
+                {"state": "AZ", "county": "Pima", "fips": "04019"},
+            ],
         },
         {
-            "org_id": "ILAPP1",
-            "name": "Illinois Appellate Court First District",
-            "court_type": CourtLevel.APPELLATE,
+            "court_id": "ILAPP1",
+            "name": "Illinois Lower Court First District",
+            "court_level": CourtLevel.LOWER,
+            "court_type": "District Court of Appeal",
             "bench_size": 24,
             "selection_type": SelectionType.PARTISAN,
+            "selection_jurisdiction": SelectionJurisdictionType.DISTRICT,
             "selection_method": "Partisan election with retention votes",
             "term_length": 10,
             "url": "https://www.illinoiscourts.gov",
+            "counties": [
+                {"state": "IL", "county": "Cook", "fips": "17031"},
+            ],
         },
     ]
 
     for court_data in courts:
-        Court.objects.get_or_create(org_id=court_data["org_id"], defaults=court_data)
+        county_list = court_data.pop("counties")
+        court, _ = Court.objects.get_or_create(court_id=court_data["court_id"], defaults=court_data)
+        for county_data in county_list:
+            ctc, _ = CountyToCourt.objects.get_or_create(
+                state=county_data["state"],
+                county=county_data["county"],
+                fips=county_data["fips"],
+            )
+            ctc.court.add(court)
 
     # create elections
 
     # make a dictionary of the courts
     court_objects = {}
     for court in Court.objects.all():
-        court_objects[court.org_id] = court
+        court_objects[court.court_id] = court
 
     elections = [
         {
@@ -214,14 +249,24 @@ def add_fake_data(request):
                 },
             )
 
+    tenures = list(Tenure.objects.all())
+    for tenure in tenures:
+        Alias.objects.get_or_create(
+            alias=fake.name(),
+            defaults={
+                "tenure": tenure,
+                "court": tenure.court,
+            },
+        )
+
     # create cases
     for _ in range(10):
         Case.objects.create(
+            court=random.choice(list(Court.objects.all())),
             docket_no=fake.bothify(text="??-####"),
             case_type=random.choice(CaseType.values),
             case_title=fake.sentence(nb_words=5),
             description=fake.text(),
-            pro_con=random.choice(["pro", "con"]),
             decision_status=random.choice([True, False]),
             decision_outcome=random.choice(
                 [
@@ -231,17 +276,36 @@ def add_fake_data(request):
                     "This one was about motorcycles",
                 ]
             ),
+            decision_date=fake.date(),
+            decision_winner=random.choice(CaseParticipant.values),
+            plaintiff_argument=fake.text(),
+            defendant_argument=fake.text(),
+            environment=random.choice(TopicAlignment.values),
+            consumers=random.choice(TopicAlignment.values),
+            reproductive_rights=random.choice(TopicAlignment.values),
+            democratic_norms=random.choice(TopicAlignment.values),
+            free_press=random.choice(TopicAlignment.values),
+            public_health=random.choice(TopicAlignment.values),
+            separation_church_state=random.choice(TopicAlignment.values),
+            voting_access=random.choice(TopicAlignment.values),
+            public_education=random.choice(TopicAlignment.values),
+            free_speech=random.choice(TopicAlignment.values),
+            privacy=random.choice(TopicAlignment.values),
+            worker_rights=random.choice(TopicAlignment.values),
         )
 
     # create individual opinions
     cases = list(Case.objects.all())
     tenures = list(Tenure.objects.all())
 
+    aliases = list(Alias.objects.all())
     for case in cases:
-        opinion_writers = random.sample(tenures, k=random.randint(2, 3))
-        for tenure in opinion_writers:
+        opinion_writers = random.sample(aliases, k=random.randint(2, 3))
+        for alias in opinion_writers:
             IndividualOpinion.objects.get_or_create(
-                case=case, tenure=tenure, defaults={"description": fake.text()}
+                case=case,
+                judge_alias=alias,
+                defaults={"description": fake.text(), "ruling": random.choice(RulingType.values)},
             )
 
     return HttpResponse("Done!")
