@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<h2 class="sub-header">{{ header }}</h2>
+
+<p>{{ preamble }}</p>
+
+<div class="dropdown-bundle">
+    <form action="" method="get">
+        <div class="dropdown-container">
+            <select id="state-dropdown" name = "state" class="regional-dropdown">
+                <option value="">--Please select your state--</option>
+                {% for code, name in states %}
+                    <option value="{{ code }}"">{{ name }}</option>
+                {% endfor %}
+            </select>
+
+            <!-- use JavaScript to load/populate county dropdown -->
+            <select id="county-dropdown" name = "county" class="regional-dropdown">
+                <option value="">--Please select your county--</option>
+            </select>
+
+            <script>
+                document.getElementById("state-dropdown").addEventListener("change", function () {
+                    const state = this.value;
+                    const countyDropdown = document.getElementById("county-dropdown");
+
+                    fetch(`/api/counties/${state}/`)
+                        .then(response => response.json())
+                        .then(counties => {
+                            countyDropdown.innerHTML = "<option value=''>--Please select your county--</option>";
+                            counties.forEach(county => {
+                                countyDropdown.innerHTML += `<option value="${county}">${county}</option>`;
+                            });
+                        });
+                });
+            </script>
+
+        </div>
+        <input id="geosubmit-button" class="reg-button" type="submit" value="Find Judges">
+    </form>
+</div>
+
+{% endblock %}

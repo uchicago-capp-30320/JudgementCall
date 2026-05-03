@@ -28,14 +28,26 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from urllib.parse import urlparse
 from localflavor.us.us_states import US_STATES
+from django.http import JsonResponse
+
+
+# little api to help the javascript fill the counties dropdown
+def get_counties(request, state):
+    # based on given state, filter C2C table, return list of distinct counties
+    counties = CountyToCourt.objects.filter(state=state).values_list("county", flat=True).distinct()
+    return JsonResponse(list(counties), safe=False)
 
 
 def judges_state_county(request, state, county):
     # need to add logic here for filtering by state and county
 
     # iterate through all the tenures and courts associated with them
-    # when we get to a new court add it to the dict of courts and add that
-    tenures = Tenure.objects.all()
+    # when we get to a new court add it to the dict of courts. For each tenure
+    # associated with that court, add it to a list which is the value in the
+    # key value pair where the key is the court name
+    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+    tenures = Tenure.objects.filter(court__in=local_courts_list)
     courts = {}
     for tenure in tenures:
         court_name = tenure.court.name
@@ -45,7 +57,7 @@ def judges_state_county(request, state, county):
             {
                 "name": tenure.person.name_canonical,
                 "party_registration": tenure.person.party_registration,
-                "more_info": f"/judgement_call/people/{tenure.person.id}/",
+                "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
             }
@@ -66,6 +78,7 @@ def show_person(request, person_id):
         "race": person.race,
         "party_registration": person.party_registration,
         "professional_experience": person.professional_experience,
+        "law_school": person.law_school,
     }
 
     person_tenures = []
@@ -91,6 +104,70 @@ def show_person(request, person_id):
             "tenures": person_tenures,
         },
     )
+
+
+def judges(request):
+    """Judges landing page. Has dropdowns to find your judges."""
+
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        return judges_state_county(request, state, county)
+
+    context = {
+        "msg": "Pending",
+        "header": "Find your judges",
+        "preamble": """Knowing your judges is important. Check them out!""",
+        "states": US_STATES,
+    }
+
+    return render(request, "judges.html", context)
+
+
+def landing(request):
+    """Landing page for Judgement Call users."""
+    context = {
+        "msg": "Welcome to Judgement Call!",
+    }
+
+    return render(request, "home.html", context)
+
+
+def about(request):
+    """About page, also to test if base.html is working."""
+    context = {"msg": "<Insert heartfelt story about the creation of this project.>"}
+
+    return render(request, "about.html", context)
+
+
+def elections(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending",
+        "header": "Elections",
+        "preamble": """Informed voting is important. Please select your state
+        and county to learn about any upcoming judicial elections.""",
+    }
+
+    return render(request, "dropdown.html", context)
+
+
+def candidates(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending",
+    }
+
+    return render(request, "dropdown.html", context)
+
+
+def analysis(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending!",
+    }
+
+    return render(request, "analysis.html", context)
 
 
 def add_fake_data(request):
@@ -309,49 +386,3 @@ def add_fake_data(request):
             )
 
     return HttpResponse("Done!")
-
-
-def landing(request):
-    """Landing page for Judgement Call users."""
-    context = {
-        "msg": "Welcome to Judgement Call!",
-    }
-
-    return render(request, "home.html", context)
-
-
-def about(request):
-    """About page, also to test if base.html is working."""
-    context = {"msg": "<Insert heartfelt story about the creation of this project.>"}
-
-    return render(request, "about.html", context)
-
-
-def elections(request):
-    """Elections landing page."""
-    context = {
-        "msg": "Pending",
-        "header": "Elections",
-        "preamble": """Informed voting is important. Please select your state
-        and county to learn about any upcoming judicial elections.""",
-    }
-
-    return render(request, "dropdown.html", context)
-
-
-def candidates(request):
-    """Elections landing page."""
-    context = {
-        "msg": "Pending",
-    }
-
-    return render(request, "dropdown.html", context)
-
-
-def analysis(request):
-    """Elections landing page."""
-    context = {
-        "msg": "Pending!",
-    }
-
-    return render(request, "analysis.html", context)
