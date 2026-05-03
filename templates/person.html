@@ -1,3 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,14 +19,8 @@
             margin: 0 auto;
             padding: 20px;
         }
-        .person-card {
-            border: 2px solid #3a3a3a;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-        }
-        .tenure-card {
-            border: 2px solid #3e6297;
+        .card {
+            border: 2px solid #493a8c;
             padding: 10px;
             margin: 10px 0;
             border-radius: 8px;
@@ -31,7 +34,7 @@
     </style>
 </head>
 <body>
-    <div class="person-card">
+    <div class="card">
         <h1>{{ person.name }}</h1>
         <p>Born: {{ person.birth_date }}</p>
         <p>Gender: {{ person.gender }}</p>
@@ -44,11 +47,13 @@
             <p>Party: {{ person.party_registration }}</p>
         {% endif %}
         <p>Experience: {{ person.professional_experience }}</p>
+        <p>Law school: {{ person.law_school }}</p>
+
     </div>
 
     <h2>Tenures</h2>
     {% for tenure in tenures %}
-        <div class="tenure-card">
+        <div class="card">
             <h3>{{ tenure.court }} ({{ tenure.start_date.year }} - {{ tenure.end_date.year }})</h3>
             <p>Selection: {{ tenure.selection_type }}</p>
             {% if tenure.chief_justice %}
@@ -64,3 +69,5 @@
     {% endfor %}
 </body>
 </html>
+
+{% endblock %}
