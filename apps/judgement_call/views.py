@@ -30,29 +30,46 @@ from urllib.parse import urlparse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 
+def judges(request):
+    """Judges landing page. Has dropdowns to find your judges."""
 
-# little api to help the javascript fill the counties dropdown
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        return judges_state_county(request, state, county)
+
+    context = {
+        "msg": "Pending",
+        "header": "Find your judges",
+        "preamble": """Knowing your judges is important. Check them out!""",
+        "states": US_STATES,
+    }
+
+    return render(request, "judges.html", context)
+
 def get_counties(request, state):
+    """API to enable the javascript to fill the counties dropdown"""
     # based on given state, filter C2C table, return list of distinct counties
     counties = CountyToCourt.objects.filter(state=state).values_list("county", flat=True).distinct()
     return JsonResponse(list(counties), safe=False)
 
-
 def judges_state_county(request, state, county):
-    # need to add logic here for filtering by state and county
-
-    # iterate through all the tenures and courts associated with them
-    # when we get to a new court add it to the dict of courts. For each tenure
-    # associated with that court, add it to a list which is the value in the
-    # key value pair where the key is the court name
+    # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
     tenures = Tenure.objects.filter(court__in=local_courts_list)
     courts = {}
+    
+    # iterate through all the tenures and courts associated with them
     for tenure in tenures:
+        
+        # when we get to a new court add it to the dict of courts. 
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = []
+        
+        # For each tenure associated with a court, add it to a list in that's
+        # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name].append(
             {
                 "name": tenure.person.name_canonical,
@@ -104,24 +121,6 @@ def show_person(request, person_id):
             "tenures": person_tenures,
         },
     )
-
-
-def judges(request):
-    """Judges landing page. Has dropdowns to find your judges."""
-
-    if request.GET.get("state") and request.GET.get("county"):
-        state = request.GET["state"]
-        county = request.GET["county"]
-        return judges_state_county(request, state, county)
-
-    context = {
-        "msg": "Pending",
-        "header": "Find your judges",
-        "preamble": """Knowing your judges is important. Check them out!""",
-        "states": US_STATES,
-    }
-
-    return render(request, "judges.html", context)
 
 
 def landing(request):
