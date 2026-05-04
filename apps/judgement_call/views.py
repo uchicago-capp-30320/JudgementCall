@@ -30,6 +30,7 @@ from urllib.parse import urlparse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 
+
 def judges(request):
     """Judges landing page. Has dropdowns to find your judges."""
 
@@ -47,11 +48,13 @@ def judges(request):
 
     return render(request, "judges.html", context)
 
+
 def get_counties(request, state):
     """API to enable the javascript to fill the counties dropdown"""
     # based on given state, filter C2C table, return list of distinct counties
     counties = CountyToCourt.objects.filter(state=state).values_list("county", flat=True).distinct()
     return JsonResponse(list(counties), safe=False)
+
 
 def judges_state_county(request, state, county):
     # grab all the tenures associated with a specific state / county
@@ -59,15 +62,14 @@ def judges_state_county(request, state, county):
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
     tenures = Tenure.objects.filter(court__in=local_courts_list)
     courts = {}
-    
+
     # iterate through all the tenures and courts associated with them
     for tenure in tenures:
-        
-        # when we get to a new court add it to the dict of courts. 
+        # when we get to a new court add it to the dict of courts.
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = []
-        
+
         # For each tenure associated with a court, add it to a list in that's
         # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name].append(
