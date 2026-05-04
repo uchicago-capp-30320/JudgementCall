@@ -39,3 +39,13 @@ Note: if running into a SECRET_KEY error in development, make sure to set the DE
 - Run git status to check if anyone new files have been created, especially in `apps/judgement_call/migrations` - if you have accidentally created new migration files be careful not to commit them!
 - To clear any records you've created, just delete your local db.sqlite3 database - this is your local database and shouldn't affect anyone else
 - This will also delete your superuser record
+
+
+### To populate database with data
+0. Set your debug environment variable, make sure superuser is set up, make sure migrations are up to date, etc.
+Run all commands from root directory.
+1. Create courts CSVs: set CL_API_KEY environment variable to CourtListener API key, then run `uv run python -m ingestion.ingest_courts`. This will take a couple minutes to create the csv files the first time; if the files already exist, ingest_courts will read from the csv files.
+2. Run ingestion commands in this order:
+- `uv run manage.py ingest courts` - will create court records
+- `uv run manage.py ingest cases` - will create case records & link to court records
+- `uv run manage.py ingest individual-opinions` - will create individual opinion records & link to case records, and will also create alias records for each individual opinion

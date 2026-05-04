@@ -160,8 +160,12 @@ class Alias(models.Model):
     class Meta:
         verbose_name_plural = "Aliases"
 
+    def __str__(self):
+        return f"{self.alias} ({self.court})"
+
 
 class Case(models.Model):
+    case_id = models.CharField(null=True)
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     docket_no = models.CharField()
     case_type = models.CharField(choices=CaseType, blank=True, null=True)
@@ -189,7 +193,7 @@ class Case(models.Model):
     worker_rights = models.CharField(choices=TopicAlignment, blank=True)
 
     def __str__(self):
-        return self.docket_no
+        return f"{self.case_title} /{self.docket_no}, {self.court}"
 
 
 class IndividualOpinion(models.Model):
@@ -198,3 +202,6 @@ class IndividualOpinion(models.Model):
     judge_alias = models.ForeignKey(Alias, on_delete=models.PROTECT, null=True)
     description = models.TextField()
     ruling = models.CharField(choices=RulingType)
+
+    def __str__(self):
+        return f"{self.judge_alias} - {self.case}"
