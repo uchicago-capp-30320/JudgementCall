@@ -8,6 +8,8 @@ class SelectionType(models.TextChoices):
     PARTISAN = "partisan election"
     NONPARTISAN = "nonpartisan election"
     APPOINTMENT = "appointment"
+    RETENTION = "retention election"
+    LEGISLATURE = "elected by legislature"
 
 
 class SelectionJurisdictionType(models.TextChoices):
@@ -58,25 +60,25 @@ class RulingType(models.TextChoices):
 
 
 class PartyAffiliation(models.TextChoices):
-    REP = "Republican"
-    DEM = "Democrat"
-    IND = "Independent"
-    OTHER = "Other"
+    REP = "republican"
+    DEM = "democrat"
+    IND = "independent"
+    OTHER = "other"
 
 
 class PersonGender(models.TextChoices):
-    MALE = "M"
-    FEMALE = "F"
-    OTHER = "O"
+    MALE = "m"
+    FEMALE = "f"
+    OTHER = "o"
 
 
 class PersonRace(models.TextChoices):
-    WHITE = "White"
-    BLACK = "Black or African American"
-    AMIN = "American Indian or Alaska Native"
-    ASIAN = "Asian"
-    NHPI = "Native Hawaiian or Other Pacific Islander"
-    OTHER = "Other"
+    WHITE = "white"
+    BLACK = "black or african american"
+    AMIN = "american indian or alaska native"
+    ASIAN = "asian"
+    NHPI = "native hawaiian or other pacific islander"
+    OTHER = "other"
 
 
 # Create your models here.
@@ -108,15 +110,15 @@ class CountyToCourt(models.Model):
 
 class Person(models.Model):
     name_canonical = models.CharField()
-    birth_date = models.DateField(blank=True)
-    gender = models.CharField(choices=PersonGender, blank=True)
-    race = models.CharField(choices=PersonRace, blank=True)
-    party_registration = models.CharField(choices=PartyAffiliation, blank=True)
+    birth_date = models.DateField(blank=True, null=True)
+    gender = models.CharField(choices=PersonGender, blank=True, null=True)
+    race = models.CharField(choices=PersonRace, blank=True, null=True)
+    party_registration = models.CharField(choices=PartyAffiliation, blank=True, null=True)
     professional_experience = models.TextField(blank=True)
     law_school = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return self.name_canonical
 
 
 class Election(models.Model):
