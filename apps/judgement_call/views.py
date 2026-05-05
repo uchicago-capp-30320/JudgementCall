@@ -450,32 +450,36 @@ def get_radar_example_data(request):
 
     # Query only Cases in Alaska from selected rights
     test_state = "Alaska"
-    # test_rights = ["environment", "reproductive_rights", "free_speech"]
+    test_rights = ["environment", "democratic_norms", "free_speech"]  # ,
     # Need to unpack dict to query Django by variable-named columns
 
     # frac_protected_list = [None] * len(test_rights)
 
-    # when_protected_kwds = {right: "protected", "then": 1}
-    # when_not_na_q_kwds = {right: "NA"}
-    # when_not_na_kwds = {"then": 1}
     cases = Case.objects.filter(case_id__contains=test_state)
 
-    # for i, right in enumerate(test_rights):
+    resp = []
+    resp.append([])
+    for i, right in enumerate(test_rights):
+        filter_protected_kwds = {right: "protected"}
+        exclude_na_kwds = {right: "NA"}
 
-    # rights_filter_kwds = {}
-    cases_protected = cases.filter(environment="protected")
-    cases_relevant = cases.exclude(environment="NA")
-    frac_protected = cases_protected.count() / cases_relevant.count()
+        cases_protected = cases.filter(**filter_protected_kwds)
+        cases_relevant = cases.exclude(**exclude_na_kwds)
 
-    resp = [
-        [
-            {"axis": "environment", "value": frac_protected},
-            {"axis": "made up", "value": 0.123},
-            {"axis": "also made up", "value": 0.90},
-        ]
-    ]
+        frac_protected = cases_protected.count() / cases_relevant.count()
+
+        resp[0].append({"axis": right, "value": frac_protected})
 
     return resp
+
+    # resp_example = [
+    #     [
+    #         {"axis": "environment", "value": frac_protected},
+    #         {"axis": "made up", "value": 0.123},
+    #         {"axis": "also made up", "value": 0.90},
+    #     ]
+    # ]
+
     # return list(cases.values())
     # # return cases
 
