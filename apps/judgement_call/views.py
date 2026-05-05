@@ -408,23 +408,7 @@ def get_individual_opinions_for_radar(request):
         This format plugs right into radarChart.js for any number
         of justices and rights
     """
-
-    # # Query only IndividualOpinions in Alaska from justices X and Y
-    # test_state = "Alaska"
-    # justice_a = "Borghesan" # Sometimes "Borghesan, Justice"
-    # justice_b = "Maassen"   # Sometimes "Maassen, Chief Justice"
-    # ind_ops = IndividualOpinion.objects.filter(
-    #         case__contains=test_state
-    #     ).filter(
-    #         Q(name__contains=justice_a) |
-    #         Q(name__contains=justice_b)
-    #     ).select_related( # "Join" with Case table
-    #         'case'
-    #     )
-    # # Add another aggregation step to get % of time
-    # # these justices protected each right
-    # return JsonResponse(list(ind_ops), safe=False)
-
+    # Query only IndividualOpinions in a single state from justices X and Y
     pass
 
 
@@ -447,13 +431,15 @@ def get_radar_example_data(request):
         This format plugs right into radarChart.js for any number
         of courts and rights
     """
+    # TODO (1): Divide by zero / null handling
+    # TODO (2): Rework this to accept any number of states
+    # TODO (3): After Court table join fixed, make Radar of judges
+    # TODO (4): Add a legend for multiple states / judges!
 
     # Query only Cases in Alaska from selected rights
     test_state = "Alaska"
-    test_rights = ["environment", "democratic_norms", "free_speech"]  # ,
+    test_rights = ["environment", "democratic_norms", "free_speech"]
     # Need to unpack dict to query Django by variable-named columns
-
-    # frac_protected_list = [None] * len(test_rights)
 
     cases = Case.objects.filter(case_id__contains=test_state)
 
@@ -473,34 +459,9 @@ def get_radar_example_data(request):
     return resp
 
     # resp_example = [
-    #     [
-    #         {"axis": "environment", "value": frac_protected},
-    #         {"axis": "made up", "value": 0.123},
+    #     [ # This list corresponds to one Case
+    #         {"axis": "made", "value": 0.1}, # This dict corresponds to one right
+    #         {"axis": "up", "value": 0.123},
     #         {"axis": "also made up", "value": 0.90},
     #     ]
     # ]
-
-    # return list(cases.values())
-    # # return cases
-
-    # for i, right in enumerate(test_rights):
-    #     when_protected_kwds = {right: "protected", "then": 1}
-    #     when_not_na_q_kwds = {right: "NA"}
-    #     when_not_na_kwds = {"then": 1}
-    #     frac_protected_list[i] = cases.aggregate(
-    #         frac_protected=Sum(
-    #             Case(When(**when_protected_kwds, default=0, output_field=FloatField())),
-    #             output_field=FloatField(),
-    #         )
-    #         # /
-    #         # Sum(
-    #         #     Case(
-    #         #         When(~Q(*when_not_na_q_kwds), **when_not_na_kwds,
-    #         #         default=0,
-    #         #         output_field=FloatField()
-    #         #         )
-    #         #     )
-    #         # )
-    #     )
-
-    # return JsonResponse(list(frac_protected_list), safe=False)

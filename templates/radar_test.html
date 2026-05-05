@@ -4,17 +4,21 @@
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
-<h2>&ltCOOL ALASKA RADAR CHART&gt</h2>
+<h2>&lt Placeholder: State Supreme Court of Alaska &gt</h2>
+<p>
+    This radar chart shows the percent of the time that AK' Supreme Court
+    ruled to protect a handful of rights, only counting cases where the right
+    was a point of contention.
 
+    You can add more "radars" to the chart to make comparisons, but I haven't
+    added a legend yet.
+
+    D3 radar template free with attribution thanks to VisualCinnamon.
+</p>
 <div class="radarChart"></div>
-<p>{{radar_data}}</p>
+<!-- <p>{{radar_data}}</p> -->
 {{ radar_data|json_script:"radar_data" }}
-<!-- MIME type, something something -->
-<!-- Specifically CAN'T be `type="module"` -->
 <script src="{% static 'js/radarChart.js' %}"></script>
-
-<!-- Get Alaska data; refactor later to correspond with drop-down selections -->
-
 
 <script>
 
@@ -82,5 +86,3 @@
     // RadarChart(".radarChart", data, radarChartOptions);
     RadarChart(".radarChart", radar_data, radarChartOptions);
 </script>
-
-<p>What a chart</p>
