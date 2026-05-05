@@ -44,6 +44,7 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
+        "radar_data": get_individual_opinions_for_radar(request),
     }
 
     return render(request, "judges.html", context)
@@ -390,6 +391,44 @@ def add_fake_data(request):
 
 
 def get_individual_opinions_for_radar(request):
+    """
+    Query multiple justices' ruling propensities to test out D3
+    Radar charts in `radar_test.html`
+
+    Returns:
+        A list of lists of dicts. Each sublist represents data for a
+        single justice and contains a dict like this:
+
+            {axis:"Environment",value:0.25},
+
+        where "axis" is the legal right in question and "value" is
+        the percent of cases related to that right in which they ruled
+        to protect that right.
+
+        This format plugs right into radarChart.js for any number
+        of justices and rights
+    """
+
+    # # Query only IndividualOpinions in Alaska from justices X and Y
+    # test_state = "Alaska"
+    # justice_a = "Borghesan" # Sometimes "Borghesan, Justice"
+    # justice_b = "Maassen"   # Sometimes "Maassen, Chief Justice"
+    # ind_ops = IndividualOpinion.objects.filter(
+    #         case__contains=test_state
+    #     ).filter(
+    #         Q(name__contains=justice_a) |
+    #         Q(name__contains=justice_b)
+    #     ).select_related( # "Join" with Case table
+    #         'case'
+    #     )
+    # # Add another aggregation step to get % of time
+    # # these justices protected each right
+    # return JsonResponse(list(ind_ops), safe=False)
+
+    pass
+
+
+def get_radar_example_data(request):
     """
     Example view to test out D3 Radar charts in `radar_test.html`
 

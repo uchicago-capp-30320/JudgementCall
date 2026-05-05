@@ -7,6 +7,9 @@
 <h2>&ltCOOL ALASKA RADAR CHART&gt</h2>
 
 <div class="radarChart"></div>
+{% for r_data in radar_data %}
+    <p>{{ r_data }}</p>
+{% endfor %}
 
 <!-- MIME type, something something -->
 <!-- Specifically CAN'T be `type="module"` -->
