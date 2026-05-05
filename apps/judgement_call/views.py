@@ -24,7 +24,7 @@ from .models import (
 from datetime import date
 import random
 from faker import Faker
-from django.db.models import Q
+from django.db.models import Q, Count, Sum, When, FloatField
 from django.core.paginator import Paginator
 from urllib.parse import urlparse
 from localflavor.us.us_states import US_STATES
@@ -44,7 +44,7 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
-        "radar_data": get_individual_opinions_for_radar(request),
+        "radar_data": get_radar_example_data(request),
     }
 
     return render(request, "judges.html", context)
@@ -430,11 +430,13 @@ def get_individual_opinions_for_radar(request):
 
 def get_radar_example_data(request):
     """
-    Example view to test out D3 Radar charts in `radar_test.html`
+    Example view to test out D3 Radar charts in `radar_test.html`.
+    Pick a court (state) and get fraction of each right type that
+    involves protecting the right.
 
     Returns:
         A list of lists of dicts. Each sublist represents data for a
-        single justice and contains a dict like this:
+        single state and contains a dict like this:
 
             {axis:"Environment",value:0.25},
 
@@ -443,23 +445,58 @@ def get_radar_example_data(request):
         to protect that right.
 
         This format plugs right into radarChart.js for any number
-        of justices and rights
+        of courts and rights
     """
 
-    # # Query only IndividualOpinions in Alaska from justices X and Y
-    # test_state = "Alaska"
-    # justice_a = "Borghesan" # Sometimes "Borghesan, Justice"
-    # justice_b = "Maassen"   # Sometimes "Maassen, Chief Justice"
-    # ind_ops = IndividualOpinion.objects.filter(
-    #         case__contains=test_state
-    #     ).filter(
-    #         Q(name__contains=justice_a) |
-    #         Q(name__contains=justice_b)
-    #     ).select_related( # "Join" with Case table
-    #         'case'
-    #     )
-    # # Add another aggregation step to get % of time
-    # # these justices protected each right
-    # return JsonResponse(list(ind_ops), safe=False)
+    # Query only Cases in Alaska from selected rights
+    test_state = "Alaska"
+    # test_rights = ["environment", "reproductive_rights", "free_speech"]
+    # Need to unpack dict to query Django by variable-named columns
 
-    pass
+    # frac_protected_list = [None] * len(test_rights)
+
+    # when_protected_kwds = {right: "protected", "then": 1}
+    # when_not_na_q_kwds = {right: "NA"}
+    # when_not_na_kwds = {"then": 1}
+    cases = Case.objects.filter(case_id__contains=test_state)
+
+    # for i, right in enumerate(test_rights):
+
+    # rights_filter_kwds = {}
+    cases_protected = cases.filter(environment="protected")
+    cases_relevant = cases.exclude(environment="NA")
+    frac_protected = cases_protected.count() / cases_relevant.count()
+
+    resp = [
+        [
+            {"axis": "environment", "value": frac_protected},
+            {"axis": "made up", "value": 0.123},
+            {"axis": "also made up", "value": 0.90},
+        ]
+    ]
+
+    return resp
+    # return list(cases.values())
+    # # return cases
+
+    # for i, right in enumerate(test_rights):
+    #     when_protected_kwds = {right: "protected", "then": 1}
+    #     when_not_na_q_kwds = {right: "NA"}
+    #     when_not_na_kwds = {"then": 1}
+    #     frac_protected_list[i] = cases.aggregate(
+    #         frac_protected=Sum(
+    #             Case(When(**when_protected_kwds, default=0, output_field=FloatField())),
+    #             output_field=FloatField(),
+    #         )
+    #         # /
+    #         # Sum(
+    #         #     Case(
+    #         #         When(~Q(*when_not_na_q_kwds), **when_not_na_kwds,
+    #         #         default=0,
+    #         #         output_field=FloatField()
+    #         #         )
+    #         #     )
+    #         # )
+    #     )
+
+    # return JsonResponse(list(frac_protected_list), safe=False)

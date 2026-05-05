@@ -7,10 +7,8 @@
 <h2>&ltCOOL ALASKA RADAR CHART&gt</h2>
 
 <div class="radarChart"></div>
-{% for r_data in radar_data %}
-    <p>{{ r_data }}</p>
-{% endfor %}
-
+<p>{{radar_data}}</p>
+{{ radar_data|json_script:"radar_data" }}
 <!-- MIME type, something something -->
 <!-- Specifically CAN'T be `type="module"` -->
 <script src="{% static 'js/radarChart.js' %}"></script>
@@ -33,7 +31,7 @@
     //////////////////////////////////////////////////////////////
     ////////////////////////// Data //////////////////////////////
     //////////////////////////////////////////////////////////////
-
+    const radar_data = JSON.parse(document.getElementById('radar_data').textContent);
     var data = [
                 [//iPhone
                     {axis:"Battery Life",value:0.22},
@@ -81,7 +79,8 @@
         color: color
     };
     //Call function to draw the Radar chart
-    RadarChart(".radarChart", data, radarChartOptions);
+    // RadarChart(".radarChart", data, radarChartOptions);
+    RadarChart(".radarChart", radar_data, radarChartOptions);
 </script>
 
 <p>What a chart</p>
