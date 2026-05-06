@@ -107,6 +107,12 @@ class CountyToCourt(models.Model):
     county = models.CharField()
     fips = models.CharField()
 
+    def __str__(self):
+        rep_str = f"{self.county} - "
+        for court in self.court.all():
+            rep_str = rep_str + f"{court.name}"
+        return rep_str
+
 
 class Person(models.Model):
     name_canonical = models.CharField()
