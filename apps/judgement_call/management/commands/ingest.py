@@ -2,7 +2,6 @@
 # import ingestion.merge_courts_data
 import csv
 import pathlib
-from apps.judgement_call.models import Court, CountyToCourt, Case, IndividualOpinion, Alias
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
 from ingestion.ingest_courts import (
@@ -14,6 +13,7 @@ from ingestion.ingest_courts import (
 from datetime import date, datetime
 from apps.judgement_call.models import (
     Court,
+    CountyToCourt,
     Case,
     IndividualOpinion,
     Person,
@@ -103,7 +103,7 @@ def command(self, data: str):
             lookup_court = Court.objects.get(court_id=court)
             county, created = CountyToCourt.objects.update_or_create(**county)
             county.court.add(lookup_court)
-            
+
     if data == "tenures":
         with open("./data/judges_slri.csv", encoding="utf-8") as file:
             reader = csv.reader(file)
