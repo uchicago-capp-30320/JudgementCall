@@ -164,7 +164,7 @@ def candidates(request):
 
 def analysis(request):
     """Analysis landing page."""
-    
+
     context = {
         "msg": "Pending",
         "header": "More cool analysis like this coming soon!",
