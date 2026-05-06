@@ -24,7 +24,7 @@ from .models import (
 from datetime import date
 import random
 from faker import Faker
-from django.db.models import Q
+from django.db.models import Q, Count, Sum, When, FloatField
 from django.core.paginator import Paginator
 from urllib.parse import urlparse
 from localflavor.us.us_states import US_STATES
@@ -44,6 +44,7 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
+        "radar_data": get_radar_example_data(request),
     }
 
     return render(request, "judges.html", context)
@@ -387,3 +388,80 @@ def add_fake_data(request):
             )
 
     return HttpResponse("Done!")
+
+
+def get_individual_opinions_for_radar(request):
+    """
+    Query multiple justices' ruling propensities to test out D3
+    Radar charts in `radar_test.html`
+
+    Returns:
+        A list of lists of dicts. Each sublist represents data for a
+        single justice and contains a dict like this:
+
+            {axis:"Environment",value:0.25},
+
+        where "axis" is the legal right in question and "value" is
+        the percent of cases related to that right in which they ruled
+        to protect that right.
+
+        This format plugs right into radarChart.js for any number
+        of justices and rights
+    """
+    # Query only IndividualOpinions in a single state from justices X and Y
+    pass
+
+
+def get_radar_example_data(request):
+    """
+    Example view to test out D3 Radar charts in `radar_test.html`.
+    Pick a court (state) and get fraction of each right type that
+    involves protecting the right.
+
+    Returns:
+        A list of lists of dicts. Each sublist represents data for a
+        single state and contains a dict like this:
+
+            {axis:"Environment",value:0.25},
+
+        where "axis" is the legal right in question and "value" is
+        the percent of cases related to that right in which they ruled
+        to protect that right.
+
+        This format plugs right into radarChart.js for any number
+        of courts and rights
+    """
+    # TODO (1): Divide by zero / null handling
+    # TODO (2): Rework this to accept any number of states
+    # TODO (3): After Court table join fixed, make Radar of judges
+    # TODO (4): Add a legend for multiple states / judges!
+
+    # Query only Cases in Alaska from selected rights
+    test_state = "Alaska"
+    test_rights = ["environment", "democratic_norms", "free_speech"]
+    # Need to unpack dict to query Django by variable-named columns
+
+    cases = Case.objects.filter(case_id__contains=test_state)
+
+    resp = []
+    resp.append([])
+    for i, right in enumerate(test_rights):
+        filter_protected_kwds = {right: "protected"}
+        exclude_na_kwds = {right: "NA"}
+
+        cases_protected = cases.filter(**filter_protected_kwds)
+        cases_relevant = cases.exclude(**exclude_na_kwds)
+
+        frac_protected = cases_protected.count() / cases_relevant.count()
+
+        resp[0].append({"axis": right, "value": frac_protected})
+
+    return resp
+
+    # resp_example = [
+    #     [ # This list corresponds to one Case
+    #         {"axis": "made", "value": 0.1}, # This dict corresponds to one right
+    #         {"axis": "up", "value": 0.123},
+    #         {"axis": "also made up", "value": 0.90},
+    #     ]
+    # ]

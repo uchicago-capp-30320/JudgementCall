@@ -38,3 +38,4 @@ Link: https://harriscapp.slack.com/lists/T0ABLBHJB/F0ASJAMQGN5
 ## Attribution
 
 Django project template: https://codeberg.org/jpt/djok
+Radar chart for D3 v4+: Nadieh Bremer | Visual Cinnamon, updated by Ingo Kleiber
