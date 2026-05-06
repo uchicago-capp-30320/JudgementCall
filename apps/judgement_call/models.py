@@ -208,8 +208,8 @@ class Alias(models.Model):
 
     def update_matches(self):
         """
-        Runs the matching algorithm and updates the alias table with the
-        updates matches in the tenure field.
+        Main function that creates a matching output, and uses the output
+        to update tenure in the Alias table in the database.
         """
         match_table = self.match_names()
         num_matches = len(match_table)
