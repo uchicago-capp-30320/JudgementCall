@@ -2,9 +2,10 @@
 # import ingestion.merge_courts_data
 import csv
 import pathlib
-from apps.judgement_call.models import Court, Case, IndividualOpinion, Alias
+from apps.judgement_call.models import Court, CountyToCourt, Case, IndividualOpinion, Alias
 from django_typer.management import Typer
 from ingestion.ingest_courts import MERGED_COURTS_PATH, get_courts_df, COURT_LOOKUP_LONG
+from ingestion.setup_us_states_counties import make_county_to_court_df
 
 """
 TO DO: decide how to format this - one ingest function to be called
@@ -74,6 +75,15 @@ def command(self, data: str):
                 indop.pop("case_id", None)
                 print(indop)
                 IndividualOpinion.objects.update_or_create(**indop)
+
+    if data == "county-to-court":
+        county_df = make_county_to_court_df()
+        for index, row in county_df.iterrows():
+            county = dict(**row)
+            court = county.pop("court", None)
+            lookup_court = Court.objects.get(court_id=court)
+            county, created = CountyToCourt.objects.update_or_create(**county)
+            county.court.add(lookup_court)
 
 
 def empty_string_to_none(value):
