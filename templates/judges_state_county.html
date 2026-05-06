@@ -40,9 +40,9 @@ Judgement Call
         {% for judge in judges %}
             <div class="judge-card">
                 <h3>{{ judge.name }} ({{ judge.start_date.year }} - {{ judge.end_date.year }}) </h3>
-                {% if judge.party_registration == "Republican" %}
+                {% if judge.party_registration == "republican" %}
                     <p style="color: red;"> {{ judge.party_registration }}</p>
-                {% elif judge.party_registration == "Democrat" %}
+                {% elif judge.party_registration == "democrat" %}
                     <p style="color: blue;"> {{ judge.party_registration }}</p>
                 {% else %}
                     <p> {{ judge.party_registration }}</p>

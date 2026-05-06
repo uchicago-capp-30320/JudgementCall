@@ -39,9 +39,9 @@ Judgement Call
         <p>Born: {{ person.birth_date }}</p>
         <p>Gender: {{ person.gender }}</p>
         <p>Race: {{ person.race }}</p>
-        {% if person.party_registration == "Republican" %}
+        {% if person.party_registration == "republican" %}
             <p>Party: <span style="color: red;">{{ person.party_registration }}</span></p>
-        {% elif person.party_registration == "Democrat" %}
+        {% elif person.party_registration == "democrat" %}
             <p>Party: <span style="color: blue;">{{ person.party_registration }}</span></p>
         {% else %}
             <p>Party: {{ person.party_registration }}</p>

@@ -44,7 +44,6 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
-        "radar_data": get_radar_example_data(request),
     }
 
     return render(request, "judges.html", context)
@@ -164,9 +163,14 @@ def candidates(request):
 
 
 def analysis(request):
-    """Elections landing page."""
+    """Analysis landing page."""
+    
     context = {
-        "msg": "Pending!",
+        "msg": "Pending",
+        "header": "More cool analysis like this coming soon!",
+        "preamble": """Here's a sweet radar chart riley k made. What a legend!""",
+        "states": US_STATES,
+        "radar_data": get_radar_example_data(request),
     }
 
     return render(request, "analysis.html", context)
