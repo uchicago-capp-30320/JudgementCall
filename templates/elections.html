@@ -30,7 +30,7 @@ Judgement Call
             <script>
                 document.getElementById("state-dropdown").addEventListener("change", function () {
                     const state = this.value;
-                    const countyDropdown = document.getElementById("county-dropdown");
+                    const countyDropdown = document.getElementById(" county-dropdown");
 
                     fetch(`/api/counties/${state}/`)
                         .then(response => response.json())
