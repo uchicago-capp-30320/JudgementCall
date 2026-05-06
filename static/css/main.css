@@ -2,6 +2,10 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
+.content-body {
+    min-height: 85vh;
+}
+
 .playfair-display-sc-regular {
     font-family: "Playfair Display SC", serif;
     font-weight: 400;
@@ -81,7 +85,6 @@ body {
 
 footer {
     background-color: #acabaf;
-    position: fixed;
     left: 0;
     bottom: 0;
     width: 100%;

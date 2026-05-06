@@ -22,6 +22,7 @@ from .models import (
     PartyAffiliation,
 )
 from datetime import date
+from dateutil.relativedelta import relativedelta
 import random
 from faker import Faker
 from django.db.models import Q, Count, Sum, When, FloatField
@@ -144,14 +145,72 @@ def about(request):
 
 def elections(request):
     """Elections landing page."""
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        return elections_state_county(request, state, county)
+
     context = {
         "msg": "Pending",
         "header": "Elections",
         "preamble": """Informed voting is important. Please select your state
         and county to learn about any upcoming judicial elections.""",
+        "states": US_STATES,
+        "button_name": "Find Elections",
     }
 
-    return render(request, "dropdown.html", context)
+    return render(request, "elections.html", context)
+
+
+def elections_state_county(request, state, county):
+    # grab all the tenures associated with a specific state / county
+    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+
+    # want elections in next 6mo
+    six_months_from_now = date.today() + relativedelta(months=6)
+    local_elections_list = Election.objects.filter(
+        court__in=local_courts_list, date__lte=six_months_from_now
+    )
+    election_names = [e.court for e in local_elections_list]
+    election_courts = Court.objects.filter(name__in=election_names)
+
+    tenures = Tenure.objects.filter(court__in=election_courts)
+    courts = {}
+
+    # iterate through all the tenures and courts associated with them
+    for tenure in tenures:
+        # when we get to a new court add it to the dict of courts.
+        court_name = tenure.court.name
+        if court_name not in courts:
+            courts[court_name] = []
+
+        # For each tenure associated with a court, add it to a list in that's
+        # a value in the {court: [tenure_info, tenure_info]} type dict
+        courts[court_name].append(
+            {
+                "name": tenure.person.name_canonical,
+                "party_registration": tenure.person.party_registration,
+                "more_info": f"/people/{tenure.person.id}/",
+                "start_date": tenure.start_date,
+                "end_date": tenure.end_date,
+            }
+        )
+
+    people = Person.objects.values()
+    for court in courts.keys():
+        for person in people:
+            courts[court_name].append(
+                {
+                    "name": person["name_canonical"],
+                    "party_registration": person["party_registration"],
+                    "more_info": f"/people/{person['id']}/",
+                }
+            )
+
+    return render(
+        request, "elections_state_county.html", {"courts": courts, "state": state, "county": county}
+    )
 
 
 def candidates(request):
@@ -451,8 +510,10 @@ def get_radar_example_data(request):
 
         cases_protected = cases.filter(**filter_protected_kwds)
         cases_relevant = cases.exclude(**exclude_na_kwds)
-
-        frac_protected = cases_protected.count() / cases_relevant.count()
+        try:
+            frac_protected = cases_protected.count() / cases_relevant.count()
+        except ZeroDivisionError:
+            frac_protected = 0
 
         resp[0].append({"axis": right, "value": frac_protected})
 
