@@ -4,6 +4,7 @@ from localflavor.us.models import USStateField
 from django.db import connection
 import pandas as pd
 from jellyfish import jaro_winkler_similarity
+from string import punctuation
 
 
 # drop down types
@@ -271,7 +272,8 @@ class Alias(models.Model):
         unique_aliases = aliases["name"].unique()
         num_aliases = len(unique_aliases)
         for num in range(num_aliases):
-            alias = aliases.loc[num, "name"].lower().replace(".", "").replace("\n", "")
+            alias = aliases.loc[num, "name"]
+            # Alias standardizing happens in ingest.py now
             r_table["alias"].append(alias)
 
             num_names = len(names)
@@ -279,7 +281,8 @@ class Alias(models.Model):
             matching_table = {"name": list(names["name"]), "match_score": []}
 
             for i in range(num_names):
-                name = names.loc[i, "name"].lower().replace(".", "").replace("I", "")
+                name = names.loc[i, "name"].lower().replace("\n", "")
+                name = "".join(ch for ch in name if ch not in punctuation)
                 score = jaro_winkler_similarity(alias, name)
                 matching_table["match_score"].append(score)
 
