@@ -161,7 +161,7 @@ class Election(models.Model):
             Election.objects.create(court=court, election_date=elect_date, incumbent=tenure)
 
     def __str__(self):
-        return f"{self.date} election for {self.court}"
+        return f"{self.election_date} election for {self.court}"
 
 
 class Candidacy(models.Model):
