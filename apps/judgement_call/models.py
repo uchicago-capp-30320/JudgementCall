@@ -1,6 +1,10 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from localflavor.us.models import USStateField
+from django.db import connection
+import pandas as pd
+from jellyfish import jaro_winkler_similarity
+from string import punctuation
 
 
 # drop down types
@@ -164,6 +168,170 @@ class Alias(models.Model):
     tenure = models.ForeignKey(Tenure, on_delete=models.PROTECT, blank=True, null=True)
     # the court the case which generated the alias came from
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
+
+    def match_names(self) -> pd.DataFrame:
+        """
+        Retrieves the alias and court_ids from the Alias table, retrieves
+        the canon names and the court_ids from the Tenure table. Turns them
+        both into dataframes and performs a matching algorithm on them.
+        """
+        # Retrieving aliases
+        query = """
+            SELECT
+                alias,
+                court_id
+            FROM
+                judgement_call_alias
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()
+        aliases = pd.DataFrame(
+            {"name": [res[0] for res in results], "court_id": [res[1] for res in results]}
+        )
+
+        # Retrieving canon names
+        canon_names = {"name": [], "court_id": []}
+        for court_id in aliases["court_id"].unique():
+            query = """
+                SELECT p.name_canonical, c.id
+                FROM
+                    judgement_call_person as p,
+                    judgement_call_court as c,
+                    judgement_call_tenure as t
+                WHERE
+                    c.id = t.court_id
+                    AND
+                    p.id = t.person_id
+                    AND
+                    c.id = %s
+            """
+            with connection.cursor() as cursor:
+                cursor.execute(query, [court_id])
+                results = cursor.fetchall()
+
+                canon_names["name"] += [res[0] for res in results]
+                canon_names["court_id"] += [res[1] for res in results]
+
+        return Alias.run_matching(canon_names, aliases)
+
+    def update_matches(self):
+        """
+        Main function that creates a matching output, and uses the output
+        to update tenure in the Alias table in the database.
+        """
+        match_table = self.match_names()
+        num_matches = len(match_table)
+
+        query_get = """
+            SELECT
+                t.id
+            FROM
+                judgement_call_tenure as t,
+                judgement_call_person as p
+            WHERE
+                t.person_id = p.id
+                AND
+                p.name_canonical = %s
+                AND
+                t.court_id = %s
+            LIMIT 1
+        """
+
+        query_update = """
+            UPDATE
+                judgement_call_alias
+            SET
+                tenure_id = %s
+            WHERE
+                alias = %s
+                AND
+                court_id = %s
+        """
+
+        for row_num in range(num_matches):
+            with connection.cursor() as cursor:
+                query_inputs = [match_table.loc[row_num, "name"], self.court_id]
+                cursor.execute(query_get, query_inputs)
+                result = cursor.fetchall()
+
+                if not result:
+                    print(f"No tenure found for {match_table.loc[row_num, 'name']}")
+                    continue
+
+                query_inputs = [result[0][0], match_table.loc[row_num, "alias"], self.court_id]
+                cursor.execute(query_update, query_inputs)
+
+    @staticmethod
+    def match(names: pd.DataFrame, aliases: pd.DataFrame) -> pd.DataFrame:
+        """
+        Takes a dataframe with canonical names, and a dataframe with aliases.
+        Iterates through each alias, standardizes it, and calculates its
+        Jaro-Winkler similary score against every standardized canonical name.
+
+        It identifies the highest scoring canonical name match, and gives a match
+        quality rating.
+
+        Returns a pandas dataframe with every unique alias given in the alias
+        input dataframe, along with its found match, and the match quality.
+        """
+        r_table = {"alias": [], "name": [], "match_quality": []}
+
+        unique_aliases = aliases["name"].unique()
+        num_aliases = len(unique_aliases)
+        for num in range(num_aliases):
+            alias = aliases.loc[num, "name"]
+            # Alias standardizing happens in ingest.py now
+            r_table["alias"].append(alias)
+
+            num_names = len(names)
+
+            matching_table = {"name": list(names["name"]), "match_score": []}
+
+            for i in range(num_names):
+                name = names.loc[i, "name"].lower().replace("\n", "")
+                name = "".join(ch for ch in name if ch not in punctuation)
+                score = jaro_winkler_similarity(alias, name)
+                matching_table["match_score"].append(score)
+
+            top_match = (
+                pd.DataFrame(matching_table).sort_values(by="match_score", ascending=False).iloc[0]
+            )
+            match_name = top_match["name"]
+            r_table["name"].append(match_name)
+            match_score = top_match["match_score"]
+
+            if match_score >= 0.9:
+                r_table["match_quality"].append("High")
+            elif (match_score < 0.9) and (match_score >= 0.5):
+                r_table["match_quality"].append("Medium")
+            else:
+                r_table["match_quality"].append("Low")
+
+        r_table = pd.DataFrame(r_table)
+        return r_table[r_table["match_quality"] == "High"]
+
+    @staticmethod
+    def run_matching(names: pd.DataFrame, alias: pd.DataFrame) -> pd.DataFrame:
+        """
+        Takes a dataframe with canonical names, and a dataframe with aliases. Function
+        iterates through each state (or court) and runs the match() function on them
+        returning a dataframe of unique aliases with their matches and match quality.
+        """
+        unique_cids = names["court_id"].unique()
+
+        r_list = []
+
+        for court_id in unique_cids:
+            print(f"Matching names for {court_id}")
+            court_names = names[names["court_id"] == court_id].reset_index(drop=True)
+            court_aliases = alias[alias["court_id"] == court_id].reset_index(drop=True)
+
+            match_results = Alias.match(court_names, court_aliases)
+
+            r_list.append(match_results)
+
+        return pd.concat(r_list)
 
     class Meta:
         verbose_name_plural = "Aliases"
