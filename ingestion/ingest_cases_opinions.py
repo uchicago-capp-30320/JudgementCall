@@ -1,22 +1,20 @@
 import requests
 import lxml.html
-from pypdf import PdfReader
 import pandas as pd
 import time
 from google import genai
-from pathlib import Path
 from google.genai import types, errors
 import os
 import us
-from datetime import datetime
+import json
 
+from pathlib import Path
+from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field
 from typing import List, Optional, TypedDict, get_type_hints
 
 case_df = pd.read_csv("../data/cases_scdb.csv")
-case_df = case_df[case_df["opinion_link"].str.contains("https", na=False)]
-judge_pd = pd.read_csv("../data/judges_slri.csv")
 
 
 # Manually enumerate rights here, but
@@ -108,10 +106,11 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
             genai_resp = client.models.generate_content(
                 model=model_id,
                 contents=[types.Part.from_bytes(data=resp, mime_type="application/pdf"), prompt],
-                config={
-                    "response_mime_type": "application/json",
-                    "response_json_schema": Case.model_json_schema(),
-                },
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_json_schema=Case.model_json_schema(),
+                    thinking_config=types.ThinkingConfig(thinking_level="medium"),
+                ),
             )
             return Case.model_validate_json(genai_resp.text).model_dump()
 
@@ -121,8 +120,8 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
             time.sleep(wait_time)
             wait_time += 1
 
-            if wait_time > 60:
-                print("Wait time exceeds 1 minute")
+            if wait_time > 300:
+                print("Wait time exceeds 5 minutes")
                 raise e
 
 
@@ -304,7 +303,6 @@ def produce_tables(
     """
     Inputs:
     - case_df: pd.DataFrame
-    - judge_df: pd.DataFrame
     - prompt_path: str
 
     Outputs:
@@ -328,7 +326,7 @@ def produce_tables(
         opinions.append(state_opinion_table(case_dic))
         cases.append(state_case_table(state_cases, case_dic))
 
-    rd = {"opinion_table": pd.concat(opinions), "case_table": pd.concat(cases)}
+    rd = {"individual_opinions": pd.concat(opinions), "case": pd.concat(cases)}
 
     # Also return JSON metadata on this LLM batch run
     with open(prompt_path, "r") as prompt_file:
@@ -336,8 +334,24 @@ def produce_tables(
     llm_run_metadata = {
         "timestamp": datetime.today(),
         "model_id": model_id,
-        "cases_processed": rd["case_table"]["case_id"].tolist(),
+        "cases_processed": rd["case"]["case_id"].tolist(),
         "prompt_start": prompt,
     }
 
     return rd, llm_run_metadata
+
+
+"""
+table_dic, run_meta_data = produce_tables(case_df)
+
+for file_name in table_dic.keys():
+    data = table_dic[file_name]
+    file_name += ".csv"
+    path = Path(__file__).parent.parent / "data" / file_name
+    data.to_csv(path, index = False)
+
+run_timestamp = run_meta_data["timestamp"].strftime("%m/%d/%Y")
+path = Path(__file__).parent.parent / "data" / f"llm_run_{run_timestamp}.json"
+with open(path, "w") as file_path:
+    json.dump(run_meta_data, file_path)
+"""
