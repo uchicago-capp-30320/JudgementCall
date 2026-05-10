@@ -169,6 +169,10 @@ class Alias(models.Model):
     # the court the case which generated the alias came from
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
 
+    @property
+    def matched(self):
+        return self.tenure is not None
+
     def find_matches(self, alias=None) -> list[Tenure]:
         if not alias:
             alias = self.alias
@@ -182,7 +186,7 @@ class Alias(models.Model):
     def match_tenure(self, update=False):
         print(f"before: alias {self.alias}, tenure {self.tenure}")
         if not update:
-            if self.tenure is not None:
+            if self.matched:
                 return self.tenure
         matches = self.find_matches()
         top_match = max(matches, key=lambda k: matches[k])
@@ -192,14 +196,16 @@ class Alias(models.Model):
             self.tenure = top_match
             self.save()
         else:
-            try_alias = self.alias.replace("justice", "").replace("j", "")
-            matches = self.find_matches(try_alias)
-            top_match = max(matches, key=lambda k: matches[k])
-            print(f"best match: {top_match}, {matches[top_match]}")
-            if matches[top_match] > 0.9:
-                # setting tenure to the top match
-                self.tenure = top_match
-                self.save()
+            try_alias = self.alias.replace("justice", "").replace(" j ", " ")
+            if try_alias != self.alias:
+                print(f"rerunning with {try_alias}")
+                matches = self.find_matches(try_alias)
+                top_match = max(matches, key=lambda k: matches[k])
+                print(f"best match: {top_match}, {matches[top_match]}")
+                if matches[top_match] > 0.9:
+                    # setting tenure to the top match
+                    self.tenure = top_match
+                    self.save()
 
         print(f"after: alias {self.alias}, tenure {self.tenure}")
         return self.tenure

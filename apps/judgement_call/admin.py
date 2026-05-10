@@ -57,7 +57,7 @@ admin.site.register(Person, PersonAdmin)
 
 
 class AliasAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ["court"]
 
 
 admin.site.register(Alias, AliasAdmin)
