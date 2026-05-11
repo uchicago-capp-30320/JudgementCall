@@ -199,7 +199,8 @@ class Alias(models.Model):
             self.tenure = top_match
             self.save()
         else:
-            try_alias = self.alias.replace("justice", "").replace(" j ", " ").replace("senior", "").replace("chief", "")
+            try_alias = self.alias.replace("justice", "").replace(" j ", " ")
+            try_alias = try_alias.replace("senior", "").replace("chief", "")
             if try_alias != self.alias:
                 print(f"rerunning with {try_alias}")
                 matches = self.find_matches(try_alias)
