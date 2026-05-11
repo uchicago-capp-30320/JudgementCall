@@ -2,7 +2,14 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from localflavor.us.models import USStateField
+<<<<<<< election_date_inference
 import pandas as pd
+=======
+from django.db import connection
+import pandas as pd
+from jellyfish import jaro_winkler_similarity
+from string import punctuation
+>>>>>>> main
 
 
 # drop down types
@@ -178,6 +185,55 @@ class Alias(models.Model):
     tenure = models.ForeignKey(Tenure, on_delete=models.PROTECT, blank=True, null=True)
     # the court the case which generated the alias came from
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
+
+    @property
+    def matched(self):
+        return self.tenure is not None
+
+    def find_matches(self, alias=None) -> list[Tenure]:
+        if not alias:
+            alias = self.alias
+        court_tenures = Tenure.objects.filter(court=self.court)
+        matches = {}
+        for tenure in court_tenures:
+            name = self.standardize_name(tenure.person.name_canonical)
+            matches[tenure] = jaro_winkler_similarity(alias, name)
+        return matches
+
+    def match_tenure(self, update=False):
+        print(f"before: alias {self.alias}, tenure {self.tenure}")
+        if not update:
+            if self.matched:
+                return self.tenure
+        matches = self.find_matches()
+        if matches == {}:
+            print(f"No names found: does {self.court} exist?")
+            return self.tenure
+        top_match = max(matches, key=lambda k: matches[k])
+        print(f"best match: {top_match}, {matches[top_match]}")
+        if matches[top_match] > 0.9:
+            # setting tenure to the top match
+            self.tenure = top_match
+            self.save()
+        else:
+            try_alias = self.alias.replace("justice", "").replace(" j ", " ")
+            try_alias = try_alias.replace("senior", "").replace("chief", "")
+            if try_alias != self.alias:
+                print(f"rerunning with {try_alias}")
+                matches = self.find_matches(try_alias)
+                top_match = max(matches, key=lambda k: matches[k])
+                print(f"best match: {top_match}, {matches[top_match]}")
+                if matches[top_match] > 0.9:
+                    # setting tenure to the top match
+                    self.tenure = top_match
+                    self.save()
+
+        print(f"after: alias {self.alias}, tenure {self.tenure}")
+        return self.tenure
+
+    @staticmethod
+    def standardize_name(name: str):
+        return name.strip().lower().translate(str.maketrans("", "", punctuation))
 
     class Meta:
         verbose_name_plural = "Aliases"
