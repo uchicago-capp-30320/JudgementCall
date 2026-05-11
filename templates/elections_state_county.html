@@ -14,19 +14,6 @@ Judgement Call
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Judges near {{ county }}, {{ state }}</title>
     <style>
-        body {
-            font-family: Inter, sans-serif;
-            /* max-width: 800px; */
-            margin: 0 auto;
-        }
-
-        /* .judge-card-container {
-            display: flex;
-            flex-direction: column;
-            /* justify-content: center;
-            align-items: center;
-        } */
-
         .judge-card {
             border: 2px solid #3e6297;
             padding: 10px;
@@ -38,37 +25,54 @@ Judgement Call
         a {
             color: #3e6297;
         }
-
-        h2 {
-            margin-top: 40px;
-        }
     </style>
 </head>
 
 <body>
-    <h1>Upcoming elections in {{ county }}, {{ state }} </h1>
-    {% for court_name, judges in courts.items %}
-    <h2>{{ court_name }} Candidates:</h2>
-    {% for judge in judges %}
-    <div class="judge-card-container">
-        <div class="judge-card">
-            <h3>{{ judge.name }} ({{ judge.start_date.year }} - {{ judge.end_date.year }}) </h3>
-            {% if judge.party_registration == "Republican" %}
-            <p style="color: red;"> {{ judge.party_registration }}</p>
-            {% elif judge.party_registration == "Democrat" %}
-            <p style="color: blue;"> {{ judge.party_registration }}</p>
-            {% else %}
-            <p> {{ judge.party_registration }}</p>
-            {% endif %}
-            <p> <a href="{{ judge.more_info }}">more details</a> </p>
-        </div>
+    <h1 class="below-nav-header">Upcoming elections in {{ county }}, {{ state }} </h1>
+    {% for court_name, details in elections.items %}
+    <div class="collapsible-container">
+        <h2>{{court_name}} Election on {{details.date}}</h2>
+        <span class="material-symbols-outlined">
+            arrow_forward_ios
+        </span>
     </div>
-    {% empty %}
-    <p>No candidates found.</p>
-    {% endfor %}
+    <div class="collapsible-details">
+        <h3>Candidates:</h3>
+        {% for candidate in details.candidates %}
+        <div class="judge-card-container">
+            <div class="judge-card">
+                <h3>{{ candidate.name }}</h3>
+                {% if candidate.party_registration == "Republican" %}
+                <p style="color: red;"> {{ candidate.party_registration }}</p>
+                {% elif candidate.party_registration == "Democrat" %}
+                <p style="color: blue;"> {{ candidate.party_registration }}</p>
+                {% else %}
+                <p> {{ candidate.party_registration }}</p>
+                {% endif %}
+                <p> <a href="{{ candidate.more_info }}">more details</a> </p>
+            </div>
+        </div>
+
+        {% empty %}
+        <p>No candidates found.</p>
+        {% endfor %}
+    </div>
     {% empty %}
     <p>No upcoming elections found for {{ county }}, {{ state }}.</p>
     {% endfor %}
+    <script>
+        document.querySelectorAll('.collapsible-container').forEach(function (container) {
+            container.addEventListener('click', function () {
+                const content = this.nextElementSibling;
+                if (content.style.maxHeight && content.style.maxHeight !== "0px") {
+                    content.style.maxHeight = "0px";
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>

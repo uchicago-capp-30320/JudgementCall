@@ -76,6 +76,7 @@ body {
     background-image: linear-gradient(#6557a4, #4a3a8c);
     color: white;
     border-radius: 25px;
+    cursor: pointer;
 
 }
 
@@ -116,6 +117,38 @@ footer {
     color: white;
     border-radius: 10px;
     text-align: center;
+}
+
+.collapsible-container {
+    background-color: #eee;
+    color: #444;
+    cursor: pointer;
+    padding: 18px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.active,
+.collapsible-container:hover {
+    background-color: #ccc;
+}
+
+.collapsible-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+    padding-left: 25px;
+}
+
+.below-nav-header {
+    padding-top: 20px;
 }
 
 /* #geosubmit-button {
