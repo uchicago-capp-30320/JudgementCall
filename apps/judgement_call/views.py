@@ -44,7 +44,8 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
-        "radar_data": get_radar_example_data(request),
+        # "radar_data": get_radar_example_data(request),
+        "radar_data": get_individual_opinions_for_radar(request),
     }
 
     return render(request, "judges.html", context)
@@ -390,10 +391,16 @@ def add_fake_data(request):
     return HttpResponse("Done!")
 
 
-def get_individual_opinions_for_radar(request):
+def get_individual_opinions_for_radar(
+    request, court_id: str = "wis", persons: list[str] = ["Rebecca Grassl Bradley"]
+):
     """
-    Query multiple justices' ruling propensities to test out D3
-    Radar charts in `radar_test.html`
+    Query multiple justices' ruling propensities to build
+    Radar charts in `radar_test.html`.
+
+    `court_id` and `person_ids` could come from judges_state_county(), but
+    in any case we need all tenures in a selected court for selected
+    persons.
 
     Returns:
         A list of lists of dicts. Each sublist represents data for a
@@ -406,10 +413,34 @@ def get_individual_opinions_for_radar(request):
         to protect that right.
 
         This format plugs right into radarChart.js for any number
-        of justices and rights
+        of justices and rights.
     """
-    # Query only IndividualOpinions in a single state from justices X and Y
-    pass
+    # Query all cases that had individual opinions authored by
+    # tenures of the given persons in the given court.
+
+    indops = IndividualOpinion.objects.filter(  # .prefetch_related()?
+        judge_alias__tenure__person__name_canonical__in=persons
+    ).filter(
+        case__court__court_id=court_id
+    )  # .prefetch_related("case") or .values("tenure_id", "ruling", ...)?
+
+    return list(indops.all().values())
+
+    # rights = TopicAlignment.choices
+    # resp = []
+    # resp.append([])
+    # for i, right in enumerate(rights):
+    #     filter_protected_kwds = {right: "protected"}
+    #     exclude_na_kwds = {right: "NA"}
+
+    #     cases_protected = cases.filter(**filter_protected_kwds)
+    #     cases_relevant = cases.exclude(**exclude_na_kwds)
+
+    #     frac_protected = cases_protected.count() / cases_relevant.count()
+
+    #     resp[0].append({"axis": right, "value": frac_protected})
+
+    # return resp
 
 
 def get_radar_example_data(request):
@@ -439,7 +470,6 @@ def get_radar_example_data(request):
     # Query only Cases in Alaska from selected rights
     test_state = "Alaska"
     test_rights = ["environment", "democratic_norms", "free_speech"]
-    # Need to unpack dict to query Django by variable-named columns
 
     cases = Case.objects.filter(case_id__contains=test_state)
 
@@ -457,11 +487,3 @@ def get_radar_example_data(request):
         resp[0].append({"axis": right, "value": frac_protected})
 
     return resp
-
-    # resp_example = [
-    #     [ # This list corresponds to one Case
-    #         {"axis": "made", "value": 0.1}, # This dict corresponds to one right
-    #         {"axis": "up", "value": 0.123},
-    #         {"axis": "also made up", "value": 0.90},
-    #     ]
-    # ]
