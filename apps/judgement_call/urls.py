@@ -14,6 +14,11 @@ urlpatterns = [
     path("people/<int:person_id>/", views.show_person, name="show_person"),
     path("about/", views.about, name="about"),
     path("elections/", views.elections, name="elections"),
+    path(
+        "elections/<str:state>/<str:county>/",
+        views.elections_state_county,
+        name="elections_state_county",
+    ),
     path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
     path("api/counties/<str:state>/", views.get_counties, name="get_counties"),

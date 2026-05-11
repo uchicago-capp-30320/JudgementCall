@@ -1,11 +1,11 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from datetime import date
 from localflavor.us.models import USStateField
 from django.db import connection
 import pandas as pd
 from jellyfish import jaro_winkler_similarity
 from string import punctuation
-from datetime import date
 
 
 # drop down types
@@ -148,22 +148,6 @@ class Person(models.Model):
         return tenures
 
 
-class Election(models.Model):
-    court = models.ForeignKey(Court, on_delete=models.PROTECT)
-    date = models.DateField()
-
-    def __str__(self):
-        return f"{self.date} election for {self.court}"
-
-
-class Candidacy(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name_plural = "Candidacies"
-
-
 class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
@@ -189,6 +173,34 @@ class Tenure(models.Model):
         if self.end_date.year == 3000:
             return None
         return years_to(self.end_date)
+
+
+class Election(models.Model):
+    court = models.ForeignKey(Court, on_delete=models.PROTECT)
+    election_date = models.DateField()
+    incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT)
+
+    def deduce_elections(self):
+        court_elections = Tenure.objects.values("id", "court_id", "end_date")
+        election_df = pd.DataFrame(list(court_elections))
+
+        for index, row in election_df.iterrows():
+            tenure = Tenure.objects.get(pk=row["id"])
+            court = Court.objects.get(pk=row["court_id"])
+            term_end = row["end_date"]
+            elect_date = term_end.replace(year=term_end.year - 1, month=11, day=5)
+            Election.objects.create(court=court, election_date=elect_date, incumbent=tenure)
+
+    def __str__(self):
+        return f"{self.election_date} election for {self.court}"
+
+
+class Candidacy(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = "Candidacies"
 
 
 class Alias(models.Model):
