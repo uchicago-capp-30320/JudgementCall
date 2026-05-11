@@ -2,14 +2,10 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from datetime import date
 from localflavor.us.models import USStateField
-<<<<<<< election_date_inference
-import pandas as pd
-=======
 from django.db import connection
 import pandas as pd
 from jellyfish import jaro_winkler_similarity
 from string import punctuation
->>>>>>> main
 
 
 # drop down types
@@ -135,6 +131,22 @@ class Person(models.Model):
     def __str__(self):
         return self.name_canonical
 
+    @property
+    def age(self):
+        if self.birth_date.year == 3000:
+            return None
+        else:
+            return years_since(self.birth_date)
+
+    @property
+    def current_tenure(self):
+        tenures = Tenure.objects.filter(
+            person=self, start_date__lte=date.today(), end_date__gte=date.today()
+        )
+        if len(tenures) > 1:
+            print("Warning! Current tenure lookup returned multiple tenures.")
+        return tenures
+
 
 class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
@@ -149,6 +161,18 @@ class Tenure(models.Model):
 
     def __str__(self):
         return f"{self.person} - {self.court}"
+
+    @property
+    def tenure_length_to_date(self):
+        if self.start_date.year == 3000:
+            return None
+        return years_since(self.start_date)
+
+    @property
+    def tenure_length_remaining(self):
+        if self.end_date.year == 3000:
+            return None
+        return years_to(self.end_date)
 
 
 class Election(models.Model):
@@ -283,3 +307,18 @@ class IndividualOpinion(models.Model):
 
     def __str__(self):
         return f"{self.judge_alias} - {self.case}"
+
+
+# Helper methods for calculating year diffs
+def years_since(date_field):
+    years_since = round((date.today() - date_field).days / 365.25)
+    if years_since < 0:
+        raise ValueError("date is not in the past!")
+    return years_since
+
+
+def years_to(date_field):
+    years_to = round((date_field - date.today()).days / 365.25)
+    if years_to < 0:
+        raise ValueError("date is not in the future!")
+    return years_to
