@@ -85,6 +85,7 @@ def judges_state_county(request, state, county):
         courts[court_name]["judges"].append(
             {
                 "name": tenure.person.name_canonical,
+                "chief_justice": tenure.chief_justice,
                 "party_registration": tenure.person.party_registration,
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
@@ -173,17 +174,21 @@ def elections(request):
     return render(request, "elections.html", context)
 
 
-def get_candidate_info(c):
+def get_candidate_info(can):
     """helper for elections_state_county"""
+    # on_bench = check_incumbent(can, cour)
     return {
-        "name": c.person.name_canonical,
-        "party_registration": c.person.party_registration,
-        "more_info": f"/people/{c.person.id}/",
-        # "incumbent": complicated
+        "name": can.person.name_canonical,
+        "party_registration": can.person.party_registration,
+        "more_info": f"/people/{can.person.id}/",
+        # "incumbent": on_bench,
     }
 
 
 def get_upcoming_elections(relevant_courts):
+    """
+    Takes in QSet of courts and returns those with nearest associated election date
+    """
     next_event = (
         Election.objects.filter(date__gte=datetime.now())
         .order_by("date")
@@ -197,6 +202,21 @@ def get_upcoming_elections(relevant_courts):
     return Election.objects.none()
 
 
+def check_incumbent(candidate, court):
+    """Takes a candidate and T/F if currently sitting on election bench"""
+    tenures = Tenure.objects.filter(person=candidate.person)
+    been_judge = tenures.exists()
+    if been_judge:
+        today = datetime.now()
+        on_bench = tenures.filter(court=court, start_date__lte=today, end_date__gte=today)
+        if on_bench.exists():
+            return (True, on_bench)
+        else:
+            return (False, None)
+    else:
+        return (False, None)
+
+
 def elections_state_county(request, state, county):
     # grab all the courts associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
@@ -204,7 +224,10 @@ def elections_state_county(request, state, county):
 
     # want to retrieve soonest elections
     local_elections_list = get_upcoming_elections(local_courts_list)
-    elections = {e.court.name: {"date": e.date.strftime("%m-%d-%Y")} for e in local_elections_list}
+    elections = {
+        e.court.name: {"date": e.date.strftime("%m-%d-%Y"), "type": e.court.selection_method}
+        for e in local_elections_list
+    }
 
     # link a list of candidate objects to corresponding election
     for e in local_elections_list:

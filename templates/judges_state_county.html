@@ -13,6 +13,8 @@ Judgement Call
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <title>Judges near {{ county }}, {{ state }}</title>
     <style>
         .judge-card {
@@ -33,16 +35,25 @@ Judgement Call
     <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
     {% for court_name, details in courts.items %}
     <div class="collapsible-container">
-        <h2>{{ court_name }}</h2>
+        <div class="judge-collapsible-title">
+            <h2>{{ court_name }}</h2>
+            <!-- <span class="material-symbols-outlined">release_alert</span> -->
+        </div>
         <span class="material-symbols-outlined">
             arrow_forward_ios
         </span>
     </div>
     <div class="collapsible-details">
-        <h3>Current Sitting Judges:</h3>
+        <div class="sub-court-header">
+            <h3>Current Sitting Judges:</h3>
+        </div>
         {% for judge in details.judges %}
         <div class="judge-card">
+            {% if judge.chief_justice == True %}
+            <h3>{{ judge.name }} ({{ judge.start_date.year }} - {{ judge.end_date.year }}) - Chief Justice</h3>
+            {% else %}
             <h3>{{ judge.name }} ({{ judge.start_date.year }} - {{ judge.end_date.year }}) </h3>
+            {% endif %}
             {% if judge.party_registration == "Republican" %}
             <p style="color: red;"> {{ judge.party_registration }}</p>
             {% elif judge.party_registration == "Democrat" %}

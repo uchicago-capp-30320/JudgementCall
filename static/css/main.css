@@ -151,6 +151,26 @@ footer {
     padding-top: 20px;
 }
 
+.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+}
+
+.judge-collapsible-title {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+/* .sub-court-header {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+} */
+
 /* #geosubmit-button {
     display: none;
 } */
