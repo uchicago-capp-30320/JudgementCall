@@ -49,6 +49,7 @@ Judgement Call
         </div>
         {% for judge in details.judges %}
         <div class="judge-card">
+            <!-- adjust years to be tabular instead of (year - year) -->
             {% if judge.chief_justice == True %}
             <h3>{{ judge.name }} ({{ judge.start_date.year }} - {{ judge.end_date.year }}) - Chief Justice</h3>
             {% else %}
