@@ -65,6 +65,7 @@ def judges_state_county(request, state, county):
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+    elections_soon = get_upcoming_elections(local_courts_list)
     tenures = Tenure.objects.filter(court__in=local_courts_list)
     courts = {}
 
@@ -73,11 +74,15 @@ def judges_state_county(request, state, county):
         # when we get to a new court add it to the dict of courts.
         court_name = tenure.court.name
         if court_name not in courts:
-            courts[court_name] = []
+            courts[court_name] = {"judges": []}
+            if court_name in elections_soon:
+                courts[court_name]["upcoming_election"] = True
+            else:
+                courts[court_name]["upcoming_election"] = False
 
         # For each tenure associated with a court, add it to a list in that's
         # a value in the {court: [tenure_info, tenure_info]} type dict
-        courts[court_name].append(
+        courts[court_name]["judges"].append(
             {
                 "name": tenure.person.name_canonical,
                 "party_registration": tenure.person.party_registration,
