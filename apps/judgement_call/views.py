@@ -86,7 +86,7 @@ def judges_state_county(request, state, county):
             {
                 "name": tenure.person.name_canonical,
                 "chief_justice": tenure.chief_justice,
-                "party_registration": tenure.person.party_registration,
+                "party_registration": tenure.person.party_registration.title(),
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
@@ -109,7 +109,7 @@ def show_person(request, person_id):
         "birth_date": person.birth_date,
         "gender": person.gender,
         "race": person.race,
-        "party_registration": person.party_registration,
+        "party_registration": person.party_registration.title(),
         "professional_experience": person.professional_experience,
         "law_school": person.law_school,
     }
