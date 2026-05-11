@@ -189,6 +189,9 @@ class Alias(models.Model):
             if self.matched:
                 return self.tenure
         matches = self.find_matches()
+        if matches == {}:
+            print(f"No names found: does {self.court} exist?")
+            return self.tenure
         top_match = max(matches, key=lambda k: matches[k])
         print(f"best match: {top_match}, {matches[top_match]}")
         if matches[top_match] > 0.9:
