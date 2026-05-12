@@ -191,14 +191,14 @@ def get_upcoming_elections(relevant_courts):
     Takes in QSet of courts and returns those with nearest associated election date
     """
     next_event = (
-        Election.objects.filter(date__gte=datetime.now())
-        .order_by("date")
-        .values_list("date", flat=True)
+        Election.objects.filter(election_date__gte=datetime.now())
+        .order_by("election_date")
+        .values_list("election_date", flat=True)
         .first()
     )
 
     if next_event:
-        return Election.objects.filter(court__in=relevant_courts, date=next_event)
+        return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
 
     return Election.objects.none()
 
@@ -354,32 +354,34 @@ def add_fake_data(request):
     elections = [
         {
             "court": court_objects["ILSUP"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["AZSUP"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["ILSUP"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
         {
             "court": court_objects["AZSUP"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
     ]
 
     for election_data in elections:
-        Election.objects.get_or_create(court=election_data["court"], date=election_data["date"])
+        Election.objects.get_or_create(
+            court=election_data["court"], election_date=election_data["election_date"]
+        )
 
     # create candidacies
     persons = list(Person.objects.all())
@@ -519,10 +521,9 @@ def get_individual_opinions_for_radar(
         # .select_related("alias")
         # .select_related("tenure")
         # .select_related("person")
-        .values("judge_alias", "case_id", "ruling", *case_rights)
     )
 
-    return list(indops)
+    return list(indops.values("judge_alias", "case_id", "ruling", *case_rights))
 
 
 def get_radar_example_data(request):
