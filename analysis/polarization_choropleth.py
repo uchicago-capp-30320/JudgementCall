@@ -7,7 +7,7 @@ from sklearn.manifold import MDS
 from apps.judgement_call.models import Court, CountyToCourt, Case
 
 
-def polarity_choropleth(court_type: str = "Supreme Court", geo_unit: str = "state"):
+def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
     # Calculating the percentage of times each court is protecting a political
     # dimension.
     political_dimensions = [field.name for field in Case._meta.get_fields()][14:]
@@ -42,30 +42,39 @@ def polarity_choropleth(court_type: str = "Supreme Court", geo_unit: str = "stat
     for court in output:
         court[geo_unit] = geo_courts[court["court_id"]]
 
-    choropleth_data = pd.DataFrame(output)
+    output_df = pd.DataFrame(output)
 
     # Calculating eudlidean distances between each court, then using
     # multi-dimensional scaling to create a single list of values indicating
     # polarization.
-    dist = nan_euclidean_distances(choropleth_data.iloc[:, 1 : choropleth_data.shape[1] - 1])
+    dist = nan_euclidean_distances(output_df.iloc[:, 1 : output_df.shape[1] - 1])
     embedding = MDS(n_components=1, n_init=1, init="random", metric="precomputed")
-    transformed = list(embedding.fit_transform(dist).reshape(1, 3)[0])
-    map_data = pd.DataFrame(
-        {
-            "court_id": choropleth_data["court_id"],
-            "transformed_euclidean_distances": transformed,
-            geo_unit: choropleth_data[geo_unit],
-        }
-    )
+    transformed = pd.Series(embedding.fit_transform(dist).reshape(1, 3)[0])
+    output["polarity"] = transformed
+    map_data = pd.DataFrame(output)
 
+    return map_data
+
+
+def create_choropleth(map_data: pd.DataFrame, dimension: str = None, geo_unit: str = "state"):
     # Creating choropleth
-    fig = px.choropleth(
-        map_data,
-        locations=geo_unit,
-        locationmode="USA-states",
-        scope="usa",
-        color="transformed_euclidean_distances",
-        color_continuous_scale="Viridis_r",
-    )
+    if dimension is not None:
+        fig = px.choropleth(
+            map_data,
+            locations=geo_unit,
+            locationmode="USA-states",
+            scope="usa",
+            color=dimension,
+            color_continuous_scale="Viridis_r",
+        )
+    else:
+        fig = px.choropleth(
+            map_data,
+            locations=geo_unit,
+            locationmode="USA-states",
+            scope="usa",
+            color="polarity",
+            color_continuous_scale="Viridis_r",
+        )
 
     return fig
