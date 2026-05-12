@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.db.models import Avg, Count, When, Value, Q
+from django.db.models import Case as Case_
 from .models import (
     Court,
     Person,
@@ -488,7 +490,9 @@ def add_fake_data(request):
 
 
 def get_individual_opinions_for_radar(
-    request, court_id: str = "wis", persons: list[str] = ["Rebecca Grassl Bradley"]
+    request,
+    court_id: str = "wis",
+    persons: list[str] = ["Rebecca Grassl Bradley", "Jill J. Karofsky"],
 ):
     """
     Query multiple justices' ruling propensities to build
@@ -521,9 +525,38 @@ def get_individual_opinions_for_radar(
         # .select_related("alias")
         # .select_related("tenure")
         # .select_related("person")
+    ).values("judge_alias", "ruling", *case_rights)  # "case_id"
+
+    # Transform those individual opinions into protected percentages and infringed percentages,
+    # grouped by judge (person). This is "Stat option 2".
+    indops_good_bad_by_judge = (
+        indops.annotate(
+            pro_reproductive_rights=Case_(
+                When(
+                    (Q(case__reproductive_rights="protected") & Q(ruling="concur"))
+                    | (Q(case__reproductive_rights="infringed") & Q(ruling="dissent")),
+                    then=Value(1),
+                ),
+                When(
+                    (Q(case__reproductive_rights="infringed") & Q(ruling="concur"))
+                    | (Q(case__reproductive_rights="protected") & Q(ruling="dissent")),
+                    then=Value(0),
+                ),
+                # Defaults to None
+            )
+        )
+        .values("judge_alias")
+        .annotate(pro_reproductive_rights__avg=Avg("pro_reproductive_rights"))
     )
 
-    return list(indops.values("judge_alias", "case_id", "ruling", *case_rights))
+    # Avg() excludes `None` values by default
+    # pcents_good_by_judge = indops_good_bad_by_judge.aggregate(
+    #     pcent_pro_reproductive_rights=Avg("pro_reproductive_rights"),
+    # )
+
+    # return list(pcents_good_by_judge)
+    return list(indops_good_bad_by_judge)
+    return list(indops)
 
 
 def get_radar_example_data(request):
