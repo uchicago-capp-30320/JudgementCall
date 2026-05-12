@@ -178,7 +178,7 @@ class Tenure(models.Model):
 class Election(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     election_date = models.DateField()
-    incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT)
+    incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT, null=True, blank=True)
 
     def deduce_elections(self):
         court_elections = Tenure.objects.values("id", "court_id", "end_date")
