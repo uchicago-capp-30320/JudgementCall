@@ -511,30 +511,17 @@ def get_individual_opinions_for_radar(
     """
     # Query all cases that had individual opinions authored by
     # tenures of the given persons in the given court.
+    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-12:]
+    indops = (
+        IndividualOpinion.objects.filter(  # .prefetch_related()?
+            judge_alias__tenure__person__name_canonical__in=persons
+        )
+        .filter(case__court__court_id=court_id)
+        .select_related("case")
+        .values("case", "ruling", *case_rights)
+    )
 
-    indops = IndividualOpinion.objects.filter(  # .prefetch_related()?
-        judge_alias__tenure__person__name_canonical__in=persons
-    ).filter(
-        case__court__court_id=court_id
-    )  # .prefetch_related("case") or .values("tenure_id", "ruling", ...)?
-
-    return list(indops.all().values())
-
-    # rights = TopicAlignment.choices
-    # resp = []
-    # resp.append([])
-    # for i, right in enumerate(rights):
-    #     filter_protected_kwds = {right: "protected"}
-    #     exclude_na_kwds = {right: "NA"}
-
-    #     cases_protected = cases.filter(**filter_protected_kwds)
-    #     cases_relevant = cases.exclude(**exclude_na_kwds)
-
-    #     frac_protected = cases_protected.count() / cases_relevant.count()
-
-    #     resp[0].append({"axis": right, "value": frac_protected})
-
-    # return resp
+    return list(indops)
 
 
 def get_radar_example_data(request):
