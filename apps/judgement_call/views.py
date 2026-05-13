@@ -163,6 +163,23 @@ def candidates(request):
     return render(request, "dropdown.html", context)
 
 
+def gantt(request):
+    """Gantt chart prototype."""
+
+    state = request.GET.get("state", "alaska")
+    print(state)
+    court = Court.objects.get(court_id=state)
+    json = court.gantt_json()
+
+    context = {
+        "msg": "Pending!",
+        "gantt_data": json.text,
+        "state": state,
+    }
+
+    return render(request, "gantt.html", context)
+
+
 def analysis(request):
     """Elections landing page."""
     context = {

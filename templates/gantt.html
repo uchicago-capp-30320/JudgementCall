@@ -1,0 +1,20 @@
+{% load static %}
+
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<h2>Gantt Chart: {{ state }}</h2>
+
+{{ gantt_data|json_script:"null" }}
+<p id="gantt-data">{{ gantt_data }}</p>
+
+<div class="ganttContainer">
+    <div class="ganttChart"></div>
+</div>
+
+
+<script src="{% static 'js/ganttChart.js' %}"></script>
+<script>
+    const ganttData = JSON.parse(document.getElementById("gantt-data").textContent);
+    makeGanttChart(ganttData, ".ganttChart");
+</script>

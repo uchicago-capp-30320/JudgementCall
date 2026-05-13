@@ -17,4 +17,5 @@ urlpatterns = [
     path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
     path("api/counties/<str:state>/", views.get_counties, name="get_counties"),
+    path("gantt/", views.gantt, name="gantt"),
 ]
