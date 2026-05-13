@@ -50,10 +50,9 @@ def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
     dist = nan_euclidean_distances(output_df.iloc[:, 1 : output_df.shape[1] - 1])
     embedding = MDS(n_components=1, n_init=1, init="random", metric="precomputed")
     transformed = pd.Series(embedding.fit_transform(dist).reshape(1, 3)[0])
-    output["polarity"] = transformed
-    map_data = pd.DataFrame(output)
+    output_df.insert(len(output_df.columns), "polarity", transformed)
 
-    return map_data
+    return output_df
 
 
 def create_choropleth(map_data: pd.DataFrame, dimension: str = None, geo_unit: str = "state"):
