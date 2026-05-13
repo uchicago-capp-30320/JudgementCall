@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, Http404
 from .models import (
     Court,
     Person,
@@ -22,6 +22,9 @@ from .models import (
     PartyAffiliation,
 )
 from datetime import date, datetime
+from django.utils import timezone
+from django.db.models import Count, Avg
+from django.db.models.functions import ExtractYear
 
 # from dateutil.relativedelta import relativedelta
 import random
@@ -64,9 +67,15 @@ def get_counties(request, state):
 def judges_state_county(request, state, county):
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    if not geo_c2c.exists():
+        raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
     elections_soon = get_upcoming_elections(local_courts_list)
-    tenures = Tenure.objects.filter(court__in=local_courts_list)
+
+    # only get current judges
+    tenures = Tenure.objects.filter(
+        court__in=local_courts_list, end_date__isnull=True
+    ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
     courts = {}
 
     # iterate through all the tenures and courts associated with them
@@ -80,7 +89,36 @@ def judges_state_county(request, state, county):
             else:
                 courts[court_name]["upcoming_election"] = False
 
-        # For each tenure associated with a court, add it to a list in that's
+            # get demographics for the court
+            court_tenures = tenures.filter(court=tenure.court)
+            gender_counts = list(court_tenures.values("person__gender").annotate(count=Count("id")))
+            race_counts = list(court_tenures.values("person__race").annotate(count=Count("id")))
+            party_counts = list(
+                court_tenures.values("person__party_registration").annotate(count=Count("id"))
+            )
+            birth_years = [
+                tenure.person.birth_date.year
+                for tenure in court_tenures
+                if tenure.person.birth_date
+            ]
+            if birth_years:
+                avg_age = timezone.now().year - (sum(birth_years) / len(birth_years))
+            else:
+                avg_age = None
+
+            # for each court, add the demographic data
+            courts[court_name]["gender_data"] = [
+                item for item in gender_counts if item["person__gender"] is not None
+            ]
+            courts[court_name]["race_data"] = [
+                item for item in race_counts if item["person__race"] is not None
+            ]
+            courts[court_name]["party_data"] = [
+                item for item in party_counts if item["person__party_registration"] is not None
+            ]
+            courts[court_name]["avg_age"] = avg_age
+
+        # For each tenure associated with a court, add it to a list that's
         # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name]["judges"].append(
             {
@@ -92,6 +130,7 @@ def judges_state_county(request, state, county):
                 "end_date": tenure.end_date,
             }
         )
+
     context = {
         "courts": courts,
         "state": state,
@@ -101,7 +140,7 @@ def judges_state_county(request, state, county):
 
 
 def show_person(request, person_id):
-    person = Person.objects.get(id=person_id)
+    person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
 
     person_info = {
@@ -190,14 +229,14 @@ def get_upcoming_elections(relevant_courts):
     Takes in QSet of courts and returns those with nearest associated election date
     """
     next_event = (
-        Election.objects.filter(date__gte=datetime.now())
-        .order_by("date")
-        .values_list("date", flat=True)
+        Election.objects.filter(election_date__gte=datetime.now())
+        .order_by("election_date")
+        .values_list("election_date", flat=True)
         .first()
     )
 
     if next_event:
-        return Election.objects.filter(court__in=relevant_courts, date=next_event)
+        return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
 
     return Election.objects.none()
 
@@ -379,7 +418,9 @@ def add_fake_data(request):
     ]
 
     for election_data in elections:
-        Election.objects.get_or_create(court=election_data["court"], date=election_data["date"])
+        Election.objects.get_or_create(
+            court=election_data["court"], election_date=election_data["date"]
+        )
 
     # create candidacies
     persons = list(Person.objects.all())
@@ -395,8 +436,8 @@ def add_fake_data(request):
         for person in persons:
             court = random.choice(list(court_objects.values()))
             selection = random.choice(SelectionType.values)
-            start = fake.date_between(start_date=date(1950, 1, 1), end_date=date(2020, 1, 1))
-            end = fake.date_between(start_date=start, end_date=date(2024, 1, 1))
+            start = fake.date_between(start_date=date(1990, 1, 1), end_date=date(2026, 1, 1))
+            end = fake.date_between(start_date=start, end_date=date(2040, 1, 1))
             appointer_party = (
                 random.choice(PartyAffiliation.values)
                 if selection == SelectionType.APPOINTMENT
