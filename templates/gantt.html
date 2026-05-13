@@ -3,7 +3,7 @@
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
-<h2>Gantt Chart: {{ court_name }}</h2>
+<h3>Gantt Chart: {{ court_name }}</h3>
 
 {{ gantt_data|json_script:"null" }}
 <p id="gantt-data" style="display: none;">{{ gantt_data }}</p>
