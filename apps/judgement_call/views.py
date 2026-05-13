@@ -519,17 +519,23 @@ def get_individual_opinions_for_radar(
     # (any!) tenures of the given persons in the given court.
     case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-12:]
     indops = (
-        IndividualOpinion.objects.filter(judge_alias__tenure__person__name_canonical__in=persons)
-        .filter(case__court__court_id=court_id)
-        .select_related("case")
+        IndividualOpinion.objects.filter(
+            judge_alias__tenure__person__name_canonical__in=persons
+        ).filter(case__court__court_id=court_id)
+        # .select_related("case", "alias", "person")
         # .select_related("alias")
         # .select_related("tenure")
         # .select_related("person")
-    ).values("judge_alias", "ruling", *case_rights)  # "case_id"
+    ).values("judge_alias", "ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
 
     # Transform those individual opinions into protected percentages and infringed percentages,
     # grouped by judge (person). This is "Stat option 2".
-    indops_good_bad_by_judge = (
+
+    # pcents_good_by_judge_kwdargs = {
+    #     case_right + "_pcent_good": Count("pk", filter=Q(account_type=Client.REGULAR))
+    #     for case_right in indops_good_bad_by_judge
+    # }
+    indops_is_pro_by_judge = (
         indops.annotate(
             pro_reproductive_rights=Case_(
                 When(
@@ -545,17 +551,17 @@ def get_individual_opinions_for_radar(
                 # Defaults to None
             )
         )
-        .values("judge_alias")
+        .values("judge_alias", "judge_alias__tenure__person__name_canonical")
         .annotate(pro_reproductive_rights__avg=Avg("pro_reproductive_rights"))
     )
-
     # Avg() excludes `None` values by default
+
     # pcents_good_by_judge = indops_good_bad_by_judge.aggregate(
     #     pcent_pro_reproductive_rights=Avg("pro_reproductive_rights"),
     # )
 
     # return list(pcents_good_by_judge)
-    return list(indops_good_bad_by_judge)
+    return list(indops_is_pro_by_judge)
     return list(indops)
 
 
