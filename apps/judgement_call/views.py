@@ -320,7 +320,7 @@ def analysis(request):
         "header": "Analysis",
         "preamble": "Apply filters to see judicial analytics.",
         "states": US_STATES,
-        "radar_data": get_radar_example_data(request),
+        "radar_data": get_individual_opinions_for_radar(request),
         "button_name": """Generate Analytics""",
     }
 
