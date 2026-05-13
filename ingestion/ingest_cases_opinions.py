@@ -341,17 +341,18 @@ def produce_tables(
     return rd, llm_run_metadata
 
 
-"""
+print("Getting cases and opinions...")
 table_dic, run_meta_data = produce_tables(case_df)
+print("Ingestion complete")
 
-for file_name in table_dic.keys():
-    data = table_dic[file_name]
-    file_name += ".csv"
-    path = Path(__file__).parent.parent / "data" / file_name
-    data.to_csv(path, index = False)
+if __name__ == "__main__":
+    for file_name in table_dic.keys():
+        data = table_dic[file_name]
+        file_name += ".csv"
+        path = Path(__file__).parent.parent / "data" / file_name
+        data.to_csv(path, index=False)
 
-run_timestamp = run_meta_data["timestamp"].strftime("%m/%d/%Y")
-path = Path(__file__).parent.parent / "data" / f"llm_run_{run_timestamp}.json"
-with open(path, "w") as file_path:
-    json.dump(run_meta_data, file_path)
-"""
+    run_timestamp = run_meta_data["timestamp"].strftime("%m/%d/%Y")
+    path = Path(__file__).parent.parent / "data" / f"llm_run_{run_timestamp}.json"
+    with open(path, "w") as file_path:
+        json.dump(run_meta_data, file_path)
