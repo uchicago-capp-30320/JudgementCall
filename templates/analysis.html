@@ -13,7 +13,9 @@ Judgement Call
 
 {% include "dropdown.html" with states=states %}
 
-{% include "radar_test.html" with radar_data=radar_data%}
+{% if radar_data %}
+    {% include "radar_test.html" with radar_data=radar_data %}
+{% endif %}
 
 {% if gantt_data %}
     {% include "gantt.html" with gantt_data=gantt_data state=state %}
