@@ -3,10 +3,10 @@
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
-<h2>Gantt Chart: {{ state }}</h2>
+<h2>Gantt Chart: {{ court_name }}</h2>
 
 {{ gantt_data|json_script:"null" }}
-<p id="gantt-data">{{ gantt_data }}</p>
+<p id="gantt-data" style="display: none;">{{ gantt_data }}</p>
 
 <div class="ganttContainer">
     <div class="ganttChart"></div>

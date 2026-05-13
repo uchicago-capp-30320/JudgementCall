@@ -1,0 +1,42 @@
+<div class="sub-court-header">
+    <h3>Court Demographics</h3>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; margin: 10px 0;">
+        <div
+            style="background: #f0f4f8; padding: 15px; border-radius: 8px; border-left: 4px solid #3e6297; flex: 1; min-width: 120px;">
+            <strong style="color: #3e6297;">Average Age</strong>
+            <div style="padding: 10px 0; font-size: 1.5em; font-weight: bold; color: #3e6297;">
+                {{ details.avg_age|floatformat:1 }}
+            </div>
+        </div>
+
+        <div
+            style="background: #ffe6e6; padding: 15px; border-radius: 8px; border-left: 4px solid #ff6b6b; flex: 1; min-width: 120px;">
+            <strong style="color: #c92a2a;">Gender</strong>
+            {% for item in details.gender_data %}
+            <div style="padding: 10px 0; font-size: 1em; font-weight: bold; color: #c92a2a;">
+                {{ item.person__gender|upper }}: <strong>{{ item.count }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div
+            style="background: #cbe3d2; padding: 15px; border-radius: 8px; border-left: 4px solid #1eaf64; flex: 1; min-width: 120px;">
+            <strong style="color: #1eaf64;">Party</strong>
+            {% for item in details.party_data %}
+            <div style="padding: 10px 0; font-size: 1em; font-weight: bold; color: #1eaf64;">
+                {{ item.person__party_registration|default:"Unaffiliated" }}: <strong>{{ item.count }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div
+            style="background: #f3e6ff; padding: 15px; border-radius: 8px; border-left: 4px solid #9333ea; flex: 1; min-width: 120px;">
+            <strong style="color: #6d28d9;">Race</strong>
+            {% for item in details.race_data %}
+            <div style="padding: 10px 0; font-size: 0.7em; font-weight: bold; color: #9333ea;">
+                {{ item.person__race|title }}: <strong>{{ item.count }}</strong>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

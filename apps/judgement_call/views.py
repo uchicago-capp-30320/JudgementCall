@@ -1,12 +1,9 @@
-<<<<<<< feat/radar-viz-judges
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.db.models import Avg, Count, When, Value, Q
-from django.db.models import Case as Case_
-=======
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404
->>>>>>> viz
+from django.db.models import Avg, Count, When, Value, Q
+from django.db.models import Case as Case_
+
+# from django.http import HttpResponse
 from .models import (
     Court,
     Person,
@@ -30,7 +27,8 @@ from .models import (
 )
 from datetime import date, datetime
 from django.utils import timezone
-from django.db.models import Count, Avg
+
+# from django.db.models import Count, Avg
 from django.db.models.functions import ExtractYear
 
 # from dateutil.relativedelta import relativedelta
@@ -272,7 +270,10 @@ def elections_state_county(request, state, county):
     # want to retrieve soonest elections
     local_elections_list = get_upcoming_elections(local_courts_list)
     elections = {
-        e.court.name: {"date": e.date.strftime("%m-%d-%Y"), "type": e.court.selection_method}
+        e.court.name: {
+            "date": e.election_date.strftime("%m-%d-%Y"),
+            "type": e.court.selection_method,
+        }
         for e in local_elections_list
     }
 
@@ -302,16 +303,12 @@ def candidates(request):
 def gantt(request):
     """Gantt chart prototype."""
 
-    state = request.GET.get("state", "alaska")
+    state = request.GET.get("state", "AZSUP")
     print(state)
     court = Court.objects.get(court_id=state)
     json = court.gantt_json()
 
-    context = {
-        "msg": "Pending!",
-        "gantt_data": json.text,
-        "state": state,
-    }
+    context = {"gantt_data": json.text, "court_id": state, "court_name": court.name}
 
     return render(request, "gantt.html", context)
 
@@ -444,11 +441,7 @@ def add_fake_data(request):
 
     for election_data in elections:
         Election.objects.get_or_create(
-<<<<<<< feat/radar-viz-judges
             court=election_data["court"], election_date=election_data["election_date"]
-=======
-            court=election_data["court"], election_date=election_data["date"]
->>>>>>> viz
         )
 
     # create candidacies
