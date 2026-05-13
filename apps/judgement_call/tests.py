@@ -22,8 +22,21 @@ from apps.judgement_call.models import (
 )
 from datetime import date
 
-
 class JudgesTestCase(TestCase):
+    """Tests for the judge / court lookup page"""
+    def test_judges_page_returns_200(self):
+        """Make sure the landing page loads"""
+        response = self.client.get("/judges/")
+        assert response.status_code == 200
+
+    def test_judges_page_has_states(self):
+        """Make sure the states are populating in our dropdowns"""
+        response = self.client.get("/judges/")
+        assert "states" in response.context
+        assert len(response.context["states"]) > 0
+
+class JudgesStateCountyTestCase(TestCase):
+    """Tests for the specific state county judge view"""
     def setUp(self):
         # create a court
         court = Court.objects.create(
@@ -78,17 +91,6 @@ class JudgesTestCase(TestCase):
             appointer_party="",
             chief_justice=False,
         )
-
-    def test_judges_page_returns_200(self):
-        """Make sure the landing page loads"""
-        response = self.client.get("/judges/")
-        assert response.status_code == 200
-
-    def test_judges_page_has_states(self):
-        """Make sure the states are populating in our dropdowns"""
-        response = self.client.get("/judges/")
-        assert "states" in response.context
-        assert len(response.context["states"]) > 0
 
     def test_judges_page_sends_to_judges_state_county(self):
         """Make sure dropdown submit sends us to judges_state_county"""
