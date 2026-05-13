@@ -10,8 +10,13 @@ Judgement Call
 <h2 class="sub-header">{{ header }}</h2>
 
 <p>{{ preamble }}</p>
-<p>(Search/viz filter panel will go here.)</p>
+
+{% include "dropdown.html" with states=states %}
 
 {% include "radar_test.html" with radar_data=radar_data %}
+
+{% if gantt_data %}
+    {% include "gantt.html" with gantt_data=gantt_data state=state %}
+{% endif %}
 
 {% endblock %}
