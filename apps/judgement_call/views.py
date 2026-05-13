@@ -498,7 +498,7 @@ def get_individual_opinions_for_radar(
     Query multiple justices' ruling propensities to build
     Radar charts in `radar_test.html`.
 
-    `court_id` and `person_ids` could come from judges_state_county(), but
+    `court_id` and `persons` could come from judges_state_county(), but
     in any case we need all tenures in a selected court for selected
     persons.
 
@@ -561,7 +561,29 @@ def get_individual_opinions_for_radar(
         .annotate(**pro_right_kwargs)
     )
 
-    return list(pro_right_avgs_by_judge)
+    # Convert from List of Dicts (each a judge) to List of Lists (each a judge) of Dicts.
+    # TODO: Radar chart has no legend, but we will add judge name here later for that.
+    # TODO: Handle missing data. What to show when Judge A is missing church-state cases,
+    # and Judge B is missing free press cases? Drop both for both judges? CANNOT DEFAULT TO 0.
+    # For now, drop a right (axis) if EITHER judge has not ruled on a related case
+    data_for_radar = [
+        [{"axis": key, "value": val} for key, val in judge_dict.items() if key.endswith("__avg")]
+        for judge_dict in list(pro_right_avgs_by_judge)
+    ]
+
+    missing_axes = []
+    for judge_list in data_for_radar:
+        missing_axes += [
+            data_dict["axis"] for data_dict in judge_list if data_dict["value"] is None
+        ]
+    missing_axes = set(missing_axes)
+
+    data_for_radar_dropmissing = [
+        [data_dict for data_dict in judge_list if data_dict["axis"] not in missing_axes]
+        for judge_list in data_for_radar
+    ]
+
+    return data_for_radar_dropmissing
 
 
 def get_radar_example_data(request):
