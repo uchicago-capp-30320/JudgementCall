@@ -525,10 +525,12 @@ def add_fake_data(request):
                 },
             )
 
+    # create alieses
     tenures = list(Tenure.objects.all())
     for tenure in tenures:
         Alias.objects.get_or_create(
-            alias=fake.name(),
+            alias=random.choice([tenure.person.name_canonical, 
+                                 tenure.person.name_canonical[1:]]),
             defaults={
                 "tenure": tenure,
                 "court": tenure.court,
