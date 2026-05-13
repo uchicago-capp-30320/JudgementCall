@@ -109,7 +109,7 @@ def judges_state_county(request, state, county):
         # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name]["judges"].append(
             {
-                "name": tenure.person.name_canonical.title(),
+                "name": tenure.person.name_canonical,
                 "chief_justice": tenure.chief_justice,
                 "party_registration": tenure.person.party_registration.title(),
                 "more_info": f"/people/{tenure.person.id}/",
@@ -134,7 +134,7 @@ def show_person(request, person_id):
     tenures = Tenure.objects.filter(person=person)
 
     person_info = {
-        "name": person.name_canonical.title(),
+        "name": person.name_canonical,
         "birth_date": person.birth_date,
         "gender": person.gender.title(),
         "race": person.race.title(),
