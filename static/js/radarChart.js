@@ -38,7 +38,7 @@ function RadarChart(id, data, options) {
     var allAxis = (data[0].map(function(i, j){return i.axis})),	//Names of each axis
         total = allAxis.length,					//The number of different axes
         radius = Math.min(cfg.w/2, cfg.h/2), 	//Radius of the outermost circle
-        Format = d3.format('%'),			 	//Percentage formatting
+        Format = d3.format('.0%'),			 	//Percentage formatting
         angleSlice = Math.PI * 2 / total;		//The width in radians of each "slice"
 
     //Scale for the radius
@@ -91,6 +91,17 @@ function RadarChart(id, data, options) {
         .style("fill-opacity", cfg.opacityCircles)
         .style("filter" , "url(#glow)");
 
+    //NEW:Emphasize 50% threshold
+    axisGrid.append("circle")
+        .attr("class", "gridCircle")
+        .attr("r", radius/2)
+        .style("fill", "#00000005")
+        .style("stroke", "#000000")
+        .style("stroke-width", "3")
+        .style("stroke-dasharray", "8 8")
+        .style("fill-opacity", 1.0)
+        // .style("filter" , "url(#glow)");
+
     //Text indicating at what % each level is
     axisGrid.selectAll(".axisLabel")
     .data(d3.range(1,(cfg.levels+1)).reverse())
@@ -100,7 +111,7 @@ function RadarChart(id, data, options) {
     .attr("y", function(d){return -d*radius/cfg.levels;})
     .attr("dy", "0.4em")
     .style("font-size", "10px")
-    .attr("fill", "#737373")
+    .attr("fill", "#111111")
     .text(function(d,i) { return Format(maxValue * d/cfg.levels); });
 
     /////////////////////////////////////////////////////////
@@ -140,7 +151,7 @@ function RadarChart(id, data, options) {
 
     //The radial line function
     var radarLine = d3.radialLine()
-        .curve(d3.curveLinearClosed)
+        .curve(d3.curveNatural) // curveLinearClosed
         .radius(function(d) { return rScale(d.value); })
         .angle(function(d,i) {	return i*angleSlice; });
 
@@ -221,11 +232,11 @@ function RadarChart(id, data, options) {
         .on("mouseover", function(d,i) {
             newX =  parseFloat(d3.select(this).attr('cx')) - 10;
             newY =  parseFloat(d3.select(this).attr('cy')) - 10;
-
+            // console.log(d.target.__data__.value);
             tooltip
                 .attr('x', newX)
                 .attr('y', newY)
-                .text(Format(d.value))
+                .text(Format(d.target.__data__.value))
                 .transition().duration(200)
                 .style('opacity', 1);
         })

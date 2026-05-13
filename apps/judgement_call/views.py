@@ -567,7 +567,11 @@ def get_individual_opinions_for_radar(
     # and Judge B is missing free press cases? Drop both for both judges? CANNOT DEFAULT TO 0.
     # For now, drop a right (axis) if EITHER judge has not ruled on a related case
     data_for_radar = [
-        [{"axis": key, "value": val} for key, val in judge_dict.items() if key.endswith("__avg")]
+        [
+            {"axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "), "value": val}
+            for key, val in judge_dict.items()
+            if key.endswith("__avg")
+        ]
         for judge_dict in list(pro_right_avgs_by_judge)
     ]
 
