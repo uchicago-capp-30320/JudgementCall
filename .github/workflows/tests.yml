@@ -42,7 +42,7 @@ jobs:
       # run pytest, which looks for test.py file and runs anything in
       # it that starts with "test"
       - name: Run tests
-        run: uv run pytest
+        run: uv run python manage.py test
         env:
           DEBUG: "True"
           SECRET_KEY: test_key_DONT_USE_IN_PROD
