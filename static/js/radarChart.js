@@ -151,12 +151,12 @@ function RadarChart(id, data, options) {
 
     //The radial line function
     var radarLine = d3.radialLine()
-        .curve(d3.curveNatural) // curveLinearClosed
+        .curve(d3.curveLinearClosed) // curveNatural
         .radius(function(d) { return rScale(d.value); })
         .angle(function(d,i) {	return i*angleSlice; });
 
     if(cfg.roundStrokes) {
-        radarLine.curve(d3.curveCardinalClosed);
+        radarLine.curve(d3.curveLinearClosed); // curveCardinalClosed
     }
 
     //Create a wrapper for the blobs
