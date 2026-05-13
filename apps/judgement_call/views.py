@@ -1,5 +1,12 @@
+<<<<<<< feat/radar-viz-judges
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.db.models import Avg, Count, When, Value, Q
+from django.db.models import Case as Case_
+=======
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, Http404
+>>>>>>> viz
 from .models import (
     Court,
     Person,
@@ -51,6 +58,7 @@ def judges(request):
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
         # "radar_data": get_radar_example_data(request),
+        "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
     }
 
@@ -410,33 +418,37 @@ def add_fake_data(request):
     elections = [
         {
             "court": court_objects["ILSUP"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["AZSUP"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["ILSUP"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
         {
             "court": court_objects["AZSUP"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
     ]
 
     for election_data in elections:
         Election.objects.get_or_create(
+<<<<<<< feat/radar-viz-judges
+            court=election_data["court"], election_date=election_data["election_date"]
+=======
             court=election_data["court"], election_date=election_data["date"]
+>>>>>>> viz
         )
 
     # create candidacies
@@ -543,10 +555,18 @@ def add_fake_data(request):
     return HttpResponse("Done!")
 
 
-def get_individual_opinions_for_radar(request):
+def get_individual_opinions_for_radar(
+    request,
+    court_id: str = "wis",
+    persons: list[str] = ["Rebecca Grassl Bradley", "Jill J. Karofsky"],
+):
     """
-    Query multiple justices' ruling propensities to test out D3
-    Radar charts in `radar_test.html`
+    Query multiple justices' ruling propensities to build
+    Radar charts in `radar_test.html`.
+
+    `court_id` and `persons` could come from judges_state_county(), but
+    in any case we need all tenures in a selected court for selected
+    persons.
 
     Returns:
         A list of lists of dicts. Each sublist represents data for a
@@ -559,10 +579,81 @@ def get_individual_opinions_for_radar(request):
         to protect that right.
 
         This format plugs right into radarChart.js for any number
-        of justices and rights
+        of justices and rights.
     """
-    # Query only IndividualOpinions in a single state from justices X and Y
-    pass
+    # Query all cases that had individual opinions authored by
+    # (any!) tenures of the given persons in the given court.
+    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-12:]
+    indops = (
+        IndividualOpinion.objects.filter(
+            judge_alias__tenure__person__name_canonical__in=persons
+        ).filter(case__court__court_id=court_id)
+    ).values("judge_alias", "ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
+
+    # Transform those individual opinions into protected percentages and infringed percentages,
+    # grouped by judge (person). This is "Stat option 2".
+    def make_pro_right_case_when(right):
+        """Helper function for converting linked IndividualOpinion data to pro/con scores"""
+        kwarg_protected = {right: "protected"}
+        kwarg_infringed = {right: "infringed"}
+
+        case_when_statement = Case_(
+            When(  # Ruled to protect a right, or tried stopping court from infringing
+                (Q(**kwarg_protected) & Q(ruling="concur"))
+                | (Q(**kwarg_infringed) & Q(ruling="dissent")),
+                then=Value(1),
+            ),
+            When(  # Ruled to infringe on a right, or tried stopping court from protecting
+                (Q(**kwarg_infringed) & Q(ruling="concur"))
+                | (Q(**kwarg_protected) & Q(ruling="dissent")),
+                then=Value(0),
+            ),
+            # Case_ defaults to None otherwise
+        )
+
+        return case_when_statement
+
+    right_avgs_by_judge_kwargs = {
+        "pro_" + case_right: make_pro_right_case_when(case_right) for case_right in case_rights
+    }
+    pro_right_kwargs = {
+        f"pro_{case_right.replace('case__', '')}__avg": Avg(f"pro_{case_right}")
+        for case_right in case_rights
+    }  # Avg() helpfully excludes `None` values by default
+
+    pro_right_avgs_by_judge = (
+        indops.annotate(**right_avgs_by_judge_kwargs)
+        .values("judge_alias", "judge_alias__tenure__person__name_canonical")
+        .annotate(**pro_right_kwargs)
+    )
+
+    # Convert from List of Dicts (each a judge) to List of Lists (each a judge) of Dicts.
+    # TODO: Radar chart has no legend, but we will add judge name here later for that.
+    # TODO: Handle missing data. What to show when Judge A is missing church-state cases,
+    # and Judge B is missing free press cases? Drop both for both judges? CANNOT DEFAULT TO 0.
+    # For now, drop a right (axis) if EITHER judge has not ruled on a related case
+    data_for_radar = [
+        [
+            {"axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "), "value": val}
+            for key, val in judge_dict.items()
+            if key.endswith("__avg")
+        ]
+        for judge_dict in list(pro_right_avgs_by_judge)
+    ]
+
+    missing_axes = []
+    for judge_list in data_for_radar:
+        missing_axes += [
+            data_dict["axis"] for data_dict in judge_list if data_dict["value"] is None
+        ]
+    missing_axes = set(missing_axes)
+
+    data_for_radar_dropmissing = [
+        [data_dict for data_dict in judge_list if data_dict["axis"] not in missing_axes]
+        for judge_list in data_for_radar
+    ]
+
+    return data_for_radar_dropmissing
 
 
 def get_radar_example_data(request):
@@ -592,7 +683,6 @@ def get_radar_example_data(request):
     # Query only Cases in Alaska from selected rights
     test_state = "Alaska"
     test_rights = ["environment", "democratic_norms", "free_speech"]
-    # Need to unpack dict to query Django by variable-named columns
 
     cases = Case.objects.filter(case_id__contains=test_state)
 
@@ -612,11 +702,3 @@ def get_radar_example_data(request):
         resp[0].append({"axis": right, "value": frac_protected})
 
     return resp
-
-    # resp_example = [
-    #     [ # This list corresponds to one Case
-    #         {"axis": "made", "value": 0.1}, # This dict corresponds to one right
-    #         {"axis": "up", "value": 0.123},
-    #         {"axis": "also made up", "value": 0.90},
-    #     ]
-    # ]
