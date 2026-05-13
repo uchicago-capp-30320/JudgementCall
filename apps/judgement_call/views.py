@@ -522,47 +522,46 @@ def get_individual_opinions_for_radar(
         IndividualOpinion.objects.filter(
             judge_alias__tenure__person__name_canonical__in=persons
         ).filter(case__court__court_id=court_id)
-        # .select_related("case", "alias", "person")
-        # .select_related("alias")
-        # .select_related("tenure")
-        # .select_related("person")
     ).values("judge_alias", "ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
 
     # Transform those individual opinions into protected percentages and infringed percentages,
     # grouped by judge (person). This is "Stat option 2".
+    def make_pro_right_case_when(right):
+        """Helper function for converting linked IndividualOpinion data to pro/con scores"""
+        kwarg_protected = {right: "protected"}
+        kwarg_infringed = {right: "infringed"}
 
-    # pcents_good_by_judge_kwdargs = {
-    #     case_right + "_pcent_good": Count("pk", filter=Q(account_type=Client.REGULAR))
-    #     for case_right in indops_good_bad_by_judge
-    # }
-    indops_is_pro_by_judge = (
-        indops.annotate(
-            pro_reproductive_rights=Case_(
-                When(
-                    (Q(case__reproductive_rights="protected") & Q(ruling="concur"))
-                    | (Q(case__reproductive_rights="infringed") & Q(ruling="dissent")),
-                    then=Value(1),
-                ),
-                When(
-                    (Q(case__reproductive_rights="infringed") & Q(ruling="concur"))
-                    | (Q(case__reproductive_rights="protected") & Q(ruling="dissent")),
-                    then=Value(0),
-                ),
-                # Defaults to None
-            )
+        case_when_statement = Case_(
+            When(  # Ruled to protect a right, or tried stopping court from infringing
+                (Q(**kwarg_protected) & Q(ruling="concur"))
+                | (Q(**kwarg_infringed) & Q(ruling="dissent")),
+                then=Value(1),
+            ),
+            When(  # Ruled to infringe on a right, or tried stopping court from protecting
+                (Q(**kwarg_infringed) & Q(ruling="concur"))
+                | (Q(**kwarg_protected) & Q(ruling="dissent")),
+                then=Value(0),
+            ),
+            # Case_ defaults to None otherwise
         )
+
+        return case_when_statement
+
+    right_avgs_by_judge_kwargs = {
+        "pro_" + case_right: make_pro_right_case_when(case_right) for case_right in case_rights
+    }
+    pro_right_kwargs = {
+        f"pro_{case_right.replace('case__', '')}__avg": Avg(f"pro_{case_right}")
+        for case_right in case_rights
+    }  # Avg() helpfully excludes `None` values by default
+
+    pro_right_avgs_by_judge = (
+        indops.annotate(**right_avgs_by_judge_kwargs)
         .values("judge_alias", "judge_alias__tenure__person__name_canonical")
-        .annotate(pro_reproductive_rights__avg=Avg("pro_reproductive_rights"))
+        .annotate(**pro_right_kwargs)
     )
-    # Avg() excludes `None` values by default
 
-    # pcents_good_by_judge = indops_good_bad_by_judge.aggregate(
-    #     pcent_pro_reproductive_rights=Avg("pro_reproductive_rights"),
-    # )
-
-    # return list(pcents_good_by_judge)
-    return list(indops_is_pro_by_judge)
-    return list(indops)
+    return list(pro_right_avgs_by_judge)
 
 
 def get_radar_example_data(request):
