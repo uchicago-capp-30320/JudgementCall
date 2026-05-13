@@ -313,6 +313,18 @@ def gantt(request):
     return render(request, "gantt.html", context)
 
 
+def get_current_judges_for_court(court_id):
+    """
+    Helper function to generate radar chart data for analysis page.
+    """
+    return list(
+        (
+            Tenure.objects.filter(court__court_id=court_id, end_date__isnull=True)
+            | Tenure.objects.filter(court__court_id=court_id, end_date__gt=timezone.now())
+        ).values_list("person__name_canonical", flat=True)
+    )
+
+
 def analysis(request):
     """Elections landing page."""
 
@@ -321,24 +333,33 @@ def analysis(request):
     court_id = None
     court_name = None
     gantt_data = None
+    radar_data = None
 
     if state and county:
         geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
         if geo_c2c.exists():
             local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
-            #court = local_courts_list[0]
+            # court = local_courts_list[0]
             court = local_courts_list.first()
             if court:
                 court_id = court.court_id
                 court_name = court.name
                 gantt_data = court.gantt_json().text
 
+    # use dynamic radar if court selected, fallback to example data
+    if court_id:
+        judges = get_current_judges_for_court(court_id)
+        print("court_id:", court_id)
+        print("judges:", judges)
+        radar_data = get_individual_opinions_for_radar(request, court_id=court_id, persons=judges)
+        print("radar_data:", radar_data)
+
     context = {
         "msg": "Pending!",
         "header": "Analysis",
         "preamble": "Apply filters to see judicial analytics.",
         "states": US_STATES,
-        "radar_data": get_individual_opinions_for_radar(request),
+        "radar_data": radar_data,
         "button_name": """Generate Analytics""",
         "state": court_id,
         "court_name": court_name,
