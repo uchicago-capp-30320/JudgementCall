@@ -344,6 +344,7 @@ def add_fake_data(request):
             ctc.court.add(court)
 
     # create elections
+    # comment to commit
 
     # make a dictionary of the courts
     court_objects = {}
