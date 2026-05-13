@@ -22,8 +22,10 @@ from apps.judgement_call.models import (
 )
 from datetime import date
 
+
 class JudgesTestCase(TestCase):
     """Tests for the judge / court lookup page"""
+
     def test_judges_page_returns_200(self):
         """Make sure the landing page loads"""
         response = self.client.get("/judges/")
@@ -35,8 +37,10 @@ class JudgesTestCase(TestCase):
         assert "states" in response.context
         assert len(response.context["states"]) > 0
 
+
 class JudgesStateCountyTestCase(TestCase):
     """Tests for the specific state county judge view"""
+
     def setUp(self):
         # create a court
         court = Court.objects.create(
