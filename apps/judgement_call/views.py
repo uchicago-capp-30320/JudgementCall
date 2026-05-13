@@ -315,6 +315,24 @@ def gantt(request):
 
 def analysis(request):
     """Elections landing page."""
+
+    state = request.GET.get("state")
+    county = request.GET.get("county")
+    court_id = None
+    court_name = None
+    gantt_data = None
+
+    if state and county:
+        geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+        if geo_c2c.exists():
+            local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+            #court = local_courts_list[0]
+            court = local_courts_list.first()
+            if court:
+                court_id = court.court_id
+                court_name = court.name
+                gantt_data = court.gantt_json().text
+
     context = {
         "msg": "Pending!",
         "header": "Analysis",
@@ -322,6 +340,9 @@ def analysis(request):
         "states": US_STATES,
         "radar_data": get_radar_example_data(request),
         "button_name": """Generate Analytics""",
+        "state": court_id,
+        "court_name": court_name,
+        "gantt_data": gantt_data,
     }
 
     return render(request, "analysis.html", context)
