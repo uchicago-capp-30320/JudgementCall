@@ -2,14 +2,26 @@ import requests
 import lxml.html
 import time
 import pandas as pd
+from pathlib import Path
 
 
-def make_request(url: str):
+def make_request(url):
     """
-    Makes a request to the given url. If the request returns a 429 status code,
-    the function waits 2.5 seconds and then repeats the request.
+    Function makes request to url. If the request responds with a 429 status
+    code, the request is made again after 2.5 seconds until. The process
+    repeats until the response responds with a 200 code.
     """
-    resp = requests.get(url)
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    acc = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+    headers = {
+        "User-Agent": user_agent,
+        "Accept": acc,
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate",
+        "Connection": "keep-alive",
+    }
+
+    resp = requests.get(url, headers=headers)
 
     if resp.status_code == 429:
         time.sleep(2.5)
@@ -180,6 +192,8 @@ def multi_page(start_url):
         "opinion_link": [],
     }
 
+    print("Beginning webscraping of State Case Database...")
+    page_num = 1
     while True:
         page_info = scrape_page(url, rd)
 
@@ -187,7 +201,11 @@ def multi_page(start_url):
         rd = page_info
 
         if url == url_base:
+            print("State Case Database webscrape complete!")
             break
+
+        print(f"Scraped page {page_num}")
+        page_num += 1
 
     return rd
 
@@ -196,3 +214,7 @@ cases_pd = multi_page("https://statecourtreport.org/state-case-database")
 
 case_df = pd.DataFrame(cases_pd).drop_duplicates(keep=False)
 case_df = case_df[~case_df["pending"]].reset_index(drop=True)
+case_df = case_df[case_df["opinion_link"].str.contains("https", na=False)]
+
+path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
+case_df.to_csv(path, index=False)
