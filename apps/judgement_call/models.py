@@ -219,9 +219,13 @@ class Alias(models.Model):
             alias = self.alias
         court_tenures = Tenure.objects.filter(court=self.court)
         matches = {}
+        last_word_alias = alias.split(" ")[-1]
         for tenure in court_tenures:
             name = self.standardize_name(tenure.person.name_canonical)
-            matches[tenure] = jaro_winkler_similarity(alias, name)
+            last_word_name = name.split(" ")[-1]
+            match_full = jaro_winkler_similarity(alias, name)
+            match_lw = jaro_winkler_similarity(last_word_alias, last_word_name)
+            matches[tenure] = max(match_full, match_lw)
         return matches
 
     def match_tenure(self, update=False):
