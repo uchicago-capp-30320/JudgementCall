@@ -752,9 +752,10 @@ def get_individual_opinions_for_radar(
 
     # Drop judges with no data at all
     data_for_radar = [
-        judge_list for judge_list in data_for_radar
+        judge_list
+        for judge_list in data_for_radar
         if any(d["value"] is not None for d in judge_list)
-    ]  
+    ]
 
     missing_axes = []
     for judge_list in data_for_radar:
