@@ -32,6 +32,7 @@ Judgement Call
 </head>
 
 <body>
+    <h1>{{ courts }}</h1>
     <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
     {% for court_name, details in courts.items %}
     <div class="collapsible-container">
@@ -44,6 +45,8 @@ Judgement Call
         </span>
     </div>
     <div class="collapsible-details">
+        {% include "infographic.html" %}
+        {% include "gantt.html" %}
         <div class="sub-court-header">
             <h3>Current Sitting Judges:</h3>
         </div>

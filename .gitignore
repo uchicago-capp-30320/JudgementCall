@@ -22,3 +22,5 @@ apikeys.txt
 # env
 .env
 .DS_Store
+data
+data/courts/*.csv
