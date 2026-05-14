@@ -4,8 +4,33 @@
 Judgement Call
 {% endblock %}
 
-<!-- comment added for PR -->
+{% block content %}
 
-<div class="temporary">
-    <p>This will be the html template for the project's landing page.</p>
+<div class="centerpiece">
+    <nav class="services">
+        <div class="elaboration">
+            <a class="big-button-item" href="/judges">
+                <span class="material-icons">gavel</span>
+                <h2 class="service">Your Judges</h2>
+            </a>
+            <p class="eventual-hover-details">Select to learn more about your local elected and appointed judges.</p>
+        </div>
+        <div class="elaboration">
+            <a class="big-button-item" href="/elections">
+                <span class="material-icons">ballot</span>
+                <h2 class="service">Elections</h2>
+            </a>
+            <p class="eventual-hover-details">Select to learn more about upcoming races and candidates for
+                your municipality.</p>
+        </div>
+        <div class="elaboration">
+            <a class="big-button-item" href="/analysis">
+                <span class="material-icons">analytics</span>
+                <h2 class="service">Analysis</h2>
+            </a>
+            <p class="eventual-hover-details">Select to see interactive graphics on longitudinal
+                trends in judiciaries nationwide.</p>
+        </div>
+    </nav>
 </div>
+{% endblock %}

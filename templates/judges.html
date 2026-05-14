@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<h2 class="sub-header">{{ header }}</h2>
+
+<p>{{ preamble }}</p>
+
+{% include "dropdown.html" with states=states %}
+
+{% endblock %}
