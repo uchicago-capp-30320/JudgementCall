@@ -5,7 +5,12 @@
 
 <h3>Gantt Chart: {{ court_name }}</h3>
 
-{{ gantt_data|json_script:"null" }}
+<p>
+    This gantt chart displays a timeline of current judges serving on
+    {{ court_name }} including their projected term end date.
+</p>
+
+{{ gantt_data|json_script:"gantt_data" }}
 <p id="gantt-data" style="display: none;">{{ gantt_data }}</p>
 
 <div class="ganttContainer">
