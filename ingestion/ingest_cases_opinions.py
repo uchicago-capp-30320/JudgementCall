@@ -11,10 +11,13 @@ import json
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional, TypedDict, get_type_hints
 
-case_df = pd.read_csv("../data/cases_scdb.csv")
+cases_path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
+case_df = pd.read_csv(cases_path)
+
+SKIPS = {"case_id": [], "num_skips": 0}
 
 
 # Manually enumerate rights here, but
@@ -106,11 +109,11 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
             genai_resp = client.models.generate_content(
                 model=model_id,
                 contents=[types.Part.from_bytes(data=resp, mime_type="application/pdf"), prompt],
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    response_json_schema=Case.model_json_schema(),
-                    thinking_config=types.ThinkingConfig(thinking_level="medium"),
-                ),
+                config={
+                    "response_mime_type": "application/json",
+                    "response_json_schema": Case.model_json_schema(),
+                    "temperature": 0,
+                },
             )
             return Case.model_validate_json(genai_resp.text).model_dump()
 
@@ -120,8 +123,8 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
             time.sleep(wait_time)
             wait_time += 1
 
-            if wait_time > 300:
-                print("Wait time exceeds 5 minutes")
+            if wait_time > 60:
+                print("Wait time exceeds 1 minute")
                 raise e
 
 
@@ -146,19 +149,27 @@ def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: d
 
     file_dic = {}
     for i in range(num_cases):
-        print(f"Querying case {i}")
+        print(f"Querying case no. {i + 1}: {case_df.iloc[i]['title']}")
+
         docket_no = case_df.iloc[i]["docket_no"].replace(" ", "-")
         state = case_df.iloc[i]["state"]
         date = str(datetime.strptime(case_df.iloc[i]["date"], "%B %d, %Y"))[:10].replace("-", "/")
         pdf_link = case_df.iloc[i]["opinion_link"]
+        case_id = "_".join([docket_no, state, date])
 
-        case_ref = "_".join([docket_no, state, date])
+        try:
+            opinion_resp = read_opinion(pdf_link, model_id, client, prompt_start)
+        except ValidationError:
+            message = f"{case_df.iloc[i]['title']} - Skipped because LLM output"
+            message += "did not follow enforced data structure"
+            print(message)
+            SKIPS["num_skips"] += 1
+            SKIPS["case_id"].append(case_id)
+            continue
 
-        opinion_resp = read_opinion(pdf_link, model_id, client, prompt_start)
-
-        file_dic[case_ref] = {}
-        file_dic[case_ref]["pdf_link"] = pdf_link
-        file_dic[case_ref]["response"] = opinion_resp
+        file_dic[case_id] = {}
+        file_dic[case_id]["pdf_link"] = pdf_link
+        file_dic[case_id]["response"] = opinion_resp
 
     return file_dic
 
@@ -254,7 +265,6 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
         "defendant_argument": [],
         "decision_outcome": [],
         "decision_winner": [],
-        # "decision_status": [],
     }
     rights_enumerated_list = list(get_type_hints(RightsDict).keys())
     rights_enumerated_dict = {right: [] for right in rights_enumerated_list}
@@ -264,18 +274,21 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
 
     for i in range(num_cases):
         docket_no = case_df.iloc[i]["docket_no"].replace(" ", "-")
-        case_table["docket_no"].append(docket_no)
         state = case_df.iloc[i]["state"]
-        case_table["state"].append(state)
         date = str(datetime.strptime(case_df.iloc[i]["date"], "%B %d, %Y"))[:10].replace("-", "/")
-        case_table["date"].append(date)
-
         title = case_df.iloc[i]["title"]
-        case_table["title"].append(title)
         type = case_df.iloc[i]["type"]
-        case_table["type"].append(type)
 
         case_id = "_".join([docket_no, state, date])
+
+        if case_id not in case_dic:
+            continue
+
+        case_table["docket_no"].append(docket_no)
+        case_table["state"].append(state)
+        case_table["date"].append(date)
+        case_table["title"].append(title)
+        case_table["type"].append(type)
         case_table["case_id"].append(case_id)
 
         response = case_dic[case_id]["response"]
@@ -289,15 +302,12 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
         for right in rights_enumerated_list:
             case_table[right].append(rights_affected[right])
 
-        # status = ~case_df.iloc[i]["pending"]  # Negate, "not pending" means "decided"
-        # case_table["decision_status"].append(status)
-
     return pd.DataFrame(case_table)
 
 
 def produce_tables(
     case_df: pd.DataFrame,
-    prompt_path: str = "../ingestion/prompt.txt",
+    prompt_path: str,
     model_id: str = "gemini-2.5-flash",
 ):
     """
@@ -314,45 +324,69 @@ def produce_tables(
     each in a dictionary.
     """
     states = case_df["state"].sort_values().unique()
-
-    opinions = []
-    cases = []
+    cases_list = []
+    opinion_list = []
 
     for state in states:
-        state_cases = case_df[case_df["state"] == state]
+        print(f"Ingesting cases and opinions for {state}")
+        court_cases = case_df[case_df["state"] == state]
 
-        case_dic = apply_model(state_cases, prompt_path, model_id)
+        case_dic = apply_model(court_cases, prompt_path, model_id)
 
-        opinions.append(state_opinion_table(case_dic))
-        cases.append(state_case_table(state_cases, case_dic))
+        cases = state_case_table(court_cases, case_dic)
+        cases_list.append(cases)
 
-    rd = {"individual_opinions": pd.concat(opinions), "case": pd.concat(cases)}
+        opinions = state_case_table(case_dic)
+        opinion_list.append(opinions)
+
+        file_path = Path(__file__).parent.parent / "data" / "cases" / (state + ".csv")
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        cases.to_csv(file_path, index=False)
+
+        file_path = Path(__file__).parent.parent / "data" / "opinions" / (state + ".csv")
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        opinions.to_csv(file_path, index=False)
+
+        print(f"Ingested {len(court_cases)} cases for {state}")
+
+    # Creating total tables
+    file_path = Path(__file__).parent.parent / "data" / "cases" / "total_cases.csv"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    total_cases = pd.concat(cases_list)
+    total_cases.to_csv(file_path, index=False)
+
+    file_path = Path(__file__).parent.parent / "data" / "opinions" / "total_opinions.csv"
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    total_opinions = pd.concat(cases_list)
+    total_opinions.to_csv(file_path, index=False)
 
     # Also return JSON metadata on this LLM batch run
     with open(prompt_path, "r") as prompt_file:
         prompt = prompt_file.read()
+
     llm_run_metadata = {
-        "timestamp": datetime.today(),
+        "timestamp": datetime.today().strftime("%m-%d-%Y"),
         "model_id": model_id,
-        "cases_processed": rd["case"]["case_id"].tolist(),
+        "cases_processed": total_cases["case_id"].tolist(),
         "prompt_start": prompt,
+        "skips": SKIPS,
     }
+    meta_path = (
+        Path(__file__).parent.parent
+        / "data"
+        / "run_metadata"
+        / f"llm_run_{llm_run_metadata['timestamp']}.json"
+    )
+    meta_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(meta_path, "w") as md:
+        json.dump(llm_run_metadata, md)
 
-    return rd, llm_run_metadata
-
-
-print("Getting cases and opinions...")
-table_dic, run_meta_data = produce_tables(case_df)
-print("Ingestion complete")
 
 if __name__ == "__main__":
-    for file_name in table_dic.keys():
-        data = table_dic[file_name]
-        file_name += ".csv"
-        path = Path(__file__).parent.parent / "data" / file_name
-        data.to_csv(path, index=False)
+    prompt_path = Path(__file__).parent.parent / "ingestion" / "prompt.txt"
 
-    run_timestamp = run_meta_data["timestamp"].strftime("%m/%d/%Y")
-    path = Path(__file__).parent.parent / "data" / f"llm_run_{run_timestamp}.json"
-    with open(path, "w") as file_path:
-        json.dump(run_meta_data, file_path)
+    start = datetime.now()
+    print("Getting cases and opinions...")
+    produce_tables(case_df, prompt_path)
+    end = datetime.now()
+    print(f"Ingestion complete after {(end - start) / 60} minutes.")
