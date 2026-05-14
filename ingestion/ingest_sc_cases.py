@@ -1,4 +1,4 @@
-import requests
+import curl_cffi
 import lxml.html
 import time
 import pandas as pd
@@ -11,23 +11,23 @@ def make_request(url):
     code, the request is made again after 2.5 seconds until. The process
     repeats until the response responds with a 200 code.
     """
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    acc = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-    headers = {
-        "User-Agent": user_agent,
-        "Accept": acc,
-        "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Encoding": "gzip, deflate",
-        "Connection": "keep-alive",
-    }
+    wait_time = 10
 
-    resp = requests.get(url, headers=headers)
-
-    if resp.status_code == 429:
-        time.sleep(2.5)
-        resp = make_request(url)
-    elif resp.status_code == 200:
-        return resp
+    while True:
+        try:
+            resp = curl_cffi.get(url, impersonate="chrome")
+            if resp.status_code == 429:
+                time.sleep(2.5)
+                continue
+            elif resp.status_code == 200:
+                return resp
+        except curl_cffi.exceptions.ConnectionError as ce:
+            if wait_time > 60:
+                print("Wait time larger than one minute, aborting")
+                raise ce
+            print(f"Ran into connection error, waiting for {wait_time} seconds")
+            time.sleep(wait_time)
+            wait_time += 1
 
 
 def scrape_case(case_url):

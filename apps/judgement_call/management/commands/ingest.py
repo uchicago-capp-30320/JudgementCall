@@ -57,7 +57,7 @@ def command(self, data: str):
                     Court.objects.update_or_create(**court)
 
     if data == "cases":
-        with open("./data/prototype_cases.csv", encoding="utf-8") as file:
+        with open("./data/cases/total_cases.csv", encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
                 headers = row
@@ -74,7 +74,7 @@ def command(self, data: str):
                 Case.objects.update_or_create(**case)
 
     if data == "individual-opinions":
-        with open("./data/prototype_individual_opinions.csv", encoding="utf-8") as file:
+        with open("./data/opinions/total_opinions.csv", encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
                 headers = row

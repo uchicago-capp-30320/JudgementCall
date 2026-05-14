@@ -17,6 +17,7 @@ from typing import List, Optional, TypedDict, get_type_hints
 cases_path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
 case_df = pd.read_csv(cases_path)
 
+QUERY_TIMES = []
 SKIPS = {"case_id": [], "num_skips": 0}
 
 
@@ -105,6 +106,7 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
     wait_time = 5
 
     while True:
+        start = datetime.now()
         try:
             genai_resp = client.models.generate_content(
                 model=model_id,
@@ -115,7 +117,7 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
                     "temperature": 0,
                 },
             )
-            return Case.model_validate_json(genai_resp.text).model_dump()
+            structured_output = Case.model_validate_json(genai_resp.text).model_dump()
 
         except errors.ServerError as e:
             print("Ran into server error due to high demand")
@@ -126,6 +128,11 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
             if wait_time > 60:
                 print("Wait time exceeds 1 minute")
                 raise e
+        end = datetime.now()
+        time_diff = int((end - start).total_seconds())
+        QUERY_TIMES.append(time_diff)
+
+        return structured_output
 
 
 def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: dict):
@@ -326,28 +333,36 @@ def produce_tables(
     states = case_df["state"].sort_values().unique()
     cases_list = []
     opinion_list = []
+    cases_path = Path(__file__).parent.parent / "data" / "cases"
+    case_files = [file.name.replace(".csv", "") for file in cases_path.iterdir()]
+    opinions_path = Path(__file__).parent.parent / "data" / "opinions"
+    opinion_files = [file.name.replace(".csv", "") for file in opinions_path.iterdir()]
 
     for state in states:
         print(f"Ingesting cases and opinions for {state}")
-        court_cases = case_df[case_df["state"] == state]
+        if (state in case_files) and (state in opinion_files):
+            case_table = cases_path / (state + ".csv")
+            cases = pd.read_csv(case_table)
+            opinion_table = opinions_path / (state + ".csv")
+            opinions = pd.read_csv(opinion_table)
+        else:
+            court_cases = case_df[case_df["state"] == state]
+            case_dic = apply_model(court_cases, prompt_path, model_id)
+            cases = state_case_table(court_cases, case_dic)
+            opinions = state_opinion_table(case_dic)
 
-        case_dic = apply_model(court_cases, prompt_path, model_id)
+            file_path = Path(__file__).parent.parent / "data" / "cases" / (state + ".csv")
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            cases.to_csv(file_path, index=False)
 
-        cases = state_case_table(court_cases, case_dic)
+            file_path = Path(__file__).parent.parent / "data" / "opinions" / (state + ".csv")
+            file_path.parent.mkdir(parents=True, exist_ok=True)
+            opinions.to_csv(file_path, index=False)
+
         cases_list.append(cases)
-
-        opinions = state_case_table(case_dic)
         opinion_list.append(opinions)
 
-        file_path = Path(__file__).parent.parent / "data" / "cases" / (state + ".csv")
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        cases.to_csv(file_path, index=False)
-
-        file_path = Path(__file__).parent.parent / "data" / "opinions" / (state + ".csv")
-        file_path.parent.mkdir(parents=True, exist_ok=True)
-        opinions.to_csv(file_path, index=False)
-
-        print(f"Ingested {len(court_cases)} cases for {state}")
+        print(f"Ingested {len(cases)} cases for {state}")
 
     # Creating total tables
     file_path = Path(__file__).parent.parent / "data" / "cases" / "total_cases.csv"
@@ -357,10 +372,10 @@ def produce_tables(
 
     file_path = Path(__file__).parent.parent / "data" / "opinions" / "total_opinions.csv"
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    total_opinions = pd.concat(cases_list)
+    total_opinions = pd.concat(opinion_list)
     total_opinions.to_csv(file_path, index=False)
 
-    # Also return JSON metadata on this LLM batch run
+    # Also write JSON metadata on this LLM batch run
     with open(prompt_path, "r") as prompt_file:
         prompt = prompt_file.read()
 
@@ -370,6 +385,7 @@ def produce_tables(
         "cases_processed": total_cases["case_id"].tolist(),
         "prompt_start": prompt,
         "skips": SKIPS,
+        "avg_case_query_time": sum(QUERY_TIMES) / len(QUERY_TIMES),
     }
     meta_path = (
         Path(__file__).parent.parent
@@ -389,4 +405,5 @@ if __name__ == "__main__":
     print("Getting cases and opinions...")
     produce_tables(case_df, prompt_path)
     end = datetime.now()
-    print(f"Ingestion complete after {(end - start) / 60} minutes.")
+    time_diff = int((end - start).total_seconds()) / 60
+    print(f"Ingestion complete after {round(time_diff, 2)} minutes.")
