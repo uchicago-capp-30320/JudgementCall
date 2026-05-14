@@ -373,15 +373,78 @@ def add_fake_data(request):
     fake = Faker("en_US")
 
     # create Persons
-    for _ in range(10):
+    for _ in range(30):
         Person.objects.create(
             name_canonical=fake.name(),
-            birth_date=fake.date_between(start_date="-150y", end_date="-22y"),
+            birth_date=fake.date_between(start_date="-70y", end_date="-22y"),
             gender=random.choice(PersonGender.values),
             race=random.choice(PersonRace.values),
             party_registration=random.choice(PartyAffiliation.values),
-            professional_experience=fake.text(),
-            law_school=fake.text(),
+            professional_experience=random.choice(
+                [
+                    "After working as a public defender in Phoenix for 12 "
+                    "years, defending the underdog became her calling. Now on "
+                    "the Arizona Superior Court, she brings a fierce "
+                    "commitment to defendants' rights and has pioneered "
+                    "restorative justice programs in her district.",
+                    "A former jazz musician turned lawyer, he still keeps a "
+                    "saxophone in his chambers and is known for making "
+                    "procedural decisions with unexpected creative flair. On "
+                    "the Illinois Appellate Court, he's become famous for "
+                    "opinions that read like carefully composed arguments.",
+                    "he spent two decades as a corporate litigator in Chicago "
+                    "before realizing she wanted to serve the public good "
+                    "instead of billionaires. Now presiding over family law "
+                    "cases, she's developed an uncanny ability to see through "
+                    "legal maneuvering to what's truly in a child's best "
+                    "interest.",
+                    "An immigrant from Sudan who worked his way through "
+                    "law school driving a cab, he never forgot his roots in "
+                    "community. On the Phoenix bench, he's known for taking "
+                    "time with self-represented litigants and mentoring young "
+                    "attorneys from underrepresented backgrounds.",
+                    "A former investigative journalist who went to law school "
+                    "at 35, she brings a reporter's eye for truth to appellate "
+                    "work in Illinois. Her opinions are meticulously "
+                    "researched masterpieces that have influenced criminal "
+                    "justice policy statewide.",
+                    "A Marine veteran and former construction worker, he "
+                    "built himself up from nothing through grit and night "
+                    "school. Now on the Arizona bench, he's the judge everyone "
+                    "respects because they know he's earned every credential "
+                    "through sacrifice.",
+                    "Raised by two trial lawyers in suburban Chicago, she "
+                    "practically grew up in courtrooms, but she chose a "
+                    "different path as a mediator first. Her transition to "
+                    "the bench brought a collaborative spirit that's "
+                    "transformed how her court handles disputes.",
+                    "She escaped a rough South Phoenix neighborhood through "
+                    "education and returned as a legal aid attorney for 15 "
+                    "years before taking the bench. Her rulings balance mercy "
+                    "with accountability in ways that have made her a "
+                    "lightning rod for both praise and controversy.",
+                    "A Catholic seminarian-turned-lawyer who still teaches "
+                    "philosophy part-time, he approaches Illinois cases with "
+                    "almost theological rigor. His written decisions are dense "
+                    "with legal philosophy and unexpected references to "
+                    "Aquinas.",
+                    "A trailblazing immigration attorney who won landmark "
+                    "cases protecting asylum seekers, she was appointed to "
+                    "the Arizona bench despite fierce opposition from "
+                    "anti-immigration groups. Her courtroom is a battle "
+                    "zone between her progressive interpretation of law and "
+                    "conservative politicians trying to restrict her "
+                    "authority.",
+                ]
+            ),
+            law_school=random.choice(
+                [
+                    "ASU Law",
+                    "University of Chicago Law School",
+                    "University of Arizona Law School",
+                    "Penn Carey Law",
+                ]
+            ),
         )
 
     # create courts
@@ -528,10 +591,11 @@ def add_fake_data(request):
                 },
             )
 
+    # create alieses
     tenures = list(Tenure.objects.all())
     for tenure in tenures:
         Alias.objects.get_or_create(
-            alias=fake.name(),
+            alias=random.choice([tenure.person.name_canonical, tenure.person.name_canonical[1:]]),
             defaults={
                 "tenure": tenure,
                 "court": tenure.court,
@@ -539,7 +603,7 @@ def add_fake_data(request):
         )
 
     # create cases
-    for _ in range(10):
+    for _ in range(30):
         Case.objects.create(
             court=random.choice(list(Court.objects.all())),
             docket_no=fake.bothify(text="??-####"),
@@ -579,12 +643,19 @@ def add_fake_data(request):
 
     aliases = list(Alias.objects.all())
     for case in cases:
-        opinion_writers = random.sample(aliases, k=random.randint(2, 3))
+        opinion_writers = random.sample(aliases, k=random.randint(8, 10))
         for alias in opinion_writers:
             IndividualOpinion.objects.get_or_create(
                 case=case,
                 judge_alias=alias,
-                defaults={"description": fake.text(), "ruling": random.choice(RulingType.values)},
+                defaults={
+                    "description": fake.text(),
+                    "ruling": random.choices(
+                        [RulingType.CONCUR, RulingType.DISSENT, RulingType.OTHER],
+                        weights=[70, 28, 2],
+                        k=1,
+                    )[0],
+                },
             )
 
     return HttpResponse("Done!")
