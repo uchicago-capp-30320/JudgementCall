@@ -376,7 +376,8 @@ def add_fake_data(request):
             law_school=random.choice(
                 [
                     "ASU Law",
-                    "University of Chicago Law SchoolUniversity of Arizona Law School",
+                    "University of Chicago Law School",
+                    "University of Arizona Law School",
                     "Penn Carey Law",
                 ]
             ),
@@ -537,7 +538,7 @@ def add_fake_data(request):
         )
 
     # create cases
-    for _ in range(400):
+    for _ in range(30):
         Case.objects.create(
             court=random.choice(list(Court.objects.all())),
             docket_no=fake.bothify(text="??-####"),
@@ -577,7 +578,7 @@ def add_fake_data(request):
 
     aliases = list(Alias.objects.all())
     for case in cases:
-        opinion_writers = random.sample(aliases, k=random.randint(2, 3))
+        opinion_writers = random.sample(aliases, k=random.randint(8, 10))
         for alias in opinion_writers:
             IndividualOpinion.objects.get_or_create(
                 case=case,
