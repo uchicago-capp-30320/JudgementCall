@@ -5,14 +5,18 @@
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
 <h3>Radar Chart: {{court_name}}</h3>
+
 <p>
     This radar chart shows the percent of the time that the Supreme Court
     ruled to protect a handful of rights, only counting cases where the right
     was a point of contention.
 </p>
+
 <div class="radarChart"></div>
-<p>{{radar_data}}</p>
+
+<p style="display: none;">{{radar_data}}</p>
 {{ radar_data|json_script:"radar_data" }}
+
 <script src="{% static 'js/radarChart.js' %}"></script>
 
 

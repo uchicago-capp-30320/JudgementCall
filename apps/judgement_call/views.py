@@ -354,6 +354,9 @@ def analysis(request):
         radar_data = get_individual_opinions_for_radar(request, court_id=court_id, persons=judges)
         print("radar_data:", radar_data)
 
+    print("gantt_data:", gantt_data)
+    print("court_name:", court_name)
+
     context = {
         "msg": "Pending!",
         "header": "Analysis",
