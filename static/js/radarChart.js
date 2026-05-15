@@ -17,7 +17,9 @@ function RadarChart(id, data, options) {
         maxValue: 0, 			//What is the value that the biggest circle will represent
         labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
         wrapWidth: 60, 		//The number of pixels after which a label needs to be given a new line
-        opacityArea: 0.35, 	//The opacity of the area of the blob
+        opacityArea: 0.5, 	//The opacity of the area of the blob
+        opacityAreaLow: 0.35, 	//The opacity of the area of the blob when another area is hovered over
+        opacityAreaHigh: 0.7, 	//The opacity of the area of the blob when hovered over
         dotRadius: 4, 			//The size of the colored circles of each blog
         opacityCircles: 0.1, 	//The opacity of the circles of each blob
         strokeWidth: 2, 		//The width of the stroke around each blob
@@ -130,8 +132,8 @@ function RadarChart(id, data, options) {
         .attr("x2", function(d, i){ return rScale(maxValue*1.1) * Math.cos(angleSlice*i - Math.PI/2); })
         .attr("y2", function(d, i){ return rScale(maxValue*1.1) * Math.sin(angleSlice*i - Math.PI/2); })
         .attr("class", "line")
-        .style("stroke", "white")
-        .style("stroke-width", "2px");
+        .style("stroke", "black")
+        .style("stroke-width", "4px");
 
     //Append the labels at each axis
     axis.append("text")
@@ -168,24 +170,37 @@ function RadarChart(id, data, options) {
     blobWrapper
         .append("path")
         .attr("class", "radarArea")
+        .attr("id", d => d[0].name.replace(/\s/g, "_")) // For name reference to legend
         .attr("d", function(d,i) { return radarLine(d); })
         .style("fill", function(d,i) { return cfg.color(i); })
         .style("fill-opacity", cfg.opacityArea)
-        .on('mouseover', function (d,i){
+        .on("mouseover", function (d,i){
             //Dim all blobs
             d3.selectAll(".radarArea")
                 .transition().duration(200)
-                .style("fill-opacity", 0.1);
-            //Bring back the hovered over blob
+                .style("fill-opacity", cfg.opacityAreaLow);
+            //Bring back the hovered-over blob
             d3.select(this)
                 .transition().duration(200)
-                .style("fill-opacity", 0.7);
+                .style("fill-opacity", cfg.opacityAreaHigh);
+            //Dim all legend name labels
+            d3.selectAll(".radarLegendLabels")
+                .transition().duration(200)
+                .style("fill-opacity", cfg.opacityAreaLow);
+            //Bring back the name label associated with the hovered-over blob
+            d3.select(`#${i[0].name.replace(/\s/g, "_") + "_LABEL"}`)
+                .transition().duration(200)
+                .style("fill-opacity", 1.0);
         })
-        .on('mouseout', function(){
+        .on("mouseout", function(){
             //Bring back all blobs
             d3.selectAll(".radarArea")
                 .transition().duration(200)
                 .style("fill-opacity", cfg.opacityArea);
+            //Bring back all name labels
+            d3.selectAll(".radarLegendLabels")
+                .transition().duration(200)
+                .style("fill-opacity", 1.0);
         });
 
     //Create the outlines
@@ -197,7 +212,7 @@ function RadarChart(id, data, options) {
         .style("fill", "none")
         .style("filter" , "url(#glow)");
 
-    //Append the circles
+    //Append the circles (data points themselves)
     blobWrapper.selectAll(".radarCircle")
         .data(function(d,i) { return d; })
         .enter().append("circle")
@@ -248,6 +263,58 @@ function RadarChart(id, data, options) {
     var tooltip = g.append("text")
         .attr("class", "tooltip")
         .style("opacity", 0);
+
+    /////////////////////////////////////////////////////////
+    ///////////////// NEW: Draw the Legend //////////////////
+    /////////////////////////////////////////////////////////
+    //Append a g element
+    var g_legend = svg.append("g")
+            .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.margin.top) + ")");
+    var size = 20
+    g_legend.selectAll(".radarLegendIcons")
+    .data(data)
+    .enter()
+    .append("rect")
+        .attr("x", 200)
+        .attr("y", function(d,i){ return 0 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("width", size)
+        .attr("height", size)
+        .style("fill", function(d,i) { return cfg.color(i); })
+        .on("mouseover", function (d,i){
+            //Dim all blobs
+            d3.selectAll(".radarArea")
+                .transition().duration(200)
+                .style("fill-opacity", 0.1);
+            //Bring back the hovered over blob
+            d3.select(`#${i[0].name.replace(/\s/g, "_")}`)
+                .transition().duration(200)
+                .style("fill-opacity", 0.7);
+        })
+        .on("mouseout", function(){
+            //Bring back all blobs
+            d3.selectAll(".radarArea")
+                .transition().duration(200)
+                .style("fill-opacity", cfg.opacityArea);
+        });
+
+    g_legend.selectAll(".radarLegendLabels")
+    .data(data)
+    .enter()
+    .append("text")
+        .attr("x", 200 + size*1.1)
+        .attr("y", function(d,i){ return 0 + i*(size+5) + (size)}) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("class", "radarLegendLabels")
+        .attr("id", function(d){
+            // Convert judge name into id, append "_LABEL" to distinguish from their blob area id
+            return d[0].name.replace(/\s/g, "_")  + "_LABEL";
+        })
+        .style("fill", function(d,i) { return cfg.color(i); })
+        .text(function(d){
+            return d[0].name; // Like creating allAxis, just use first element (should all be same name anyway)
+        })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+
 
     /////////////////////////////////////////////////////////
     /////////////////// Helper Function /////////////////////

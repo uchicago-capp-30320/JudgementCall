@@ -690,6 +690,10 @@ def get_individual_opinions_for_radar(
         This format plugs right into radarChart.js for any number
         of justices and rights.
     """
+    # TO REMOVE (only allow 2 judges as input at a time so
+    # there is enough data overlap to build radar)
+    persons = persons[:2]
+
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
     case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-12:]
@@ -743,7 +747,11 @@ def get_individual_opinions_for_radar(
     # For now, drop a right (axis) if EITHER judge has not ruled on a related case
     data_for_radar = [
         [
-            {"axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "), "value": val}
+            {
+                "axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "),
+                "value": val,
+                "name": judge_dict["judge_alias__tenure__person__name_canonical"],
+            }
             for key, val in judge_dict.items()
             if key.endswith("__avg")
         ]
@@ -769,6 +777,7 @@ def get_individual_opinions_for_radar(
         for judge_list in data_for_radar
     ]
 
+    # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
     return data_for_radar_dropmissing
 
 
