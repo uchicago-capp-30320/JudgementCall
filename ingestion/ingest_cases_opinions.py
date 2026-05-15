@@ -285,6 +285,7 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
     for index, row in case_df.iterrows():
         title = row["title"]
         case_type = row["type"]
+        date = str(datetime.strptime(row["date"], "%B %d, %Y"))[:10]
 
         case_id = generate_case_id(row["docket_no"], row["state"], row["date"], index)
 
@@ -293,7 +294,7 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
 
         case_table["docket_no"].append(row["docket_no"])
         case_table["state"].append(row["state"])
-        case_table["date"].append(row["date"])
+        case_table["date"].append(date)
         case_table["title"].append(title)
         case_table["type"].append(case_type)
         case_table["case_id"].append(case_id)
