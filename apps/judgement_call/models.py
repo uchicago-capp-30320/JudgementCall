@@ -7,6 +7,39 @@ import pandas as pd
 from jellyfish import jaro_winkler_similarity
 from string import punctuation
 
+ENDINGS = [
+    "C.J.",
+    "P.J.",
+    "J.",
+    "Sp. J.",
+    "JJ.",
+    "PJJ",
+    "C. J.",
+    "P.JJ.",
+    "V.C.J.",
+    "A.R.J.",
+    "D.J.",
+    "S.J.",
+    "P.J.A.D",
+    "J.P.T.",
+    "PJ",
+    "J",
+    "CJ",
+]
+
+KEY_WORDS = [
+    "justice",
+    "judge",
+    "chief justice",
+    "chief",
+    "presiding justice",
+    "associate justice",
+    "associate chief justice",
+    "retired",
+    "sitting",
+    "by designation",
+]
+
 
 # drop down types
 class SelectionType(models.TextChoices):
@@ -214,14 +247,19 @@ class Alias(models.Model):
     def matched(self):
         return self.tenure is not None
 
-    def find_matches(self, alias=None) -> list[Tenure]:
+    def find_matches(self, alias=None, last_word=False) -> list[Tenure]:
         if not alias:
             alias = self.alias
         court_tenures = Tenure.objects.filter(court=self.court)
         matches = {}
-        for tenure in court_tenures:
-            name = self.standardize_name(tenure.person.name_canonical)
-            matches[tenure] = jaro_winkler_similarity(alias, name)
+        if not last_word:
+            for tenure in court_tenures:
+                name = self.standardize_name(tenure.person.name_canonical)
+                matches[tenure] = jaro_winkler_similarity(alias, name)
+        else:
+            for tenure in court_tenures:
+                name = self.standardize_name(tenure.person.name_canonical).split(" ")[-1]
+                matches[tenure] = jaro_winkler_similarity(alias, name)
         return matches
 
     def match_tenure(self, update=False):
@@ -229,26 +267,61 @@ class Alias(models.Model):
         if not update:
             if self.matched:
                 return self.tenure
+
         matches = self.find_matches()
+
         if matches == {}:
             print(f"No names found: does {self.court} exist?")
             return self.tenure
         top_match = max(matches, key=lambda k: matches[k])
         print(f"best match: {top_match}, {matches[top_match]}")
+
+        top_match_lw = top_match.person.name_canonical.split(" ")[-1]
+        top_match_lw = self.standardize_name(top_match_lw)
+        main_alias_lw = self.standardize_alias(self.alias)
+        main_alias_lw = main_alias_lw.split(" ")[-1]
+
         if matches[top_match] > 0.9:
             # setting tenure to the top match
+            print("Matched through JW score")
             self.tenure = top_match
             self.save()
+
+        elif top_match_lw == main_alias_lw:
+            print("Matched through last name")
+            self.tenure = top_match
+            self.save()
+
         else:
             try_alias = self.standardize_alias(self.alias)
+            try_alias_lw = try_alias.split(" ")[-1]
+
             if try_alias != self.alias:
                 print(f"rerunning with {try_alias}")
                 matches = self.find_matches(try_alias)
                 top_match = max(matches, key=lambda k: matches[k])
+
+                top_match_lw = top_match.person.name_canonical.split(" ")[-1]
+                top_match_lw = self.standardize_name(top_match_lw)
+
+                matches_lw = self.find_matches(try_alias_lw, last_word=True)
+                top_match_last_word = max(matches_lw, key=lambda k: matches_lw[k])
+
                 print(f"best match: {top_match}, {matches[top_match]}")
                 if matches[top_match] > 0.9:
                     # setting tenure to the top match
+                    print("Matched through JW score after retry")
                     self.tenure = top_match
+                    self.save()
+
+                elif top_match_lw == try_alias_lw:
+                    print("Matched through last name after retry")
+                    self.tenure = top_match
+                    self.save()
+
+                elif matches_lw[top_match_last_word] > 0.9:
+                    print("Matched through alternative last word JW score after retry")
+                    self.tenure = top_match_last_word
                     self.save()
 
         print(f"after: alias {self.alias}, tenure {self.tenure}")
@@ -260,42 +333,13 @@ class Alias(models.Model):
 
     @staticmethod
     def standardize_alias(alias: str):
-        endings = [
-            "C.J.",
-            "P.J.",
-            "J.",
-            "Sp. J.",
-            "JJ.",
-            "PJJ",
-            "C. J.",
-            "P.JJ.",
-            "V.C.J.",
-            "A.R.J.",
-            "D.J.",
-            "S.J.",
-            "P.J.A.D",
-            "J.P.T.",
-            "PJ",
-            "J",
-            "CJ",
-        ]
-        for end in endings:
+        for end in ENDINGS:
             if alias.endswith(end):
                 alias = alias.replace(end, "")
 
         alias = alias.strip().lower().translate(str.maketrans("", "", punctuation))
-        key_words = [
-            "justice",
-            "judge",
-            "chief justice",
-            "presiding justice",
-            "associate justice",
-            "associate chief justice",
-            "retired",
-            "sitting",
-            "by designation",
-        ]
-        for word in key_words:
+
+        for word in KEY_WORDS:
             if word in alias:
                 alias = alias.replace(word, "")
         return alias.strip()
