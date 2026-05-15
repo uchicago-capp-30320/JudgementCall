@@ -50,7 +50,7 @@ def query_similarity_df(court_id):
 def pivot_similarity_df(df):
     df = df.pivot(index="case", columns="judge", values="ruling")
     print(len(df), df.head())
-    nona_df = df.dropna()
+    nona_df = df.fillna(1)
     print(len(nona_df), nona_df.head())
     feat_mat = nona_df.transpose()
     return feat_mat
@@ -64,8 +64,9 @@ def mds_embedding(feat_mat):
 
 
 def make_df_to_plot(x, y, df):
-    context = df["case", "judge_name", "appointer_party"]
+    context = df[["case", "judge_name", "appointer_party"]]
     judges_mds = context.copy().assign(x=x, y=y)
+    print(judges_mds)
     return judges_mds
 
 
@@ -76,10 +77,11 @@ def make_plot(court_id):
     feat_mat = pivot_similarity_df
     x, y = mds_embedding(feat_mat)
     plot_df = make_df_to_plot(x, y, df)
+    return plot_df
 
-    alt.Chart(plot_df, title=f"{court_id} Judge Similarity").mark_circle(size=60).encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color="appointer_party",
-        tooltip=["judge_name"],
-    ).interactive()
+    # alt.Chart(plot_df, title=f"{court_id} Judge Similarity").mark_circle(size=60).encode(
+    #     x=alt.X("x", axis=None),
+    #     y=alt.Y("y", axis=None),
+    #     color="appointer_party",
+    #     tooltip=["judge_name"],
+    # ).interactive()
