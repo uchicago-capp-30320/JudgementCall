@@ -1,19 +1,21 @@
 case_id,name,description,ruling
-2022-63-C.A._Rhode Island_2024/05/22,Melissa A. Long,"Concurred, arguing that Mr. Brown had a reasonable expectation of privacy during his conversation with his mother in the police interview room, and the police recording violated his Fourth Amendment and state constitutional rights.",concur
-2022-63-C.A._Rhode Island_2024/05/22,"Suttell, C.J.",Concurred with majority opinion.,concur
-2022-63-C.A._Rhode Island_2024/05/22,"Goldberg, J.",Concurred with majority opinion.,concur
-2022-63-C.A._Rhode Island_2024/05/22,"Robinson, J.",Concurred with majority opinion.,concur
-2022-63-C.A._Rhode Island_2024/05/22,"Lynch Prata, J.",Concurred with majority opinion.,concur
-2020-66-Appeal_Rhode Island_2022/05/04,Justice Goldberg,Concurred with majority opinion.,concur
-2020-66-Appeal_Rhode Island_2022/05/04,"Suttell, C.J.",Concurred with majority opinion.,concur
-2020-66-Appeal_Rhode Island_2022/05/04,Justice Robinson,Concurred that plaintiffs lacked standing but dissented from the majority's decision to address issues beyond standing.,other
-"2019-459-Appeal,-2019-462-Appeal_Rhode Island_2022/03/02",Justice Lynch Prata,"Concurred, argued that the civil death statute is unconstitutional because it completely deprives life-sentenced prisoners of their right to bring civil actions, violating Article 1, Section 5 of the Rhode Island Constitution.",concur
-"2019-459-Appeal,-2019-462-Appeal_Rhode Island_2022/03/02",Justice Goldberg,"Dissented, argued that the civil death statute should be addressed prospectively by the General Assembly, not the court, and that the majority's decision will unnecessarily open floodgates to frivolous inmate claims.",dissent
-"2019-459-Appeal,-2019-462-Appeal_Rhode Island_2022/03/02","Suttell, C.J.",Concurred with majority opinion.,concur
-"2019-459-Appeal,-2019-462-Appeal_Rhode Island_2022/03/02","Robinson, J.",Concurred with majority opinion.,concur
-"2019-459-Appeal,-2019-462-Appeal_Rhode Island_2022/03/02","Long, J.",Concurred with majority opinion.,concur
-2019-167-Appeal_Rhode Island_2021/06/28,Chief Justice Suttell,"Concurred, arguing that the Superior Court correctly dismissed the plaintiff's claims under RICRA due to issue preclusion and that Article 1, Section 2 of the Rhode Island Constitution does not create a private cause of action.",concur
-2019-167-Appeal_Rhode Island_2021/06/28,Goldberg,Concurred with majority opinion.,concur
-2019-167-Appeal_Rhode Island_2021/06/28,Robinson,Concurred with majority opinion.,concur
-2019-167-Appeal_Rhode Island_2021/06/28,Lynch Prata,Concurred with majority opinion.,concur
-2019-167-Appeal_Rhode Island_2021/06/28,Justice Long,Did not participate in the case.,other
+2022-63-C.A._Rhode-Island_2024/05/22_368,Melissa A. Long,"Concurred, arguing that Mr. Brown had a reasonable expectation of privacy during his conversation with his mother in the police interview room, and the police recording violated his Fourth Amendment and state constitutional rights.",concur
+2022-63-C.A._Rhode-Island_2024/05/22_368,"Suttell, C.J.",Concurred with majority opinion.,concur
+2022-63-C.A._Rhode-Island_2024/05/22_368,"Goldberg, J.",Concurred with majority opinion.,concur
+2022-63-C.A._Rhode-Island_2024/05/22_368,"Robinson, J.",Concurred with majority opinion.,concur
+2022-63-C.A._Rhode-Island_2024/05/22_368,"Lynch Prata, J.",Concurred with majority opinion.,concur
+2020-66-Appeal_Rhode-Island_2022/05/04_839,Justice Goldberg,"Concurred, argued that the plaintiffs lacked standing to challenge the Reproductive Privacy Act and that the General Assembly had the constitutional authority to enact it.",concur
+2020-66-Appeal_Rhode-Island_2022/05/04_839,"Suttell, C.J.",Concurred with majority opinion.,concur
+2020-66-Appeal_Rhode-Island_2022/05/04_839,"Robinson, J.","Concurred in part and dissented in part, argued that the court should only rule on the issue of standing and not address other substantive issues.",dissent
+2020-66-Appeal_Rhode-Island_2022/05/04_839,Justice Lynch Prata,Did not participate in the decision.,other
+2020-66-Appeal_Rhode-Island_2022/05/04_839,Justice Long,Did not participate in the decision.,other
+"2019-459-Appeal,-2019-462-Appeal_Rhode-Island_2022/03/02_869",Justice Lynch Prata,"Concurred, argued that the civil death statute is unconstitutional because it completely deprives life-sentenced prisoners of their right to bring civil actions, violating Article 1, Section 5 of the Rhode Island Constitution.",concur
+"2019-459-Appeal,-2019-462-Appeal_Rhode-Island_2022/03/02_869",Justice Goldberg,"Dissented, argued that the civil death statute should be addressed prospectively by the General Assembly, not the court, and that the majority's decision will unnecessarily open floodgates to frivolous inmate claims.",dissent
+"2019-459-Appeal,-2019-462-Appeal_Rhode-Island_2022/03/02_869","Suttell, C.J.",Concurred with majority opinion.,concur
+"2019-459-Appeal,-2019-462-Appeal_Rhode-Island_2022/03/02_869","Robinson, J.",Concurred with majority opinion.,concur
+"2019-459-Appeal,-2019-462-Appeal_Rhode-Island_2022/03/02_869","Long, J.",Concurred with majority opinion.,concur
+2019-167-Appeal_Rhode-Island_2021/06/28_993,Chief Justice Suttell,"Concurred, arguing that the Superior Court correctly dismissed the plaintiff's claims under RICRA due to issue preclusion and that Article 1, Section 2 of the Rhode Island Constitution does not create a private cause of action.",concur
+2019-167-Appeal_Rhode-Island_2021/06/28_993,Goldberg,Concurred with majority opinion.,concur
+2019-167-Appeal_Rhode-Island_2021/06/28_993,Robinson,Concurred with majority opinion.,concur
+2019-167-Appeal_Rhode-Island_2021/06/28_993,Lynch Prata,Concurred with majority opinion.,concur
+2019-167-Appeal_Rhode-Island_2021/06/28_993,Justice Long,Did not participate in the case.,other

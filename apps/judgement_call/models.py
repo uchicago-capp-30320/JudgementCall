@@ -219,13 +219,9 @@ class Alias(models.Model):
             alias = self.alias
         court_tenures = Tenure.objects.filter(court=self.court)
         matches = {}
-        last_word_alias = alias.split(" ")[-1]
         for tenure in court_tenures:
             name = self.standardize_name(tenure.person.name_canonical)
-            last_word_name = name.split(" ")[-1]
-            match_full = jaro_winkler_similarity(alias, name)
-            match_lw = jaro_winkler_similarity(last_word_alias, last_word_name)
-            matches[tenure] = max(match_full, match_lw)
+            matches[tenure] = jaro_winkler_similarity(alias, name)
         return matches
 
     def match_tenure(self, update=False):
@@ -244,8 +240,7 @@ class Alias(models.Model):
             self.tenure = top_match
             self.save()
         else:
-            try_alias = self.alias.replace("justice", "").replace(" j ", " ")
-            try_alias = try_alias.replace("senior", "").replace("chief", "")
+            try_alias = self.standardize_alias(self.alias)
             if try_alias != self.alias:
                 print(f"rerunning with {try_alias}")
                 matches = self.find_matches(try_alias)
@@ -262,6 +257,48 @@ class Alias(models.Model):
     @staticmethod
     def standardize_name(name: str):
         return name.strip().lower().translate(str.maketrans("", "", punctuation))
+
+    @staticmethod
+    def standardize_alias(alias: str):
+        endings = [
+            "C.J.",
+            "P.J.",
+            "J.",
+            "Sp. J.",
+            "JJ.",
+            "PJJ",
+            "C. J.",
+            "P.JJ.",
+            "V.C.J.",
+            "A.R.J.",
+            "D.J.",
+            "S.J.",
+            "P.J.A.D",
+            "J.P.T.",
+            "PJ",
+            "J",
+            "CJ",
+        ]
+        for end in endings:
+            if alias.endswith(end):
+                alias = alias.replace(end, "")
+
+        alias = alias.strip().lower().translate(str.maketrans("", "", punctuation))
+        key_words = [
+            "justice",
+            "judge",
+            "chief justice",
+            "presiding justice",
+            "associate justice",
+            "associate chief justice",
+            "retired",
+            "sitting",
+            "by designation",
+        ]
+        for word in key_words:
+            if word in alias:
+                alias = alias.replace(word, "")
+        return alias.strip()
 
     class Meta:
         verbose_name_plural = "Aliases"

@@ -2,7 +2,6 @@
 # import ingestion.merge_courts_data
 import csv
 import pathlib
-import string
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
 from ingestion.ingest_courts import (
@@ -63,8 +62,8 @@ def command(self, data: str):
                 headers = row
                 break
             for row in reader:
-                case = dict(zip(case_model_cols, row))
-                case.pop("", None)
+                case = dict(zip(case_model_cols[1:], row))
+                # case.pop("", None)
                 court_id = COURT_LOOKUP_LONG[case["state"]]
                 lookup_court = Court.objects.get(court_id=court_id)
                 case["court"] = lookup_court
@@ -85,7 +84,7 @@ def command(self, data: str):
                 case_id = row_dict["case_id"]
                 lookup_case = Case.objects.get(case_id=case_id)
                 # link to alias
-                alias = standardize_alias(row_dict["name"])
+                alias = row_dict["name"]
                 alias, found = Alias.objects.get_or_create(alias=alias, court=lookup_case.court)
                 # create indop dict
                 indop = build_indop(row_dict)
@@ -162,10 +161,6 @@ def empty_string_to_none(value):
         return None
     else:
         return value
-
-
-def standardize_alias(alias: str):
-    return alias.strip().lower().translate(str.maketrans("", "", string.punctuation))
 
 
 def build_indop(row_dict: dict):

@@ -84,6 +84,15 @@ class Case(BaseModel):
     judge_opinions: List[IndividualOpinion]
 
 
+def generate_case_id(docket_no, state, date, index):
+    docket_no = docket_no.replace(" ", "-")
+    state = "-".join(state.split(" "))
+    date = str(datetime.strptime(date, "%B %d, %Y"))[:10].replace("-", "/")
+    case_id = "_".join([docket_no, state, date, str(index)])
+
+    return case_id
+
+
 def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str):
     """
     Inputs:
@@ -129,7 +138,7 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
                 print("Wait time exceeds 1 minute")
                 raise e
         end = datetime.now()
-        time_diff = int((end - start).total_seconds())
+        time_diff = (end - start).total_seconds()
         QUERY_TIMES.append(time_diff)
 
         return structured_output
@@ -150,24 +159,20 @@ def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: d
     dataframe. It then extract the information about the client, the model id
     and gemini client.
     """
-    num_cases = len(case_df)
     model_id = client_info["model_id"]
     client = client_info["client"]
 
     file_dic = {}
-    for i in range(num_cases):
-        print(f"Querying case no. {i + 1}: {case_df.iloc[i]['title']}")
+    for index, row in case_df.iterrows():
+        print(f"Querying case no. {index + 1}: {row['title']}")
 
-        docket_no = case_df.iloc[i]["docket_no"].replace(" ", "-")
-        state = case_df.iloc[i]["state"]
-        date = str(datetime.strptime(case_df.iloc[i]["date"], "%B %d, %Y"))[:10].replace("-", "/")
-        pdf_link = case_df.iloc[i]["opinion_link"]
-        case_id = "_".join([docket_no, state, date])
+        pdf_link = row["opinion_link"]
+        case_id = generate_case_id(row["docket_no"], row["state"], row["date"], index)
 
         try:
             opinion_resp = read_opinion(pdf_link, model_id, client, prompt_start)
         except ValidationError:
-            message = f"{case_df.iloc[i]['title']} - Skipped because LLM output"
+            message = f"{row['title']} - Skipped because LLM output"
             message += "did not follow enforced data structure"
             print(message)
             SKIPS["num_skips"] += 1
@@ -277,25 +282,20 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
     rights_enumerated_dict = {right: [] for right in rights_enumerated_list}
     case_table = case_table | rights_enumerated_dict
 
-    num_cases = len(case_df)
+    for index, row in case_df.iterrows():
+        title = row["title"]
+        case_type = row["type"]
 
-    for i in range(num_cases):
-        docket_no = case_df.iloc[i]["docket_no"].replace(" ", "-")
-        state = case_df.iloc[i]["state"]
-        date = str(datetime.strptime(case_df.iloc[i]["date"], "%B %d, %Y"))[:10].replace("-", "/")
-        title = case_df.iloc[i]["title"]
-        type = case_df.iloc[i]["type"]
-
-        case_id = "_".join([docket_no, state, date])
+        case_id = generate_case_id(row["docket_no"], row["state"], row["date"], index)
 
         if case_id not in case_dic:
             continue
 
-        case_table["docket_no"].append(docket_no)
-        case_table["state"].append(state)
-        case_table["date"].append(date)
+        case_table["docket_no"].append(row["docket_no"])
+        case_table["state"].append(row["state"])
+        case_table["date"].append(row["date"])
         case_table["title"].append(title)
-        case_table["type"].append(type)
+        case_table["type"].append(case_type)
         case_table["case_id"].append(case_id)
 
         response = case_dic[case_id]["response"]
@@ -316,6 +316,7 @@ def produce_tables(
     case_df: pd.DataFrame,
     prompt_path: str,
     model_id: str = "gemini-2.5-flash",
+    use_existing: bool = True,
 ):
     """
     Inputs:
@@ -340,7 +341,7 @@ def produce_tables(
 
     for state in states:
         print(f"Ingesting cases and opinions for {state}")
-        if (state in case_files) and (state in opinion_files):
+        if (state in case_files) and (state in opinion_files) and use_existing:
             case_table = cases_path / (state + ".csv")
             cases = pd.read_csv(case_table)
             opinion_table = opinions_path / (state + ".csv")
@@ -379,13 +380,18 @@ def produce_tables(
     with open(prompt_path, "r") as prompt_file:
         prompt = prompt_file.read()
 
+    try:
+        avg_query_time = sum(QUERY_TIMES) / len(QUERY_TIMES)
+    except ZeroDivisionError:
+        avg_query_time = 0
+
     llm_run_metadata = {
         "timestamp": datetime.today().strftime("%m-%d-%Y"),
         "model_id": model_id,
         "cases_processed": total_cases["case_id"].tolist(),
         "prompt_start": prompt,
         "skips": SKIPS,
-        "avg_case_query_time": sum(QUERY_TIMES) / len(QUERY_TIMES),
+        "avg_case_query_time": avg_query_time,
     }
     meta_path = (
         Path(__file__).parent.parent
@@ -403,7 +409,7 @@ if __name__ == "__main__":
 
     start = datetime.now()
     print("Getting cases and opinions...")
-    produce_tables(case_df, prompt_path)
+    produce_tables(case_df, prompt_path, use_existing=False)
     end = datetime.now()
-    time_diff = int((end - start).total_seconds()) / 60
+    time_diff = (end - start).total_seconds() / 60
     print(f"Ingestion complete after {round(time_diff, 2)} minutes.")
