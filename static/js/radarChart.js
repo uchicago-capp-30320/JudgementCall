@@ -1,11 +1,10 @@
-// COPYPASTA <script> from radar_test.html here when MIME type thing discussed
-
 /////////////////////////////////////////////////////////
 /////////////// The Radar Chart Function ////////////////
 /////////////// Written by Nadieh Bremer ////////////////
 ////////////////// VisualCinnamon.com ///////////////////
 //////////Updated for d3.js v4 by Ingo Kleiber //////////
 /////////// Inspired by the code of alangrafu ///////////
+//// Legend and other updates by Team Judgement Call ////
 /////////////////////////////////////////////////////////
 
 function RadarChart(id, data, options) {
@@ -91,7 +90,7 @@ function RadarChart(id, data, options) {
         .style("fill-opacity", cfg.opacityCircles)
         .style("filter" , "url(#glow)");
 
-    //NEW:Emphasize 50% threshold
+    //NEW: Emphasize 50% threshold
     axisGrid.append("circle")
         .attr("class", "gridCircle")
         .attr("r", radius/2)
