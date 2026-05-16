@@ -690,6 +690,8 @@ def get_individual_opinions_for_radar(
         This format plugs right into radarChart.js for any number
         of justices and rights.
     """
+    # ERROR: My query duplicates judges with multiple aliases (there are many)
+
     # TO REMOVE (only allow 2 judges as input at a time so
     # there is enough data overlap to build radar)
     persons = persons[:2]

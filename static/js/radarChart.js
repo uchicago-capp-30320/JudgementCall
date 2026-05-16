@@ -132,7 +132,7 @@ function RadarChart(id, data, options) {
         .attr("x2", function(d, i){ return rScale(maxValue*1.1) * Math.cos(angleSlice*i - Math.PI/2); })
         .attr("y2", function(d, i){ return rScale(maxValue*1.1) * Math.sin(angleSlice*i - Math.PI/2); })
         .attr("class", "line")
-        .style("stroke", "black")
+        .style("stroke", "grey")
         .style("stroke-width", "4px");
 
     //Append the labels at each axis
@@ -218,10 +218,16 @@ function RadarChart(id, data, options) {
         .enter().append("circle")
         .attr("class", "radarCircle")
         .attr("r", cfg.dotRadius)
-        .attr("cx", function(d,i){ return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2); })
+        .attr("cx", function(d,i){
+            console.log(d);
+            console.log(i);
+
+            return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2);
+        })
         .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-        .style("fill", function(d,i,j) { return cfg.color(j); })
-        .style("fill-opacity", 0.8);
+        .style("fill", function(d, i){ return cfg.color(d.name) }) // HOW TO MAKE THESE MATCH BLOB COLORS
+        .style("fill-opacity", 0.8)
+        .style("stroke", "#000000");
 
     /////////////////////////////////////////////////////////
     //////// Append invisible circles for tooltip ///////////
@@ -269,7 +275,7 @@ function RadarChart(id, data, options) {
     /////////////////////////////////////////////////////////
     //Append a g element
     var g_legend = svg.append("g")
-            .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.left) + "," + (cfg.margin.top) + ")");
+            .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.right) + "," + (cfg.margin.top) + ")");
     var size = 20
     g_legend.selectAll(".radarLegendIcons")
     .data(data)
