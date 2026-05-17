@@ -9,6 +9,7 @@ import time
 import csv
 import pandas as pd
 import re
+from datetime import datetime, timezone
 
 # Constants for scraping
 ALLOWED_DOMAIN = "https://en.wikipedia.org/wiki/"
@@ -29,7 +30,7 @@ COLUMN_MAP = {
     "Party": "ticket_party",
     "Appointer": "appointer_name",
     "Appointed by": "appointer_name",
-    "Law school": "law_school"
+    "Law school": "law_school",
 }
 
 # For dataframe - which columns we expect to see
@@ -47,46 +48,50 @@ EXPECTED_COLUMNS = [
     "appointer_name",
     "appointer_party",
     "law_school",
-    #"selection_type"
+    # "selection_type",
+    "source_url",
+    "scraped_at"
 ]
 
 # States to scrape
-states = ["Alabama",
-          "Alaska",
-          "Arizona",
-          "Arkansas",
-          "Colorado",
-          "Connecticut",
-          "Florida",
-          "Georgia",
-          "Hawaii",
-          "Idaho",
-          "Illinois",
-          "Indiana",
-          "Iowa",
-          "Michigan",
-          "Minnesota",
-          "Missouri",
-          "Montana",
-          "Nevada",
-          "New Hampshire",
-          "New Jersey",
-          "New Mexico",
-          "North Carolina",
-          "North Dakota",
-          "Ohio",
-          "Pennsylvania",
-          "Rhode Island",
-          "South Dakota",
-          "Texas",
-          "Utah",
-          "Vermont",
-          "Washington",
-          "Wyoming"
-          ]
+states = [
+    "Alabama",
+    "Alaska",
+    "Arizona",
+    "Arkansas",
+    "Colorado",
+    "Connecticut",
+    "Florida",
+    "Georgia",
+    "Hawaii",
+    "Idaho",
+    "Illinois",
+    "Indiana",
+    "Iowa",
+    "Michigan",
+    "Minnesota",
+    "Missouri",
+    "Montana",
+    "Nevada",
+    "New Hampshire",
+    "New Jersey",
+    "New Mexico",
+    "North Carolina",
+    "North Dakota",
+    "Ohio",
+    "Pennsylvania",
+    "Rhode Island",
+    "South Dakota",
+    "Texas",
+    "Utah",
+    "Vermont",
+    "Washington",
+    "Wyoming",
+]
 
 
 ########## BASE SCRAPER ##########
+
 
 def make_link_absolute(path):
     """
@@ -142,7 +147,7 @@ def get_parse_html(url):
     return root
 
 
-def scrape_page(root, state):
+def scrape_page(root, state, url, scraped_at):
     """
     Given the html text of a page, extract the info from the table of judges.
     """
@@ -164,6 +169,8 @@ def scrape_page(root, state):
     # Make a data column for state and court name
     header.append("state")
     header.append("court")
+    header.append("source_url")
+    header.append("scraped_at")
 
     # Extract the table data
     rows = []
@@ -191,6 +198,8 @@ def scrape_page(root, state):
         # Add given state for each row
         row.append(state)
         row.append(page_title)
+        row.append(url)
+        row.append(scraped_at)
 
         rows.append(row)
 
@@ -199,11 +208,13 @@ def scrape_page(root, state):
 
 def run_scraper(state, path):
     url = make_link_absolute(path)
+    scraped_at = datetime.now(timezone.utc).isoformat()  # UTC ISO timestamp
     root = get_parse_html(url)
-    return scrape_page(root, state)
+    return scrape_page(root, state, url, scraped_at)
 
 
 ########## CLEANING/EXTRACTION OF SCRAPED DATA ##########
+
 
 def extract_name_and_chief_status(raw_name, seat_value=None):
     # Normalize raw_name
@@ -236,18 +247,20 @@ def extract_name_and_chief_status(raw_name, seat_value=None):
         is_chief_from_seat = "chief justice" in seat_lower
 
     # Combine rules
-    is_chief = (is_chief_from_name and not (is_vice_chief or is_associate_chief)) or is_chief_from_seat
+    is_chief = (
+        is_chief_from_name and not (is_vice_chief or is_associate_chief)
+    ) or is_chief_from_seat
 
     # Clean name
     cleaned = (
         name.replace("Vice Chief Justice", "")
-            .replace("Associate Chief Justice", "")
-            .replace("Chief Justice", "")
-            .replace("Presiding Justice", "")
-            .replace("Presiding Judge", "")
-            .replace("Senior Associate Justice", "")
-            .replace(",", "")
-            .strip()
+        .replace("Associate Chief Justice", "")
+        .replace("Chief Justice", "")
+        .replace("Presiding Justice", "")
+        .replace("Presiding Judge", "")
+        .replace("Senior Associate Justice", "")
+        .replace(",", "")
+        .strip()
     )
 
     return cleaned, is_chief
@@ -256,14 +269,14 @@ def extract_name_and_chief_status(raw_name, seat_value=None):
 def split_appointer(value):
     if not isinstance(value, str) or value.strip() == "":
         return None, None
-    
+
     # Match patterns like "Ron DeSantis (R)"
     match = re.match(r"^(.*?)\s*\((.*?)\)$", value.strip())
     if match:
         name = match.group(1).strip()
         party = match.group(2).strip()
         return name, party
-    
+
     # If no party is present
     return value.strip(), None
 
@@ -304,15 +317,16 @@ def normalize_df(df, state, path):
             df[col] = None
 
     # Clean name and detect chief justice status
-    df["person_clean"], df["chief_justice"] = zip(*df.apply(
-        lambda row: extract_name_and_chief_status(
-            raw_name=row.get("name"),
-            seat_value=row.get("Seat") or row.get("Position")
-        ),
-        axis=1
-    ))
+    df["person_clean"], df["chief_justice"] = zip(
+        *df.apply(
+            lambda row: extract_name_and_chief_status(
+                raw_name=row.get("name"), seat_value=row.get("Seat") or row.get("Position")
+            ),
+            axis=1,
+        )
+    )
 
-     # Remove vacancies
+    # Remove vacancies
     df = df[df["person_clean"].notna()]
 
     # Replace person column with cleaned version
@@ -320,9 +334,7 @@ def normalize_df(df, state, path):
     df = df.drop(columns=["person_clean"])
 
     # Extract appointer name and party
-    df["appointer_name"], df["appointer_party"] = zip(
-        *df["appointer_name"].apply(split_appointer)
-    )
+    df["appointer_name"], df["appointer_party"] = zip(*df["appointer_name"].apply(split_appointer))
 
     # Return df for Tenure and Person table creation
     return df[
@@ -334,19 +346,21 @@ def normalize_df(df, state, path):
             "start_date",
             "end_date",
             "mandatory_retirement",
-            #"selection_type",
+            "chief_justice",
+            "chief_term",
             "ticket_party",
             "appointer_name",
             "appointer_party",
-            "chief_justice",
-            "chief_term",
-            "law_school"
+            "law_school",
+            # "selection_type",
+            "source_url",
+            "scraped_at"
         ]
     ]
 
 
 ########## RUNNING SCRAPER ##########
-def make_path(state):  
+def make_path(state):
     fix = state.replace(" ", "_")
     return f"{fix}_Supreme_Court"
 
@@ -356,10 +370,7 @@ def main():
 
     states_to_scrape["Georgia"] = ["Supreme_Court_of_Georgia_(U.S._state)"]
 
-    states_to_scrape["Texas"] = [
-        "Supreme_Court_of_Texas",
-        "Texas_Court_of_Criminal_Appeals"
-    ]
+    states_to_scrape["Texas"] = ["Supreme_Court_of_Texas", "Texas_Court_of_Criminal_Appeals"]
 
     all_dfs = []
 
@@ -369,9 +380,7 @@ def main():
 
             # Clean cells
             header = [clean_cell(h) for h in header]
-            cleaned_rows = [
-                [clean_cell(cell) for cell in row] for row in rows
-            ]
+            cleaned_rows = [[clean_cell(cell) for cell in row] for row in rows]
 
             # Clean/extract data
             df = pd.DataFrame(cleaned_rows, columns=header)
