@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Judges near {{ county }}, {{ state }}</title>
+    <style>
+        .judge-card {
+            border: 2px solid #3e6297;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            max-width: 800px;
+        }
+
+        a {
+            color: #3e6297;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="below-nav-header">Upcoming elections in {{ county }}, {{ state }} </h1>
+    {% for court_name, details in elections.items %}
+    <div class="collapsible-container">
+        <h2>{{court_name}} Election on {{details.date}}</h2>
+        <span class="material-symbols-outlined">
+            arrow_forward_ios
+        </span>
+    </div>
+    <div class="collapsible-details">
+        <h3>Election Type: <a
+                href="https://statecourtreport.org/our-work/analysis-opinion/how-are-state-judges-selected?_gl=1*1uyzd55*_gcl_au*MjA5NjA3ODA5NS4xNzc4NTE2NjAy">{{details.type}}</a>
+        </h3>
+        <h3>Candidates:</h3>
+        {% for candidate in details.candidates %}
+        <div class="judge-card-container">
+            <div class="judge-card">
+                <h3>{{ candidate.name }}</h3>
+                {% if candidate.party_registration == "Republican" %}
+                <p style="color: red;"> {{ candidate.party_registration }}</p>
+                {% elif candidate.party_registration == "Democrat" %}
+                <p style="color: blue;"> {{ candidate.party_registration }}</p>
+                {% else %}
+                <p> {{ candidate.party_registration }}</p>
+                {% endif %}
+                <p> <a href="{{ candidate.more_info }}">more details</a> </p>
+            </div>
+        </div>
+
+        {% empty %}
+        <p>No candidates found.</p>
+        {% endfor %}
+    </div>
+    {% empty %}
+    <p>No upcoming elections found for {{ county }}, {{ state }}.</p>
+    {% endfor %}
+    <script>
+        document.querySelectorAll('.collapsible-container').forEach(function (container) {
+            container.addEventListener('click', function () {
+                const content = this.nextElementSibling;
+                if (content.style.maxHeight && content.style.maxHeight !== "0px") {
+                    content.style.maxHeight = "0px";
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
+
+{% endblock %}

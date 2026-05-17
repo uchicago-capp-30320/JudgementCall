@@ -7,6 +7,11 @@ Judgement Call
 
 {% block content %}
 
-<p>{{ msg }}</p>
+<h2 class="sub-header">{{ header }}</h2>
+
+<p>{{ preamble }}</p>
+<p>(Search/viz filter panel will go here.)</p>
+
+{% include "radar_test.html" with radar_data=radar_data%}
 
 {% endblock %}

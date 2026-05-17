@@ -1,37 +1,61 @@
 You are reading a court opinion for a state supreme court. In a
 brief sentence, summarize what the final and single court decision was.
 Summarize in one brief sentence what issue is being debated, explicitly saying
-what the pro- and con- positions are. Generate a list of every state supreme
-court judge on the case with their individual opinions.
+what the pro and con positions are. Generate a list of every state supreme
+court judge on the case with their individual concurrence or dissent, and their
+individual opinion if they had one.
 
 Strictly follow this format:
 {
-    case_title: The title of the case,
-    decision: The final decision that was made for the case,
-    issue_debate: The main issue being debated in the case,
+    issue_debate: A phrase starting with "Whether" that summarizes the main issue being debated in the case,
+    plaintiff_argument: Briefly, the plaintiff's stance on the debate issue,
+    defendant_argument: Briefly, the defendant's stance on the debate issue,
+    decision_outcome: The court's final decision for the case whether they ruled with the plaintiff or not,
+    decision_winner: The party that the court sided with ("plaintiff","defendant","other"),
+    rights_affected: {
+        environment: The effect of the court's decision on environmental rights,
+        consumers: The effect of the court's decision on consumer rights,
+        reproductive_rights: The effect of the court's decision on reproductive rights,
+        democratic_norms: The effect of the court's decision on democratic norms,
+        free_press: The effect of the court's decision on the right to free press,
+        public_health: The effect of the court's decision on public health,
+        separation_church_state: The effect of the court's decision on separation of church and state,
+        voting_access: The effect of the court's decision on voting rights,
+        public_education: The effect of the court's decision on the right to public education,
+        free_speech: The effect of the court's decision on the right to free speech,
+        privacy: The effect of the court's decision on privacy rights,
+        worker_rights: The effect of the court's decision on worker rights,
+    },
     judge_opinions: [
         {
             judge_name: The full name of the judge giving an opinion,
-            opinion_summary: An extremely brief description of the judge's opinion on the case
+            ruling: Choose from ["concur","dissent","other"] based on how this judge ruled (delivering opinion is to concur),
+            description: An extremely brief description of the judge's own opinion on the case taking the format "<Concurred/Dissented>, argued that <argument goes here>."
         },
         {
             judge_name: The full name of the judge giving an opinion,
-            opinion_summary: An extremely brief description of the judge's opinion on the case
+            ruling: Choose from ["concur","dissent","other"] based on how this judge ruled (delivering opinion is to concur),
+            description: An extremely brief description of the judge's own opinion on the case taking the format "<Concurred/Dissented>, argued that <argument goes here>."
         }
     ]
 }
 
-You will receive a dataframe containing the name of every state supreme court
-judge you are dealing with in this case. Do no include judge names not in this
-dataframe. The dataframe will be provided after the document after the
-$DATAFRAME$.
+For "rights_affected", set each item only to one of ["protected","infringed","NA"] depending on how the court's decision
+affected that item as a legal right.
+
+For individual judge opinions, only set the "ruling" to "other" when they recuse or have some procedural reason
+not to concur or dissent. Individual judges may disagree on parts of an argument but ultimately still agree with it.
 
 If individual opinions for judges are not available, do not include them in
-the response.
+the response. If individual opinions for judges are just a ruling without
+a unique opinion argument, set the "description" to "<Concurred/Dissented> with majority opinion".
+Ensure that the individual opinion "description" for judges is written in plain, accessible, and brief
+English as much as possible. Avoid excessive legalese.
 
-Ensure that each judge's full name is displayed, capitalized on the first
-letter, and only appears once. Given that this is one case, make sure your
-response contains only 1 issue being debated, 1 court decision, and 1 list
-of individual judge decisions.
+Ensure that each judge's full name is displayed. Do not infer complete judge
+names if they are incomplete. Only record judge names exactly as they are
+listed in this document. Make sure a name only appears once. Given that this
+is one case, make sure your response contains only 1 issue being debated, 1
+court decision, and 1 list of individual judge decisions.
 
 Here is the opinion document and dataframe you need to analyze:

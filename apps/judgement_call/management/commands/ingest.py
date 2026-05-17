@@ -2,11 +2,11 @@
 # import ingestion.merge_courts_data
 import csv
 import pathlib
+import string
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
 from ingestion.ingest_courts import (
     MERGED_COURTS_PATH,
-    get_courts_df,
     COURT_LOOKUP_LONG,
     COURT_LOOKUP_SHORT,
 )
@@ -80,18 +80,17 @@ def command(self, data: str):
                 headers = row
                 break
             for row in reader:
-                indop = dict(zip(headers, row))
-                indop.pop("", None)
-                case_id = indop["case_id"]
+                row_dict = dict(zip(headers, row))
+                # link to case
+                case_id = row_dict["case_id"]
                 lookup_case = Case.objects.get(case_id=case_id)
-                print(lookup_case.court)
-                indop["case"] = lookup_case
-                alias = indop["name"]
+                # link to alias
+                alias = standardize_alias(row_dict["name"])
                 alias, found = Alias.objects.get_or_create(alias=alias, court=lookup_case.court)
-                print(alias)
+                # create indop dict
+                indop = build_indop(row_dict)
                 indop["judge_alias"] = alias
-                indop.pop("name", None)
-                indop.pop("case_id", None)
+                indop["case"] = lookup_case
                 print(indop)
                 IndividualOpinion.objects.update_or_create(**indop)
 
@@ -163,6 +162,15 @@ def empty_string_to_none(value):
         return None
     else:
         return value
+
+
+def standardize_alias(alias: str):
+    return alias.strip().lower().translate(str.maketrans("", "", string.punctuation))
+
+
+def build_indop(row_dict: dict):
+    indop_keys = ["description", "ruling"]
+    return {k: v for k, v in row_dict.items() if k in indop_keys}
 
 
 slri_race = {
