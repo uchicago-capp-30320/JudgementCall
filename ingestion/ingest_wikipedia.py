@@ -17,6 +17,7 @@ REQUEST_DELAY = 0.1
 # For scraping - wikipedia columns that need mapping
 COLUMN_MAP = {
     "Name": "name",
+    "Justice": "name",
     "Born": "birth_date",
     "Start": "start_date",
     "Start date": "start_date",
@@ -24,6 +25,7 @@ COLUMN_MAP = {
     "Term ends": "end_date",
     "Mandatory retirement": "mandatory_retirement",
     "Chief term": "chief_term",
+    "Chief": "chief_term",
     "Party": "ticket_party",
     "Appointer": "appointer_name",
     "Appointed by": "appointer_name",
@@ -32,6 +34,8 @@ COLUMN_MAP = {
 
 # For dataframe - which columns we expect to see
 EXPECTED_COLUMNS = [
+    "state",
+    "court",
     "name",
     "birth_date",
     "start_date",
@@ -143,6 +147,10 @@ def scrape_page(root, state):
     Given the html text of a page, extract the info from the table of judges.
     """
 
+    # Get name of court
+    page_title = root.cssselect("title")[0].text_content().strip()
+    page_title = page_title.replace(" - Wikipedia", "")
+
     # Get the entire table, headers (th) and data (td)
     table = root.cssselect("table.wikitable.sortable tbody")[0]
 
@@ -153,8 +161,9 @@ def scrape_page(root, state):
         text = th.text_content().strip()
         header.append(text)
 
-    # Make a data column for state
-    header.append("State")
+    # Make a data column for state and court name
+    header.append("state")
+    header.append("court")
 
     # Extract the table data
     rows = []
@@ -181,6 +190,7 @@ def scrape_page(root, state):
 
         # Add given state for each row
         row.append(state)
+        row.append(page_title)
 
         rows.append(row)
 
@@ -216,6 +226,9 @@ def extract_name_and_chief_status(raw_name, seat_value=None):
     # Detect vice chief justice (should not count as chief justice)
     is_vice_chief = "vice chief justice" in name_lower
 
+    # Detect associate chief justice (should not count as chief justice)
+    is_associate_chief = "associate chief justice" in name_lower
+
     # Detect chief justice from seat/position column
     is_chief_from_seat = False
     if seat_value:
@@ -223,12 +236,16 @@ def extract_name_and_chief_status(raw_name, seat_value=None):
         is_chief_from_seat = "chief justice" in seat_lower
 
     # Combine rules
-    is_chief = (is_chief_from_name and not is_vice_chief) or is_chief_from_seat
+    is_chief = (is_chief_from_name and not (is_vice_chief or is_associate_chief)) or is_chief_from_seat
 
     # Clean name
     cleaned = (
-        name.replace("Chief Justice", "")
-            .replace("Vice Chief Justice", "")
+        name.replace("Vice Chief Justice", "")
+            .replace("Associate Chief Justice", "")
+            .replace("Chief Justice", "")
+            .replace("Presiding Justice", "")
+            .replace("Presiding Judge", "")
+            .replace("Senior Associate Justice", "")
             .replace(",", "")
             .strip()
     )
@@ -306,14 +323,12 @@ def normalize_df(df, state, path):
     df["appointer_name"], df["appointer_party"] = zip(
         *df["appointer_name"].apply(split_appointer)
     )
- 
-    # Add state name
-    df["state"] = state
 
     # Return df for Tenure and Person table creation
     return df[
         [
             "state",
+            "court",
             "name",
             "birth_date",
             "start_date",
