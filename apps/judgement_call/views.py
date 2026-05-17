@@ -703,7 +703,7 @@ def get_individual_opinions_for_radar(
         IndividualOpinion.objects.filter(
             judge_alias__tenure__person__name_canonical__in=persons
         ).filter(case__court__court_id=court_id)
-    ).values("judge_alias", "ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
+    ).values("ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
 
     # Transform those individual opinions into protected percentages and infringed percentages,
     # grouped by judge (person). This is "Stat option 2".
@@ -738,7 +738,7 @@ def get_individual_opinions_for_radar(
 
     pro_right_avgs_by_judge = (
         indops.annotate(**right_avgs_by_judge_kwargs)
-        .values("judge_alias", "judge_alias__tenure__person__name_canonical")
+        .values("judge_alias__tenure__person__name_canonical")
         .annotate(**pro_right_kwargs)
     )
 
