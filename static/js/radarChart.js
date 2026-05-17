@@ -20,7 +20,7 @@ function RadarChart(id, data, options) {
         opacityArea: 0.5, 	//The opacity of the area of the blob
         opacityAreaLow: 0.35, 	//The opacity of the area of the blob when another area is hovered over
         opacityAreaHigh: 0.7, 	//The opacity of the area of the blob when hovered over
-        dotRadius: 4, 			//The size of the colored circles of each blog
+        dotRadius: 8, 			//The size of the colored circles of each blog
         opacityCircles: 0.1, 	//The opacity of the circles of each blob
         strokeWidth: 2, 		//The width of the stroke around each blob
         roundStrokes: false,	//If true the area and stroke will follow a round path (cardinal-closed)
@@ -101,7 +101,7 @@ function RadarChart(id, data, options) {
         .style("stroke-width", "3")
         .style("stroke-dasharray", "8 8")
         .style("fill-opacity", 1.0)
-        // .style("filter" , "url(#glow)");
+        .style("filter" , "url(#glow)");
 
     //Text indicating at what % each level is
     axisGrid.selectAll(".axisLabel")
@@ -110,8 +110,8 @@ function RadarChart(id, data, options) {
     .attr("class", "axisLabel")
     .attr("x", 4)
     .attr("y", function(d){return -d*radius/cfg.levels;})
-    .attr("dy", "0.4em")
-    .style("font-size", "10px")
+    .attr("dy", "-0.2em")
+    .style("font-size", "15px")
     .attr("fill", "#111111")
     .text(function(d,i) { return Format(maxValue * d/cfg.levels); });
 
@@ -135,7 +135,7 @@ function RadarChart(id, data, options) {
         .style("stroke", "grey")
         .style("stroke-width", "4px");
 
-    //Append the labels at each axis
+    //Append the labels at each axis (issue area)
     axis.append("text")
         .attr("class", "legend")
         .style("font-size", "11px")
@@ -226,7 +226,7 @@ function RadarChart(id, data, options) {
         })
         .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
         .style("fill", function(d, i){ return cfg.color(d.name) }) // HOW TO MAKE THESE MATCH BLOB COLORS
-        .style("fill-opacity", 0.8)
+        .style("fill-opacity", 0.5)
         .style("stroke", "#000000");
 
     /////////////////////////////////////////////////////////
