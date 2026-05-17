@@ -250,15 +250,17 @@ function RadarChart(id, data, options) {
         .style("fill", "none")
         .style("pointer-events", "all")
         .on("mouseover", function(d,i) {
-            newX =  parseFloat(d3.select(this).attr('cx')) - 10;
-            newY =  parseFloat(d3.select(this).attr('cy')) - 10;
-            // console.log(d.target.__data__.value);
+            newX =  parseFloat(d3.select(this).attr("cx")) - 10;
+            newY =  parseFloat(d3.select(this).attr("cy")) - 10;
+            console.log(cfg.color.domain());
+            console.log(d.target.__data__.name);
             tooltip
-                .attr('x', newX)
-                .attr('y', newY)
+                .attr("x", newX)
+                .attr("y", newY)
                 .text(Format(d.target.__data__.value))
+                .style("fill", cfg.color(d.target.__data__.name))
                 .transition().duration(200)
-                .style('opacity', 1);
+                .style("opacity", 1);
         })
         .on("mouseout", function(){
             tooltip.transition().duration(200)
@@ -268,6 +270,15 @@ function RadarChart(id, data, options) {
     //Set up the small tooltip for when you hover over a circle
     var tooltip = g.append("text")
         .attr("class", "tooltip")
+        .style("pointer-events", "none")
+        .style("font-size", "2em")
+        .style("text-shadow", "2px 2px black")
+        // .style("filter", "drop-shadow(0px 0px 2em gray)")
+        // .style("box-shadow", "#ff2e2e 0px 0px 5px")
+        // .style("webkit-text-stroke", "2px black")
+        .style("stroke", "black")
+        .style("stroke-width", "2px")
+        .style("paint-order", "stroke fill")
         .style("opacity", 0);
 
     /////////////////////////////////////////////////////////
