@@ -50,7 +50,7 @@ EXPECTED_COLUMNS = [
     "law_school",
     # "selection_type",
     "source_url",
-    "scraped_at"
+    "scraped_at",
 ]
 
 # States to scrape
@@ -354,7 +354,7 @@ def normalize_df(df, state, path):
             "law_school",
             # "selection_type",
             "source_url",
-            "scraped_at"
+            "scraped_at",
         ]
     ]
 
