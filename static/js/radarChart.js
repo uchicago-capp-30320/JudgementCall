@@ -16,6 +16,7 @@ function RadarChart(id, data, options) {
         levels: 3,				//How many levels or inner circles should there be drawn
         maxValue: 0, 			//What is the value that the biggest circle will represent
         labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
+        lineSpace: 1.2,     //Line spacing between legend items
         wrapWidth: 100, 		//The number of pixels after which a label needs to be given a new line
         opacityArea: 0.5, 	//The opacity of the area of the blob
         opacityAreaLow: 0.35, 	//The opacity of the area of the blob when another area is hovered over
@@ -286,14 +287,14 @@ function RadarChart(id, data, options) {
     /////////////////////////////////////////////////////////
     //Append another g element
     var g_legend = svg.append("g")
-            .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.right) + "," + (cfg.margin.top) + ")");
+            .attr("transform", "translate(" + (-cfg.w/2) + "," + (cfg.margin.top) + ")");
     var size = 20
     g_legend.selectAll(".radarLegendIcons")
     .data(data)
     .enter()
     .append("rect")
         .attr("x", 200)
-        .attr("y", function(d,i){ return 0 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("y", function(d,i){ return 0 + cfg.lineSpace*i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
         .attr("width", size)
         .attr("height", size)
         .attr("rx", "20")
@@ -320,18 +321,19 @@ function RadarChart(id, data, options) {
     .enter()
     .append("text")
         .attr("x", 200 + size*1.1)
-        .attr("y", function(d,i){ return 0 + i*(size+5) + (size)}) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("y", function(d,i){ return 0 + cfg.lineSpace*i*(size+5) + (size)}) // 100 is where the first dot appears. 25 is the distance between dots
         .attr("class", "radarLegendLabels")
         .attr("id", function(d){
             // Convert judge name into id, append "_LABEL" to distinguish from their blob area id
             return d[0].name.replace(/\s/g, "_")  + "_LABEL";
         })
         .style("fill", function(d,i) { return cfg.color(i); })
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
         .text(function(d){
             return d[0].name; // Like creating allAxis, just use first element (should all be same name anyway)
         })
-        .attr("text-anchor", "left")
-        .style("alignment-baseline", "middle")
+        // .call(wrap, cfg.wrapWidth*2);
 
 
     /////////////////////////////////////////////////////////
