@@ -16,14 +16,14 @@ function RadarChart(id, data, options) {
         levels: 3,				//How many levels or inner circles should there be drawn
         maxValue: 0, 			//What is the value that the biggest circle will represent
         labelFactor: 1.25, 	//How much farther than the radius of the outer circle should the labels be placed
-        wrapWidth: 60, 		//The number of pixels after which a label needs to be given a new line
+        wrapWidth: 100, 		//The number of pixels after which a label needs to be given a new line
         opacityArea: 0.5, 	//The opacity of the area of the blob
         opacityAreaLow: 0.35, 	//The opacity of the area of the blob when another area is hovered over
         opacityAreaHigh: 0.7, 	//The opacity of the area of the blob when hovered over
         dotRadius: 8, 			//The size of the colored circles of each blog
         opacityCircles: 0.1, 	//The opacity of the circles of each blob
         strokeWidth: 2, 		//The width of the stroke around each blob
-        roundStrokes: false,	//If true the area and stroke will follow a round path (cardinal-closed)
+        roundStrokes: true,	//If true the area and stroke will follow a round path (cardinal-closed)
         color: d3.schemeCategory10	//Color function
     };
 
@@ -138,7 +138,7 @@ function RadarChart(id, data, options) {
     //Append the labels at each axis (issue area)
     axis.append("text")
         .attr("class", "legend")
-        .style("font-size", "11px")
+        .style("font-size", "14px")
         .attr("text-anchor", "middle")
         .attr("dy", "0.35em")
         .attr("x", function(d, i){ return rScale(maxValue * cfg.labelFactor) * Math.cos(angleSlice*i - Math.PI/2); })
@@ -157,7 +157,7 @@ function RadarChart(id, data, options) {
         .angle(function(d,i) {	return i*angleSlice; });
 
     if(cfg.roundStrokes) {
-        radarLine.curve(d3.curveLinearClosed); // curveCardinalClosed
+        radarLine.curve(d3.curveCardinalClosed); // curveLinearClosed
     }
 
     //Create a wrapper for the blobs
@@ -284,7 +284,7 @@ function RadarChart(id, data, options) {
     /////////////////////////////////////////////////////////
     ///////////////// NEW: Draw the Legend //////////////////
     /////////////////////////////////////////////////////////
-    //Append a g element
+    //Append another g element
     var g_legend = svg.append("g")
             .attr("transform", "translate(" + (cfg.w/2 + cfg.margin.right) + "," + (cfg.margin.top) + ")");
     var size = 20
@@ -296,6 +296,7 @@ function RadarChart(id, data, options) {
         .attr("y", function(d,i){ return 0 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
         .attr("width", size)
         .attr("height", size)
+        .attr("rx", "20")
         .style("fill", function(d,i) { return cfg.color(i); })
         .on("mouseover", function (d,i){
             //Dim all blobs
