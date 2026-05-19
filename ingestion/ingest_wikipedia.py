@@ -99,6 +99,7 @@ states = [
     "Illinois",
     "Indiana",
     "Iowa",
+    "Kansas",
     "Kentucky",
     "Louisiana",
     "Maine",
@@ -106,6 +107,7 @@ states = [
     "Massachusetts",
     "Michigan",
     "Minnesota",
+    "Mississippi",
     "Missouri",
     "Montana",
     "Nebraska",
@@ -121,11 +123,13 @@ states = [
     "Oregon",
     "Pennsylvania",
     "Rhode Island",
+    "South Carolina",
     "South Dakota",
     "Tennessee",
     "Texas",
     "Utah",
     "Vermont",
+    "Virginia",
     "Washington",
     "West Virginia",
     "Wisconsin",
@@ -241,12 +245,39 @@ def scrape_page(root, state, url, scraped_at):
     if table is None:
         raise ValueError(f"No matching table found for {url}")
 
-    # Extract just the header values
-    header_row = table.cssselect("tr th")
-    header = []
-    for th in header_row:
-        text = th.text_content().strip()
-        header.append(text)
+    # Extract just the header values, handle rowspan and colspan
+    header_rowspan_map = {}
+    final_header = {}
+
+    for tr in table.cssselect("tr"):
+        ths = tr.cssselect("th")
+        if not ths:
+            break  # stop at first data row
+
+        col_index = 0
+        for th in ths:
+            # Skip columns with rowspans from previous header rows
+            while col_index in header_rowspan_map:
+                remaining = header_rowspan_map[col_index]
+                if remaining == 1:
+                    del header_rowspan_map[col_index]
+                else:
+                    header_rowspan_map[col_index] = remaining - 1
+                col_index += 1
+
+            text = th.text_content().strip()
+            colspan = int(th.get("colspan", 1))
+            rowspan = int(th.get("rowspan", 1))
+
+            for c in range(colspan):
+                final_header[col_index + c] = text
+                if rowspan > 1:
+                    header_rowspan_map[col_index + c] = rowspan - 1
+
+            col_index += colspan
+
+    col_count = max(final_header.keys()) + 1
+    header = [final_header.get(i, "") for i in range(col_count)]
 
     # Make a data column for state and court name
     header.append("state")
@@ -256,26 +287,52 @@ def scrape_page(root, state, url, scraped_at):
 
     # Extract the table data
     rows = []
+
+    # Track active rowspans: {col_index: (remaining_rows, value)}
+    rowspan_map = {}
+
     for tr in table.cssselect("tr"):
         cells = tr.cssselect("td")
         if not cells:
             continue  # skip the header row
 
         row = []
+        col_index = 0
+
+        # Fill in any active rowspans before reading new cells
+        while col_index in rowspan_map:
+            remaining, value = rowspan_map[col_index]
+            row.append(value)
+            if remaining == 1:
+                del rowspan_map[col_index]
+            else:
+                rowspan_map[col_index] = (remaining - 1, value)
+            col_index += 1
+
         for td in cells:
-            ## need to handle merged cell
+            # Need to handle merged cell
             text = td.text_content().strip()
 
-            # detect colspan
-            colspan = td.get("colspan")
-            if colspan is None:
-                colspan = 1
-            else:
-                colspan = int(colspan)
+            rowspan = int(td.get("rowspan", 1))
+            colspan = int(td.get("colspan", 1))
 
-            # append the value colspan times
+            if rowspan > 1:
+                for c in range(colspan):
+                    rowspan_map[col_index + c] = (rowspan - 1, text)
+
             for _ in range(colspan):
                 row.append(text)
+                col_index += 1
+
+            # After placing this cell, fill in any rowspans that now apply
+            while col_index in rowspan_map:
+                remaining, value = rowspan_map[col_index]
+                row.append(value)
+                if remaining == 1:
+                    del rowspan_map[col_index]
+                else:
+                    rowspan_map[col_index] = (remaining - 1, value)
+                col_index += 1
 
         # Add given state for each row
         row.append(state)
