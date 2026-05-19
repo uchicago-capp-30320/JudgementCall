@@ -54,11 +54,13 @@ def command(self):
         prompt_path = Path(__file__).parent.parent.parent.parent.parent / "ingestion" / "prompt.txt"
         table_dic = produce_tables(new_cases, prompt_path, use_existing=False)
 
-        cases = table_dic["case_table"].reset_index().to_dict(orient="records")
+        cases = table_dic["case_table"].reset_index(drop=True).to_dict(orient="records")
         for case in cases:
             Case.objects.update_or_create(**case)
 
-        ind_opinions = table_dic["individual_opinion_table"].reset_index().to_dict(orient="records")
+        ind_opinions = (
+            table_dic["individual_opinion_table"].reset_index(drop=True).to_dict(orient="records")
+        )
         for ind_op in ind_opinions:
             IndividualOpinion.objects.update_or_create(**ind_op)
 
