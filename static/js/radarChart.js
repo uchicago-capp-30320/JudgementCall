@@ -252,9 +252,10 @@ function RadarChart(id, data, options) {
         .style("font-size", "2em")
         // .style("text-shadow", "2px 1px 1px black")
         .style("stroke", "black")
-        .style("stroke-width", "3px")
+        .style("stroke-width", "2px")
         .style("paint-order", "stroke fill")
-        .style("opacity", 0);
+        .style("opacity", 0)
+        .style("filter" , "url(#glow)");
 
     /////////////////////////////////////////////////////////
     ///////////////// NEW: Draw the Legend //////////////////
@@ -279,6 +280,7 @@ function RadarChart(id, data, options) {
             return "radarLegendIcon" + " " + `group-${i}`
         }) // For name reference to legend
         .style("fill", function(d,i) { return cfg.color(i); })
+        .style("filter" , "url(#glow)")
         .on("mouseover", function (d,i){
             handle_mouseover_fades(d,i);
         })
@@ -310,7 +312,7 @@ function RadarChart(id, data, options) {
         .on("mouseout", function(d,i){
             handle_mouseout_fades(d,i);
         });
-        // .call(wrap, cfg.wrapWidth*2);
+        //.call(wrap, cfg.wrapWidth*2); //Would be nice to line-wrap long names in legend
     const legendWidth = d3.select("#legendBBox")
         .node()
         .getBBox().width;
@@ -324,8 +326,6 @@ function RadarChart(id, data, options) {
         .style("stroke", "#CDCDCD")
         .style("fill-opacity", cfg.opacityCircles)
         .style("filter" , "url(#glow)")
-        // .attr("stroke", "grey")
-        // .attr("stroke-width", "1px")
         .lower(); //Draw below legend content; update rect width to actual text length
 
     /////////////////////////////////////////////////////////
