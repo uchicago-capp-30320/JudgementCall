@@ -8,24 +8,24 @@
 /////////////////////////////////////////////////////////
 
 function RadarChart(id, data, options) {
-    // Edit this cfg from the `options` arg passed in radar_test.html!
+    // cfg defaults for values NOT passed through `options` arg in radar_test.html!
     var cfg = {
-        w: 600,				//Width of the circle
-        h: 600,				//Height of the circle
+        w: 600,				    //Width of the circle
+        h: 600,				    //Height of the circle
         margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
-        legendRadarBuffer: 15, //Extra space between legend and radar
+        legendRadarBuffer: 15,  //Extra space between legend and radar
         levels: 3,				//How many levels or inner circles should there be drawn
         maxValue: 0, 			//What is the value that the biggest circle will represent
-        labelFactor: 1.33, 	//How much farther than the radius of the outer circle should the axis labels be placed
-        lineSpace: 1.2,     //Line spacing between legend items
+        labelFactor: 1.33, 	    //How much farther than the radius of the outer circle should the axis labels be placed
+        lineSpace: 1.2,         //Line spacing between legend items
         wrapWidth: 100, 		//The number of pixels after which a label needs to be given a new line
-        opacityArea: 0.5, 	//The base opacity of the area of the blob
+        opacityArea: 0.5, 	    //The base opacity of the area of the blob
         opacityAreaLow: 0.35, 	//The opacity of the area of the blob when another area is hovered over
         opacityAreaHigh: 0.7, 	//The opacity of the area of the blob when hovered over
         dotRadius: 8, 			//The size of the colored circles of each blog
         opacityCircles: 0.1, 	//The opacity of the circles of each blob
         strokeWidth: 2, 		//The width of the stroke around each blob
-        roundStrokes: true,	//If true the area and stroke will follow a round path (cardinal-closed)
+        roundStrokes: true,	    //If true the area and stroke will follow a round path (cardinal-closed)
         color: d3.schemeCategory10	//Color function
     };
 
@@ -48,6 +48,7 @@ function RadarChart(id, data, options) {
     var rScale = d3.scaleLinear()
         .range([0, radius])
         .domain([0, maxValue]);
+
     /////////////////////////////////////////////////////////
     //////////// Create the container SVG and g /////////////
     /////////////////////////////////////////////////////////
@@ -100,8 +101,8 @@ function RadarChart(id, data, options) {
         .attr("r", radius/2)
         .style("fill", "#00000005")
         .style("stroke", "#000000")
-        .style("stroke-width", "3")
-        .style("stroke-dasharray", "8 8")
+        .style("stroke-width", "2.5")
+        .style("stroke-dasharray", "10 10")
         .style("fill-opacity", 1.0)
         .style("filter" , "url(#glow)");
 
@@ -250,7 +251,6 @@ function RadarChart(id, data, options) {
         .attr("class", "tooltip")
         .style("pointer-events", "none")
         .style("font-size", "2em")
-        // .style("text-shadow", "2px 1px 1px black")
         .style("stroke", "black")
         .style("stroke-width", "2px")
         .style("paint-order", "stroke fill")
