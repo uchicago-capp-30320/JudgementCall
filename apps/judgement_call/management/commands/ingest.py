@@ -3,6 +3,7 @@
 import csv
 import pathlib
 import string
+import us
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
 from ingestion.ingest_courts import (
@@ -57,23 +58,65 @@ def command(self, data: str):
                     Court.objects.update_or_create(**court)
 
     if data == "cases":
-        with open("./data/prototype_cases.csv", encoding="utf-8") as file:
-            reader = csv.reader(file)
-            for row in reader:
-                headers = row
-                break
-            for row in reader:
-                case = dict(zip(case_model_cols, row))
-                case.pop("", None)
-                court_id = COURT_LOOKUP_LONG[case["state"]]
-                lookup_court = Court.objects.get(court_id=court_id)
-                case["court"] = lookup_court
-                case.pop("state", None)
-                case["decision_date"] = case["decision_date"].replace("/", "-")
-                print(case)
-                Case.objects.update_or_create(**case)
+        cases_created = 0
+
+        for state in us.STATES:
+            print(state.name)
+            state_case_path = pathlib.Path(f"./data/cases/{state.name}.csv")
+            print(f"{state.name} file found: {state_case_path.is_file()}")
+            court_id = COURT_LOOKUP_LONG[state.name]
+            lookup_court = Court.objects.get(court_id=court_id)
+
+            with open(state_case_path, encoding="utf-8") as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    headers = row
+                    break
+                for row in reader:
+                    row_dict = dict(zip(headers, row))
+                    case = build_case(row_dict)
+                    case["court"] = lookup_court
+                    # case["decision_date"] = case["decision_date"].replace("/", "-")
+                    print(case)
+                    case, created = Case.objects.update_or_create(**case)
+                    print(case, created)
+                    cases_created += created
+            print(f"Cases created: {cases_created}")
 
     if data == "individual-opinions":
+        opinions_created = 0
+
+        for state in us.STATES:
+            print(state.name)
+            state_opinion_path = pathlib.Path(f"./data/opinions/{state.name}.csv")
+            print(f"{state.name} file found: {state_opinion_path.is_file()}")
+            court_id = COURT_LOOKUP_LONG[state.name]
+            lookup_court = Court.objects.get(court_id=court_id)
+
+            with open(state_opinion_path, encoding="utf-8") as file:
+                reader = csv.reader(file)
+                for row in reader:
+                    headers = row
+                    break
+                for row in reader:
+                    row_dict = dict(zip(headers, row))
+                    # link to case
+                    case_id = row_dict["case_id"]
+                    lookup_case = Case.objects.get(case_id=case_id)
+                    # link to alias
+                    alias = standardize_alias(row_dict["name"])
+                    alias, found = Alias.objects.get_or_create(alias=alias, court=lookup_case.court)
+                    # create indop dict
+                    indop = build_indop(row_dict)
+                    indop["judge_alias"] = alias
+                    indop["case"] = lookup_case
+                    print(indop)
+                    indop, created = IndividualOpinion.objects.update_or_create(**indop)
+                    print(indop, created)
+                    opinions_created += created
+            print(f"Opinions created: {opinions_created}")
+
+        return
         with open("./data/prototype_individual_opinions.csv", encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
@@ -157,11 +200,11 @@ def command(self, data: str):
                     continue
 
 
+# HELPER FUNCTIONS
+
+
 def empty_string_to_none(value):
-    if value == "":
-        return None
-    else:
-        return value
+    return value if value != "" else None
 
 
 def standardize_alias(alias: str):
@@ -169,8 +212,41 @@ def standardize_alias(alias: str):
 
 
 def build_indop(row_dict: dict):
-    indop_keys = ["description", "ruling"]
-    return {k: v for k, v in row_dict.items() if k in indop_keys}
+    indop_fields = ["description", "ruling"]
+    return {k: v for k, v in row_dict.items() if k in indop_fields}
+
+
+def build_case(row_dict: dict):
+    case_fields = case_model_cols
+    return {k: v for k, v in row_dict.items() if k in case_fields}
+
+
+def build_tenure(row_dict: dict):
+    tenure_fields = [
+        "court",
+        "person",
+        "start_date",
+        "end_date",
+        "selection_type",
+        "ticket_party",
+        "appointer_name",
+        "appointer_party",
+        "chief_justice",
+    ]
+    return {k: v for k, v in row_dict.items() if k in tenure_fields}
+
+
+def build_person(row_dict: dict):
+    person_fields = [
+        "name",
+        "birth_date",
+        "gender",
+        "race",
+        "party_registration",
+        "professional_experience",
+        "law_school",
+    ]
+    return {k: v for k, v in row_dict.items() if k in person_fields}
 
 
 slri_race = {
@@ -216,8 +292,10 @@ def slri_selection_type_parse(slri_selection_type):
         return None
 
 
+indop_csv_cols = ["case_id", "name", "description", "ruling"]
+
 case_csv_cols = [
-    "",
+    # "",
     "case_id",
     "docket_no",
     "title",
@@ -244,11 +322,11 @@ case_csv_cols = [
 ]
 
 case_model_cols = [
-    "",
+    # "",
     "case_id",
     "docket_no",
     "case_title",
-    "state",
+    # "state",
     "decision_date",
     "case_type",
     "description",
