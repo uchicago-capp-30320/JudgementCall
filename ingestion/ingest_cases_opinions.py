@@ -7,6 +7,7 @@ from google.genai import types, errors
 import os
 import us
 import json
+import hashlib
 
 from pathlib import Path
 from datetime import datetime
@@ -84,15 +85,6 @@ class Case(BaseModel):
     judge_opinions: List[IndividualOpinion]
 
 
-def generate_case_id(docket_no, state, date, index):
-    docket_no = docket_no.replace(" ", "-")
-    state = "-".join(state.split(" "))
-    date = str(datetime.strptime(date, "%B %d, %Y"))[:10].replace("-", "/")
-    case_id = "_".join([docket_no, state, date, str(index)])
-
-    return case_id
-
-
 def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str):
     """
     Inputs:
@@ -167,7 +159,7 @@ def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: d
         print(f"Querying case no. {index + 1}: {row['title']}")
 
         pdf_link = row["opinion_link"]
-        case_id = generate_case_id(row["docket_no"], row["state"], row["date"], index)
+        case_id = row["case_id"]
 
         try:
             opinion_resp = read_opinion(pdf_link, model_id, client, prompt_start)
@@ -283,23 +275,19 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
     case_table = case_table | rights_enumerated_dict
 
     for index, row in case_df.iterrows():
-        title = row["title"]
-        case_type = row["type"]
         date = str(datetime.strptime(row["date"], "%B %d, %Y"))[:10]
 
-        case_id = generate_case_id(row["docket_no"], row["state"], row["date"], index)
-
-        if case_id not in case_dic:
+        if row["case_id"] not in case_dic:
             continue
 
         case_table["docket_no"].append(row["docket_no"])
         case_table["state"].append(row["state"])
         case_table["date"].append(date)
-        case_table["title"].append(title)
-        case_table["type"].append(case_type)
-        case_table["case_id"].append(case_id)
+        case_table["title"].append(row["title"])
+        case_table["type"].append(row["type"])
+        case_table["case_id"].append(row["case_id"])
 
-        response = case_dic[case_id]["response"]
+        response = case_dic[row["case_id"]]["response"]
         case_table["description"].append(response["issue_debate"])
         case_table["plaintiff_argument"].append(response["plaintiff_argument"])
         case_table["defendant_argument"].append(response["defendant_argument"])
@@ -318,6 +306,7 @@ def produce_tables(
     prompt_path: str,
     model_id: str = "gemini-2.5-flash",
     use_existing: bool = True,
+    write_on: bool = True,
 ):
     """
     Inputs:
@@ -353,13 +342,14 @@ def produce_tables(
             cases = state_case_table(court_cases, case_dic)
             opinions = state_opinion_table(case_dic)
 
-            file_path = Path(__file__).parent.parent / "data" / "cases" / (state + ".csv")
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            cases.to_csv(file_path, index=False)
+            if write_on:
+                file_path = Path(__file__).parent.parent / "data" / "cases" / (state + ".csv")
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                cases.to_csv(file_path, index=False)
 
-            file_path = Path(__file__).parent.parent / "data" / "opinions" / (state + ".csv")
-            file_path.parent.mkdir(parents=True, exist_ok=True)
-            opinions.to_csv(file_path, index=False)
+                file_path = Path(__file__).parent.parent / "data" / "opinions" / (state + ".csv")
+                file_path.parent.mkdir(parents=True, exist_ok=True)
+                opinions.to_csv(file_path, index=False)
 
         cases_list.append(cases)
         opinion_list.append(opinions)
@@ -367,15 +357,16 @@ def produce_tables(
         print(f"Ingested {len(cases)} cases for {state}")
 
     # Creating total tables
-    file_path = Path(__file__).parent.parent / "data" / "cases" / "total_cases.csv"
-    file_path.parent.mkdir(parents=True, exist_ok=True)
     total_cases = pd.concat(cases_list)
-    total_cases.to_csv(file_path, index=False)
-
-    file_path = Path(__file__).parent.parent / "data" / "opinions" / "total_opinions.csv"
-    file_path.parent.mkdir(parents=True, exist_ok=True)
     total_opinions = pd.concat(opinion_list)
-    total_opinions.to_csv(file_path, index=False)
+    if write_on:
+        file_path = Path(__file__).parent.parent / "data" / "cases" / "total_cases.csv"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        total_cases.to_csv(file_path, index=False)
+
+        file_path = Path(__file__).parent.parent / "data" / "opinions" / "total_opinions.csv"
+        file_path.parent.mkdir(parents=True, exist_ok=True)
+        total_opinions.to_csv(file_path, index=False)
 
     # Also write JSON metadata on this LLM batch run
     with open(prompt_path, "r") as prompt_file:
@@ -403,6 +394,8 @@ def produce_tables(
     meta_path.parent.mkdir(parents=True, exist_ok=True)
     with open(meta_path, "w") as md:
         json.dump(llm_run_metadata, md)
+
+    return {"case_table": total_cases, "individual_opinion_table": total_opinions}
 
 
 if __name__ == "__main__":

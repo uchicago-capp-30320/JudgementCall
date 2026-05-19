@@ -247,19 +247,17 @@ class Alias(models.Model):
     def matched(self):
         return self.tenure is not None
 
-    def find_matches(self, alias=None, last_word=False) -> list[Tenure]:
-        if not alias:
-            alias = self.alias
+    def find_matches(self, alias, num_words=None):
         court_tenures = Tenure.objects.filter(court=self.court)
         matches = {}
-        if not last_word:
-            for tenure in court_tenures:
-                name = self.standardize_name(tenure.person.name_canonical)
-                matches[tenure] = jaro_winkler_similarity(alias, name)
-        else:
-            for tenure in court_tenures:
-                name = self.standardize_name(tenure.person.name_canonical).split(" ")[-1]
-                matches[tenure] = jaro_winkler_similarity(alias, name)
+        for tenure in court_tenures:
+            standard_name = self.standardize_name(tenure.person.name_canonical)
+            if num_words is None:
+                matches[tenure] = jaro_winkler_similarity(standard_name, alias)
+            else:
+                name_portion = " ".join(standard_name.split(" ")[-num_words:]).strip()
+                matches[tenure] = jaro_winkler_similarity(name_portion, alias)
+
         return matches
 
     def match_tenure(self, update=False):
@@ -268,61 +266,57 @@ class Alias(models.Model):
             if self.matched:
                 return self.tenure
 
-        matches = self.find_matches()
+        # Compute matches with the standardized alias
+        standard_alias = self.standardize_alias(self.alias)
+        matches = self.find_matches(standard_alias)
 
+        # Handle situation where an alias has no matches
         if matches == {}:
             print(f"No names found: does {self.court} exist?")
             return self.tenure
+
+        # Extract top-matching tenure and the person's name
         top_match = max(matches, key=lambda k: matches[k])
-        print(f"best match: {top_match}, {matches[top_match]}")
+        top_match_standard_name = self.standardize_name(top_match.person.name_canonical)
 
-        top_match_lw = top_match.person.name_canonical.split(" ")[-1]
-        top_match_lw = self.standardize_name(top_match_lw)
-        main_alias_lw = self.standardize_alias(self.alias)
-        main_alias_lw = main_alias_lw.split(" ")[-1]
-
-        if matches[top_match] > 0.9:
-            # setting tenure to the top match
-            print("Matched through JW score")
+        # Save tenure if the standardized name and standardized alias are
+        # the exactly the same
+        if top_match_standard_name == standard_alias:
             self.tenure = top_match
             self.save()
 
-        elif top_match_lw == main_alias_lw:
-            print("Matched through last name")
+        # If the top-matching tenure has a 0.9+ JW score save the tenure
+        elif matches[top_match] > 0.9:
             self.tenure = top_match
             self.save()
 
         else:
-            try_alias = self.standardize_alias(self.alias)
-            try_alias_lw = try_alias.split(" ")[-1]
+            # If both of the conditions above fail, then reverse iterate
+            # through the terms of the standardized alias to match them with
+            # the corresponding terms in the standardized top-matching name
+            alias_terms = standard_alias.split(" ")
+            build_out_term = ""
 
-            if try_alias != self.alias:
-                print(f"rerunning with {try_alias}")
-                matches = self.find_matches(try_alias)
+            for i, term in reversed(list(enumerate(alias_terms))):
+                # Compute build out alias and build out top-matching name
+                build_out_term = " ".join([term, build_out_term]).strip()
+                matches = self.find_matches(build_out_term, num_words=i + 1)
                 top_match = max(matches, key=lambda k: matches[k])
+                build_out_name = " ".join(top_match.person.name_canonical.split(" ")[-i:]).strip()
 
-                top_match_lw = top_match.person.name_canonical.split(" ")[-1]
-                top_match_lw = self.standardize_name(top_match_lw)
-
-                matches_lw = self.find_matches(try_alias_lw, last_word=True)
-                top_match_last_word = max(matches_lw, key=lambda k: matches_lw[k])
-
-                print(f"best match: {top_match}, {matches[top_match]}")
-                if matches[top_match] > 0.9:
-                    # setting tenure to the top match
-                    print("Matched through JW score after retry")
+                # If the build out top-matching name and build out alias
+                # are the same, save the tenure
+                if build_out_name == build_out_term:
                     self.tenure = top_match
                     self.save()
+                    break
 
-                elif top_match_lw == try_alias_lw:
-                    print("Matched through last name after retry")
+                # If the build out top-matching name and build out alias
+                # have a 0.9+ JW score
+                elif matches[top_match] > 0.9:
                     self.tenure = top_match
                     self.save()
-
-                elif matches_lw[top_match_last_word] > 0.9:
-                    print("Matched through alternative last word JW score after retry")
-                    self.tenure = top_match_last_word
-                    self.save()
+                    break
 
         print(f"after: alias {self.alias}, tenure {self.tenure}")
         return self.tenure
