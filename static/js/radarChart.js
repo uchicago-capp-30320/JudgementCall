@@ -174,7 +174,7 @@ function RadarChart(id, data, options) {
         .append("path")
         .attr("class", function(d,i) {
             return "radarArea" + " " + `group-${i}`
-        }) // Group name reference for legend
+        }) // Group name: Reference for legend and dynamic highlighting
         .attr("d", function(d,i) { return radarLine(d); })
         .style("fill", function(d,i) { return cfg.color(i); })
         .style("fill-opacity", cfg.opacityArea)
@@ -272,13 +272,13 @@ function RadarChart(id, data, options) {
     .enter()
     .append("rect")
         .attr("x", 200 + nudge)
-        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5) }) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5) })
         .attr("width", size)
         .attr("height", size)
         .attr("rx", "5")
         .attr("class", function(d,i) {
             return "radarLegendIcon" + " " + `group-${i}`
-        }) // For name reference to legend
+        })
         .style("fill", function(d,i) { return cfg.color(i); })
         .style("filter" , "url(#glow)")
         .on("mouseover", function (d,i){
@@ -293,18 +293,17 @@ function RadarChart(id, data, options) {
     .enter()
     .append("text")
         .attr("x", nudge + 200 + size*1.1)
-        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5)}) //Position exactly to icon y
+        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5)}) //Position exactly to icon y...
         .attr("dy", "1em") //...then eek the text down by its own size so it's vertically center-aligned!
         .attr("class", function(d,i) {
             return "radarLegendLabel " + `group-${i}`
         })
         .attr("text-anchor", "left")
-        // .style("fill", function(d,i) { return cfg.color(i); })
         .style("fill", "#2c2c2c")
         .style("alignment-baseline", "middle")
         .style("font-size", "0.75em")
         .text(function(d){
-            return d[0].name; // Like creating allAxis, just use first element (should all be same name anyway)
+            return d[0].name; // Like creating allAxis, just use first element (should all be same judge name anyway)
         })
         .on("mouseover", function (d,i){
             handle_mouseover_fades(d,i);
@@ -326,7 +325,7 @@ function RadarChart(id, data, options) {
         .style("stroke", "#CDCDCD")
         .style("fill-opacity", cfg.opacityCircles)
         .style("filter" , "url(#glow)")
-        .lower(); //Draw below legend content; update rect width to actual text length
+        .lower(); //Draw below legend content; update rect width to fit actual text length
 
     /////////////////////////////////////////////////////////
     /////////////////// Helper Function /////////////////////
@@ -364,10 +363,7 @@ function RadarChart(id, data, options) {
     //that one to handle the if-thens of different opacities for radarArea, legendLabel, etc.
     //Handles opacity transitinos involved when hovering over chart elements
     function handle_mouseover_fades(d, i) {
-        //Dim all blobs
-        console.log("HERE");
-        console.log(i);
-        console.log(d);
+        //Dim all radar blobs
         d3.selectAll(".radarArea")
             .transition().duration(200)
             .style("fill-opacity", cfg.opacityAreaLow);
@@ -383,13 +379,13 @@ function RadarChart(id, data, options) {
         //.originalTarget vs. .explicitOriginalTarget? Latter selects both labels (bad)
         const this_class = d.originalTarget.attributes.class.nodeValue;
         const regex = /group-[\d]+/;
-        const this_group = this_class.match(regex)[0]; //.split(' ').at(-1);
+        const this_group = this_class.match(regex)[0];
         //Bring back the hovered-over blob
         console.log(this_group);
         d3.select(".radarArea" + "." + this_group)
             .transition().duration(200)
             .style("fill-opacity", cfg.opacityAreaHigh);
-        //Bring back the name label associated with the hovered-over blob
+        //Bring back the name label associated with the hovered-over blob.
         //When CSS selecting by multiple classes, no spaces between class names!
         d3.select(".radarLegendLabel" + "." + this_group)
             .transition().duration(200)
@@ -401,7 +397,7 @@ function RadarChart(id, data, options) {
     }
 
     function handle_mouseout_fades(d, i) {
-        //Bring every chart element back to full opacity
+        //Bring every chart element back to its normal opacity
         d3.selectAll(".radarArea")
             .transition().duration(200)
             .style("fill-opacity", cfg.opacityArea);
