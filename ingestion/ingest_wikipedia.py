@@ -10,6 +10,18 @@ import csv
 import pandas as pd
 import re
 from datetime import datetime, timezone
+from pathlib import Path
+
+# Path for data
+# Directory of the current script (ingestion/)
+BASE_DIR = Path(__file__).resolve().parent
+
+# Path to the data/ folder and make sure it exists
+DATA_DIR = BASE_DIR.parent / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
+# Final CSV path
+OUTPUT_CSV = DATA_DIR / "wikipedia.csv"
 
 # Constants for scraping
 ALLOWED_DOMAIN = "https://en.wikipedia.org/wiki/"
@@ -24,6 +36,7 @@ COLUMN_MAP = {
     "Start date": "start_date",
     "Joined": "start_date",
     "Term ends": "end_date",
+    "Term Ends": "end_date",
     "Mandatory retirement": "mandatory_retirement",
     "Chief term": "chief_term",
     "Chief": "chief_term",
@@ -31,7 +44,23 @@ COLUMN_MAP = {
     "Appointer": "appointer_name",
     "Appointed by": "appointer_name",
     "Law school": "law_school",
+    "Law School": "law_school",
 }
+
+# For scraping - choosing correct Wikipedia table
+REQUIRED_ANY = ["start", "start date", "joined"]
+REQUIRED_ALL = ["law school"]
+
+FORBIDDEN = [
+    "vacator",
+    "reason",
+    "vacancy date",
+    "replacing",
+    "image",
+    "active retirement",
+    "active start",
+    "active end",
+]
 
 # For dataframe - which columns we expect to see
 EXPECTED_COLUMNS = [
@@ -59,8 +88,10 @@ states = [
     "Alaska",
     "Arizona",
     "Arkansas",
+    "California",
     "Colorado",
     "Connecticut",
+    "Delaware",
     "Florida",
     "Georgia",
     "Hawaii",
@@ -68,24 +99,36 @@ states = [
     "Illinois",
     "Indiana",
     "Iowa",
+    "Kentucky",
+    "Louisiana",
+    "Maine",
+    "Maryland",
+    "Massachusetts",
     "Michigan",
     "Minnesota",
     "Missouri",
     "Montana",
+    "Nebraska",
     "Nevada",
     "New Hampshire",
     "New Jersey",
     "New Mexico",
+    "New York",
     "North Carolina",
     "North Dakota",
     "Ohio",
+    "Oklahoma",
+    "Oregon",
     "Pennsylvania",
     "Rhode Island",
     "South Dakota",
+    "Tennessee",
     "Texas",
     "Utah",
     "Vermont",
     "Washington",
+    "West Virginia",
+    "Wisconsin",
     "Wyoming",
 ]
 
@@ -147,6 +190,35 @@ def get_parse_html(url):
     return root
 
 
+def clean_header(text):
+    text = text.lower().strip()
+    text = re.sub(r"\[[^\]]*\]", "", text)  # remove footnotes [a], [1], etc.
+    text = text.replace("–", "-")
+    text = " ".join(text.split())
+    return text
+
+
+def is_correct_table(table):
+    # Extract and clean headers
+    headers = [clean_header(th.text_content()) for th in table.cssselect("tr th")]
+
+    header_text = " ".join(headers)
+
+    # Must contain at least one of REQUIRED_ANY
+    if not any(req in header_text for req in REQUIRED_ANY):
+        return False
+
+    # Must contain all REQUIRED_ALL
+    if not all(req in header_text for req in REQUIRED_ALL):
+        return False
+
+    # Must NOT contain any forbidden keyword
+    if any(bad in header_text for bad in FORBIDDEN):
+        return False
+
+    return True
+
+
 def scrape_page(root, state, url, scraped_at):
     """
     Given the html text of a page, extract the info from the table of judges.
@@ -157,7 +229,17 @@ def scrape_page(root, state, url, scraped_at):
     page_title = page_title.replace(" - Wikipedia", "")
 
     # Get the entire table, headers (th) and data (td)
-    table = root.cssselect("table.wikitable.sortable tbody")[0]
+    # May be multiple tables depending on page
+    tables = root.cssselect("table.wikitable.sortable tbody")
+
+    table = None
+    for t in tables:
+        if is_correct_table(t):
+            table = t
+            break
+
+    if table is None:
+        raise ValueError(f"No matching table found for {url}")
 
     # Extract just the header values
     header_row = table.cssselect("tr th")
@@ -216,7 +298,7 @@ def run_scraper(state, path):
 ########## CLEANING/EXTRACTION OF SCRAPED DATA ##########
 
 
-def extract_name_and_chief_status(raw_name, seat_value=None):
+def extract_name_and_chief_status(raw_name, seat_value=None, position_value=None):
     # Normalize raw_name
     if raw_name is None:
         return None, False
@@ -231,34 +313,39 @@ def extract_name_and_chief_status(raw_name, seat_value=None):
     if name_lower == "vacant":
         return None, False
 
-    # Detect chief justice from name
+    # Find chief justice from name
     is_chief_from_name = "chief justice" in name_lower
 
-    # Detect vice chief justice (should not count as chief justice)
+    # Find titles with chief justice but should not count as chief justice
     is_vice_chief = "vice chief justice" in name_lower
-
-    # Detect associate chief justice (should not count as chief justice)
     is_associate_chief = "associate chief justice" in name_lower
+    is_deputy_chief = "deputy chief justice" in name_lower
 
-    # Detect chief justice from seat/position column
+    # Find chief justice from seat/position column
     is_chief_from_seat = False
-    if seat_value:
-        seat_lower = str(seat_value).lower()
-        is_chief_from_seat = "chief justice" in seat_lower
+    for val in (seat_value, position_value):
+        if val:
+            lower = str(val).lower()
+            if "chief justice" in lower:
+                is_chief_from_seat = True
+                break
 
     # Combine rules
     is_chief = (
-        is_chief_from_name and not (is_vice_chief or is_associate_chief)
+        is_chief_from_name and not (is_vice_chief or is_associate_chief or is_deputy_chief)
     ) or is_chief_from_seat
 
     # Clean name
     cleaned = (
         name.replace("Vice Chief Justice", "")
         .replace("Associate Chief Justice", "")
+        .replace("Deputy Chief Justice", "")
         .replace("Chief Justice", "")
         .replace("Presiding Justice", "")
+        .replace("Vice Presiding Judge", "")
         .replace("Presiding Judge", "")
         .replace("Senior Associate Justice", "")
+        .replace("Justice pro tempore", "")
         .replace(",", "")
         .strip()
     )
@@ -317,21 +404,23 @@ def normalize_df(df, state, path):
             df[col] = None
 
     # Clean name and detect chief justice status
-    df["person_clean"], df["chief_justice"] = zip(
+    df["name_clean"], df["chief_justice"] = zip(
         *df.apply(
             lambda row: extract_name_and_chief_status(
-                raw_name=row.get("name"), seat_value=row.get("Seat") or row.get("Position")
+                raw_name=row.get("name"),
+                seat_value=row.get("Seat"),
+                position_value=row.get("Position"),
             ),
             axis=1,
         )
     )
 
     # Remove vacancies
-    df = df[df["person_clean"].notna()]
+    df = df[df["name_clean"].notna()]
 
     # Replace person column with cleaned version
-    df["name"] = df["person_clean"]
-    df = df.drop(columns=["person_clean"])
+    df["name"] = df["name_clean"]
+    df = df.drop(columns=["name_clean"])
 
     # Extract appointer name and party
     df["appointer_name"], df["appointer_party"] = zip(*df["appointer_name"].apply(split_appointer))
@@ -360,6 +449,8 @@ def normalize_df(df, state, path):
 
 
 ########## RUNNING SCRAPER ##########
+
+
 def make_path(state):
     fix = state.replace(" ", "_")
     return f"{fix}_Supreme_Court"
@@ -368,9 +459,14 @@ def make_path(state):
 def main():
     states_to_scrape = {state: [make_path(state)] for state in states}
 
+    # Adding in states with slightly different urls
     states_to_scrape["Georgia"] = ["Supreme_Court_of_Georgia_(U.S._state)"]
-
+    states_to_scrape["Maine"] = ["Maine_Supreme_Judicial_Court"]
     states_to_scrape["Texas"] = ["Supreme_Court_of_Texas", "Texas_Court_of_Criminal_Appeals"]
+    states_to_scrape["Massachusetts"] = ["Massachusetts_Supreme_Judicial_Court"]
+    states_to_scrape["New York"] = ["New_York_Court_of_Appeals"]
+    states_to_scrape["Oklahoma"] = ["Oklahoma_Supreme_Court", "Oklahoma_Court_of_Criminal_Appeals"]
+    states_to_scrape["West Virginia"] = ["Supreme_Court_of_Appeals_of_West_Virginia"]
 
     all_dfs = []
 
@@ -391,7 +487,7 @@ def main():
 
     big_df = pd.concat(all_dfs, ignore_index=True)
 
-    big_df.to_csv("wikipedia.csv", index=False)
+    big_df.to_csv(OUTPUT_CSV, index=False)
 
 
 if __name__ == "__main__":
