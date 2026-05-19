@@ -263,7 +263,7 @@ class Alias(models.Model):
         verbose_name_plural = "Aliases"
 
     def __str__(self):
-        return f"{self.alias} ({self.court})"
+        return f"{self.tenure}: {self.alias} ({self.court})"
 
 
 class Case(models.Model):
