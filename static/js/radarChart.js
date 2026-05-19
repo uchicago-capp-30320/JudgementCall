@@ -250,12 +250,9 @@ function RadarChart(id, data, options) {
         .attr("class", "tooltip")
         .style("pointer-events", "none")
         .style("font-size", "2em")
-        .style("text-shadow", "2px 2px black")
-        // .style("filter", "drop-shadow(0px 0px 2em gray)")
-        // .style("box-shadow", "#ff2e2e 0px 0px 5px")
-        // .style("webkit-text-stroke", "2px black")
+        // .style("text-shadow", "2px 1px 1px black")
         .style("stroke", "black")
-        .style("stroke-width", "2px")
+        .style("stroke-width", "3px")
         .style("paint-order", "stroke fill")
         .style("opacity", 0);
 
@@ -274,10 +271,10 @@ function RadarChart(id, data, options) {
     .enter()
     .append("rect")
         .attr("x", 200 + nudge)
-        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5) }) // 100 is where the first dot appears. 25 is the distance between dots
         .attr("width", size)
         .attr("height", size)
-        .attr("rx", "20")
+        .attr("rx", "5")
         .attr("class", function(d,i) {
             return "radarLegendIcon" + " " + `group-${i}`
         }) // For name reference to legend
@@ -294,12 +291,14 @@ function RadarChart(id, data, options) {
     .enter()
     .append("text")
         .attr("x", nudge + 200 + size*1.1)
-        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5) + (size)}) // 0 is where the first dot appears. 25 is the distance between dots
+        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5)}) //Position exactly to icon y
+        .attr("dy", "1em") //...then eek the text down by its own size so it's vertically center-aligned!
         .attr("class", function(d,i) {
             return "radarLegendLabel " + `group-${i}`
         })
         .attr("text-anchor", "left")
-        .style("fill", function(d,i) { return cfg.color(i); })
+        // .style("fill", function(d,i) { return cfg.color(i); })
+        .style("fill", "#2c2c2c")
         .style("alignment-baseline", "middle")
         .style("font-size", "0.75em")
         .text(function(d){
