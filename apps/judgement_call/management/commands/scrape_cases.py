@@ -1,9 +1,11 @@
 import csv
-import pathlib
+from pathlib import Path
 import string
 import us
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
+from ingestion.ingest_cases_opinions import produce_tables, generate_case_id
+from ingestion.ingest_sc_cases import scrape_scdb
 from ingestion.ingest_courts import (
     MERGED_COURTS_PATH,
     COURT_LOOKUP_LONG,
@@ -38,16 +40,27 @@ app = Typer()
 @app.command()
 def command(self):
     # TODO: scrape State Case Database
-    # generate unique document IDs
+    all_current_cases = scrape_scdb(write_on=False)
+
     # check if any are new
     # eg new_cases = df[df["docket_id"].notin(all_cases)]
-    all_cases = [case["case_id"] for case in Case.objects.values("case_id")]
-    print(all_cases)
+    db_cases_ids = [case["case_id"] for case in Case.objects.values("case_id")]
+    new_cases = all_current_cases[~all_current_cases["case_id"].isin(db_cases_ids)]
+    print("New cases not in database:")
+    print(new_cases)
+
     # run LLM processing on new_cases
-    # case = {"case_id": , ...}
-    # case, updated = Case.objects.update_or_create(**case)
-    # indop = {"case": case, "judge_alias": , ...}
-    # indop, created = IndividualOpinion.objects.get_or_create(**indop)
+    if not new_cases.empty:
+        prompt_path = Path(__file__).parent.parent.parent.parent.parent / "ingestion" / "prompt.txt"
+        table_dic = produce_tables(new_cases, prompt_path, use_existing=False)
+
+        cases = table_dic["case_table"].reset_index().to_dict(orient="records")
+        for case in cases:
+            Case.objects.update_or_create(**case)
+
+        ind_opinions = table_dic["individual_opinion_table"].reset_index().to_dict(orient="records")
+        for ind_op in ind_opinions:
+            IndividualOpinion.objects.update_or_create(**ind_op)
 
 
 # HELPER FUNCTIONS

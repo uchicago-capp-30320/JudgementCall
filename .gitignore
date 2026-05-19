@@ -13,6 +13,9 @@ wheels/
 _staticfiles/
 _logs/
 db.sqlite3
+data/cases/total_cases.csv
+data/opinions/total_opinions.csv
+data/courts/courts_cl.csv
 
 # API keys
 apikeys.txt
