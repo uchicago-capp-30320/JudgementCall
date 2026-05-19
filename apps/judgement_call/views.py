@@ -21,14 +21,19 @@ from .models import (
     PersonRace,
     PartyAffiliation,
 )
-from datetime import date
+from datetime import date, datetime
+
+# from dateutil.relativedelta import relativedelta
 import random
 from faker import Faker
-from django.db.models import Q, Count, Sum, When, FloatField
-from django.core.paginator import Paginator
-from urllib.parse import urlparse
+
+# from django.db.models import Q, Count, Sum, When, FloatField
+# from django.core.paginator import Paginator
+# from urllib.parse import urlparse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+
+# comment to push
 
 
 def judges(request):
@@ -44,7 +49,8 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
-        "radar_data": get_radar_example_data(request),
+        # "radar_data": get_radar_example_data(request),
+        "button_name": "Find judges",
     }
 
     return render(request, "judges.html", context)
@@ -57,10 +63,36 @@ def get_counties(request, state):
     return JsonResponse(list(counties), safe=False)
 
 
+def judge_sort(judge_lst):
+    ordered_lst = []
+
+    for j in judge_lst:
+        if j["chief_justice"]:
+            chief_j = j
+        else:
+            if len(ordered_lst) == 0:
+                ordered_lst.append(j)
+            for i, sj in enumerate(ordered_lst):
+                if sj["name"] > j["name"]:
+                    ordered_lst.insert((i - 1), j)
+
+    return [chief_j] + ordered_lst
+
+
 def judges_state_county(request, state, county):
+    """
+    courts structure --
+    courts {
+        court_name: {
+            upcoming_election: T/F
+            judges: [judge1_dict, judge2_dict, judge3_dict...]
+        }
+    }
+    """
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+    elections_soon = get_upcoming_elections(local_courts_list)
     tenures = Tenure.objects.filter(court__in=local_courts_list)
     courts = {}
 
@@ -69,22 +101,34 @@ def judges_state_county(request, state, county):
         # when we get to a new court add it to the dict of courts.
         court_name = tenure.court.name
         if court_name not in courts:
-            courts[court_name] = []
+            courts[court_name] = {"judges": []}
+            if court_name in elections_soon:
+                courts[court_name]["upcoming_election"] = True
+            else:
+                courts[court_name]["upcoming_election"] = False
 
         # For each tenure associated with a court, add it to a list in that's
         # a value in the {court: [tenure_info, tenure_info]} type dict
-        courts[court_name].append(
+        courts[court_name]["judges"].append(
             {
                 "name": tenure.person.name_canonical,
-                "party_registration": tenure.person.party_registration,
+                "chief_justice": tenure.chief_justice,
+                "party_registration": tenure.person.party_registration.title(),
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
             }
         )
-    return render(
-        request, "judges_state_county.html", {"courts": courts, "state": state, "county": county}
-    )
+
+    # for c in courts.keys():
+    #     c["judges"] = judge_sort(c["judges"])
+
+    context = {
+        "courts": courts,
+        "state": state,
+        "county": county,
+    }
+    return render(request, "judges_state_county.html", context)
 
 
 def show_person(request, person_id):
@@ -94,11 +138,11 @@ def show_person(request, person_id):
     person_info = {
         "name": person.name_canonical,
         "birth_date": person.birth_date,
-        "gender": person.gender,
-        "race": person.race,
-        "party_registration": person.party_registration,
-        "professional_experience": person.professional_experience,
-        "law_school": person.law_school,
+        "gender": person.gender.title(),
+        "race": person.race.title(),
+        "party_registration": person.party_registration.title(),
+        "professional_experience": person.professional_experience.title(),
+        "law_school": person.law_school.title(),
     }
 
     person_tenures = []
@@ -108,10 +152,10 @@ def show_person(request, person_id):
                 "court": tenure.court.name,
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
-                "selection_type": tenure.selection_type,
-                "ticket_party": tenure.ticket_party,
-                "appointer_name": tenure.appointer_name,
-                "appointer_party": tenure.appointer_party,
+                "selection_type": tenure.selection_type.title(),
+                "ticket_party": tenure.ticket_party.title(),
+                "appointer_name": tenure.appointer_name.title(),
+                "appointer_party": tenure.appointer_party.title(),
                 "chief_justice": tenure.chief_justice,
             }
         )
@@ -144,14 +188,93 @@ def about(request):
 
 def elections(request):
     """Elections landing page."""
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        return elections_state_county(request, state, county)
+
     context = {
         "msg": "Pending",
         "header": "Elections",
         "preamble": """Informed voting is important. Please select your state
         and county to learn about any upcoming judicial elections.""",
+        "states": US_STATES,
+        "button_name": "Find Elections",
     }
 
-    return render(request, "dropdown.html", context)
+    return render(request, "elections.html", context)
+
+
+def get_candidate_info(can):
+    """helper for elections_state_county"""
+    # on_bench = check_incumbent(can, cour)
+    return {
+        "name": can.person.name_canonical,
+        "party_registration": can.person.party_registration,
+        "more_info": f"/people/{can.person.id}/",
+        # "incumbent": on_bench,
+    }
+
+
+def get_upcoming_elections(relevant_courts):
+    """
+    Takes in QSet of courts and returns those with nearest associated election date
+    """
+    next_event = (
+        Election.objects.filter(election_date__gte=datetime.now())
+        .order_by("election_date")
+        .values_list("election_date", flat=True)
+        .first()
+    )
+
+    if next_event:
+        return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
+
+    return Election.objects.none()
+
+
+def check_incumbent(candidate, court):
+    """Takes a candidate and T/F if currently sitting on election bench"""
+    tenures = Tenure.objects.filter(person=candidate.person)
+    been_judge = tenures.exists()
+    if been_judge:
+        today = datetime.now()
+        on_bench = tenures.filter(court=court, start_date__lte=today, end_date__gte=today)
+        if on_bench.exists():
+            return (True, on_bench)
+        else:
+            return (False, None)
+    else:
+        return (False, None)
+
+
+def elections_state_county(request, state, county):
+    # grab all the courts associated with a specific state / county
+    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+
+    # want to retrieve soonest elections
+    local_elections_list = get_upcoming_elections(local_courts_list)
+    elections = {
+        e.court.name: {
+            "date": e.election_date.strftime("%m-%d-%Y"),
+            "type": e.court.selection_method.title(),
+        }
+        for e in local_elections_list
+    }
+
+    # link a list of candidate objects to corresponding election
+    for e in local_elections_list:
+        candidates = Candidacy.objects.filter(election=e)
+        elections[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
+
+    context = {
+        "elections": elections,
+        "state": state,
+        "county": county,
+    }
+
+    return render(request, "elections_state_county.html", context)
 
 
 def candidates(request):
@@ -167,6 +290,11 @@ def analysis(request):
     """Elections landing page."""
     context = {
         "msg": "Pending!",
+        "header": "Analysis",
+        "preamble": "Apply filters to see judicial analytics.",
+        "states": US_STATES,
+        "radar_data": get_radar_example_data(request),
+        "button_name": """Generate Analytics""",
     }
 
     return render(request, "analysis.html", context)
@@ -451,8 +579,10 @@ def get_radar_example_data(request):
 
         cases_protected = cases.filter(**filter_protected_kwds)
         cases_relevant = cases.exclude(**exclude_na_kwds)
-
-        frac_protected = cases_protected.count() / cases_relevant.count()
+        try:
+            frac_protected = cases_protected.count() / cases_relevant.count()
+        except ZeroDivisionError:
+            frac_protected = 0
 
         resp[0].append({"axis": right, "value": frac_protected})
 

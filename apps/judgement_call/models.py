@@ -1,6 +1,11 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from datetime import date
 from localflavor.us.models import USStateField
+from django.db import connection
+import pandas as pd
+from jellyfish import jaro_winkler_similarity
+from string import punctuation
 
 
 # drop down types
@@ -126,21 +131,21 @@ class Person(models.Model):
     def __str__(self):
         return self.name_canonical
 
+    @property
+    def age(self):
+        if self.birth_date.year == 3000:
+            return None
+        else:
+            return years_since(self.birth_date)
 
-class Election(models.Model):
-    court = models.ForeignKey(Court, on_delete=models.PROTECT)
-    date = models.DateField()
-
-    def __str__(self):
-        return f"{self.date} election for {self.court}"
-
-
-class Candidacy(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    election = models.ForeignKey(Election, on_delete=models.CASCADE)
-
-    class Meta:
-        verbose_name_plural = "Candidacies"
+    @property
+    def current_tenure(self):
+        tenures = Tenure.objects.filter(
+            person=self, start_date__lte=date.today(), end_date__gte=date.today()
+        )
+        if len(tenures) > 1:
+            print("Warning! Current tenure lookup returned multiple tenures.")
+        return tenures
 
 
 class Tenure(models.Model):
@@ -157,6 +162,46 @@ class Tenure(models.Model):
     def __str__(self):
         return f"{self.person} - {self.court}"
 
+    @property
+    def tenure_length_to_date(self):
+        if self.start_date.year == 3000:
+            return None
+        return years_since(self.start_date)
+
+    @property
+    def tenure_length_remaining(self):
+        if self.end_date.year == 3000:
+            return None
+        return years_to(self.end_date)
+
+
+class Election(models.Model):
+    court = models.ForeignKey(Court, on_delete=models.PROTECT)
+    election_date = models.DateField()
+    incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT, null=True, blank=True)
+
+    def deduce_elections(self):
+        court_elections = Tenure.objects.values("id", "court_id", "end_date")
+        election_df = pd.DataFrame(list(court_elections))
+
+        for index, row in election_df.iterrows():
+            tenure = Tenure.objects.get(pk=row["id"])
+            court = Court.objects.get(pk=row["court_id"])
+            term_end = row["end_date"]
+            elect_date = term_end.replace(year=term_end.year - 1, month=11, day=5)
+            Election.objects.create(court=court, election_date=elect_date, incumbent=tenure)
+
+    def __str__(self):
+        return f"{self.election_date} election for {self.court}"
+
+
+class Candidacy(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name_plural = "Candidacies"
+
 
 class Alias(models.Model):
     alias = models.CharField()
@@ -164,6 +209,55 @@ class Alias(models.Model):
     tenure = models.ForeignKey(Tenure, on_delete=models.PROTECT, blank=True, null=True)
     # the court the case which generated the alias came from
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
+
+    @property
+    def matched(self):
+        return self.tenure is not None
+
+    def find_matches(self, alias=None) -> list[Tenure]:
+        if not alias:
+            alias = self.alias
+        court_tenures = Tenure.objects.filter(court=self.court)
+        matches = {}
+        for tenure in court_tenures:
+            name = self.standardize_name(tenure.person.name_canonical)
+            matches[tenure] = jaro_winkler_similarity(alias, name)
+        return matches
+
+    def match_tenure(self, update=False):
+        print(f"before: alias {self.alias}, tenure {self.tenure}")
+        if not update:
+            if self.matched:
+                return self.tenure
+        matches = self.find_matches()
+        if matches == {}:
+            print(f"No names found: does {self.court} exist?")
+            return self.tenure
+        top_match = max(matches, key=lambda k: matches[k])
+        print(f"best match: {top_match}, {matches[top_match]}")
+        if matches[top_match] > 0.9:
+            # setting tenure to the top match
+            self.tenure = top_match
+            self.save()
+        else:
+            try_alias = self.alias.replace("justice", "").replace(" j ", " ")
+            try_alias = try_alias.replace("senior", "").replace("chief", "")
+            if try_alias != self.alias:
+                print(f"rerunning with {try_alias}")
+                matches = self.find_matches(try_alias)
+                top_match = max(matches, key=lambda k: matches[k])
+                print(f"best match: {top_match}, {matches[top_match]}")
+                if matches[top_match] > 0.9:
+                    # setting tenure to the top match
+                    self.tenure = top_match
+                    self.save()
+
+        print(f"after: alias {self.alias}, tenure {self.tenure}")
+        return self.tenure
+
+    @staticmethod
+    def standardize_name(name: str):
+        return name.strip().lower().translate(str.maketrans("", "", punctuation))
 
     class Meta:
         verbose_name_plural = "Aliases"
@@ -213,3 +307,18 @@ class IndividualOpinion(models.Model):
 
     def __str__(self):
         return f"{self.judge_alias} - {self.case}"
+
+
+# Helper methods for calculating year diffs
+def years_since(date_field):
+    years_since = round((date.today() - date_field).days / 365.25)
+    if years_since < 0:
+        raise ValueError("date is not in the past!")
+    return years_since
+
+
+def years_to(date_field):
+    years_to = round((date_field - date.today()).days / 365.25)
+    if years_to < 0:
+        raise ValueError("date is not in the future!")
+    return years_to
