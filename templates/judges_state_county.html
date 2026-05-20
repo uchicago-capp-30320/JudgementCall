@@ -13,8 +13,8 @@ Judgement Call
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+    <!-- :opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200 -->
     <title>Judges near {{ county }}, {{ state }}</title>
     <style>
         .judge-card {
@@ -32,8 +32,11 @@ Judgement Call
 </head>
 
 <body>
-    <h1 style="display: none;">{{ courts }}</h1>
-    <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
+    <div class="below-nav-and-back">
+        <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
+        {% include "back-arrow.html" with fallback_url=fallback_url %}
+    </div>
+
     {% for court_name, details in courts.items %}
     <div class="collapsible-container">
         <div class="judge-collapsible-title">
@@ -75,6 +78,7 @@ Judgement Call
     {% empty %}
     <p>No courts found for {{ county }}, {{ state }}.</p>
     {% endfor %}
+    {% include "back.html" with fallback_url=fallback_url %}
     <script>
         document.querySelectorAll('.collapsible-container').forEach(function (container) {
             container.addEventListener('click', function () {

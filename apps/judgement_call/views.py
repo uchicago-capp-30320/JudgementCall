@@ -38,6 +38,7 @@ from faker import Faker
 # from django.db.models import Q, Count, Sum, When, FloatField
 # from django.core.paginator import Paginator
 # from urllib.parse import urlparse
+from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 
@@ -58,6 +59,7 @@ def judges(request):
         # "radar_data": get_radar_example_data(request),
         "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
+        "fallback_url": reverse("judgement_call:landing"),
     }
 
     return render(request, "judges.html", context)
@@ -149,8 +151,23 @@ def judges_state_county(request, state, county):
         "courts": courts,
         "state": state,
         "county": county,
+        "fallback_url": reverse("judgement_call:judges"),
     }
     return render(request, "judges_state_county.html", context)
+
+
+def court_full_view(request, court_id):
+    court = Court.objects.get(court_id=court_id)
+    judges = get_current_judges_for_court(court_id)
+
+    context = {
+        "court": court,
+        "court_name": court.name,
+        "gantt_data": court.gantt_json().text,
+        "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+    }
+
+    return render(request, "court.html", context)
 
 
 def show_person(request, person_id):
@@ -222,6 +239,7 @@ def elections(request):
         and county to learn about any upcoming judicial elections.""",
         "states": US_STATES,
         "button_name": "Find Elections",
+        "fallback_url": reverse("judgement_call:landing"),
     }
 
     return render(request, "elections.html", context)
@@ -279,7 +297,7 @@ def elections_state_county(request, state, county):
 
     # want to retrieve soonest elections
     local_elections_list = get_upcoming_elections(local_courts_list)
-    elections = {
+    elctions = {
         e.court.name: {
             "date": e.election_date.strftime("%m-%d-%Y"),
             "type": e.court.selection_method.title(),
@@ -290,12 +308,13 @@ def elections_state_county(request, state, county):
     # link a list of candidate objects to corresponding election
     for e in local_elections_list:
         candidates = Candidacy.objects.filter(election=e)
-        elections[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
+        elctions[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
 
     context = {
-        "elections": elections,
+        "elections": elctions,
         "state": state,
         "county": county,
+        "fallback_url": reverse("judgement_call:elections"),
     }
 
     return render(request, "elections_state_county.html", context)
@@ -377,6 +396,7 @@ def analysis(request):
         "state": court_id,
         "court_name": court_name,
         "gantt_data": gantt_data,
+        "fallback_url": reverse("judgement_call:landing"),
     }
 
     return render(request, "analysis.html", context)

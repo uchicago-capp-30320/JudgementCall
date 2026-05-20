@@ -165,6 +165,12 @@ footer {
     gap: 10px;
 }
 
+.below-nav-and-back {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 /* .sub-court-header {
     display: flex;
     align-items: center;
