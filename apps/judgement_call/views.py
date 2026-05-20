@@ -341,7 +341,7 @@ def elections_state_county(request, state, county):
         elections[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
 
     context = {
-        "elections": elctions,
+        "elections": elections,
         "state": state,
         "county": county,
         "fallback_url": reverse("judgement_call:elections"),
