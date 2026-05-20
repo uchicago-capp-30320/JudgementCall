@@ -27,6 +27,7 @@ def make_request(url):
         try:
             resp = curl_cffi.get(url, impersonate="chrome")
             if resp.status_code == 429:
+                print("Ran into 429 error, sleeping for 2.5 seconds")
                 time.sleep(2.5)
                 continue
             elif resp.status_code == 200:
@@ -209,6 +210,7 @@ def multi_page(start_url):
     print("Beginning webscraping of State Case Database...")
     page_num = 1
     while True:
+        time.sleep(2.5)
         page_info = scrape_page(url, rd)
 
         url = url_base + next_page_url(url)
@@ -250,8 +252,8 @@ def scrape_scdb(write_on=True):
     case_df = case_df[case_df["opinion_link"].str.contains("https", na=False)]
 
     # Handling duplicates and duplicate IDs
-    case_df = pd.DataFrame(case_df).drop_duplicates(keep=False).reset_index(drop=True)
-    handle_duplicate_id(case_df)
+    case_df = case_df.drop_duplicates(keep=False).reset_index(drop=True)
+    handle_duplicate_id(case_df, "case_id")
 
     # Writing csv file
     if write_on:
@@ -259,3 +261,7 @@ def scrape_scdb(write_on=True):
         case_df.to_csv(path, index=False)
 
     return case_df
+
+
+if __name__ == "__main__":
+    scrape_scdb()

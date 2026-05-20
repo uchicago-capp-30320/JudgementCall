@@ -15,9 +15,6 @@ from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional, TypedDict, get_type_hints
 
-cases_path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
-case_df = pd.read_csv(cases_path)
-
 QUERY_TIMES = []
 SKIPS = {"case_id": [], "num_skips": 0}
 
@@ -264,6 +261,7 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
         "state": [],
         "date": [],
         "type": [],
+        "opinion_link": [],
         "description": [],
         "plaintiff_argument": [],
         "defendant_argument": [],
@@ -285,6 +283,7 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
         case_table["date"].append(date)
         case_table["title"].append(row["title"])
         case_table["type"].append(row["type"])
+        case_table["opinion_link"].append(row["opinion_link"])
         case_table["case_id"].append(row["case_id"])
 
         response = case_dic[row["case_id"]]["response"]
@@ -399,6 +398,9 @@ def produce_tables(
 
 
 if __name__ == "__main__":
+    cases_path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
+    case_df = pd.read_csv(cases_path)
+
     prompt_path = Path(__file__).parent.parent / "ingestion" / "prompt.txt"
 
     start = datetime.now()
