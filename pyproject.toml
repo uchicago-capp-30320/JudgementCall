@@ -36,6 +36,7 @@ dependencies = [
     "typer>=0.25.1",
     "us>=3.2.0",
     "whitenoise>=6.9.0,<7",
+    "typer==0.11.1",
     "curl-cffi>=0.15.0",
 ]
 
