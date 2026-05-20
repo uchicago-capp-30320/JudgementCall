@@ -700,6 +700,12 @@ def get_individual_opinions_for_radar(
         This format plugs right into radarChart.js for any number
         of justices and rights.
     """
+    # ERROR: My query duplicates judges with multiple aliases (there are many)
+
+    # TO REMOVE (only allow 2 judges as input at a time so
+    # there is enough data overlap to build radar)
+    persons = persons[:2]
+
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
     case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-12:]
@@ -707,7 +713,7 @@ def get_individual_opinions_for_radar(
         IndividualOpinion.objects.filter(
             judge_alias__tenure__person__name_canonical__in=persons
         ).filter(case__court__court_id=court_id)
-    ).values("judge_alias", "ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
+    ).values("ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
 
     # Transform those individual opinions into protected percentages and infringed percentages,
     # grouped by judge (person). This is "Stat option 2".
@@ -742,7 +748,7 @@ def get_individual_opinions_for_radar(
 
     pro_right_avgs_by_judge = (
         indops.annotate(**right_avgs_by_judge_kwargs)
-        .values("judge_alias", "judge_alias__tenure__person__name_canonical")
+        .values("judge_alias__tenure__person__name_canonical")
         .annotate(**pro_right_kwargs)
     )
 
@@ -753,7 +759,11 @@ def get_individual_opinions_for_radar(
     # For now, drop a right (axis) if EITHER judge has not ruled on a related case
     data_for_radar = [
         [
-            {"axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "), "value": val}
+            {
+                "axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "),
+                "value": val,
+                "name": judge_dict["judge_alias__tenure__person__name_canonical"],
+            }
             for key, val in judge_dict.items()
             if key.endswith("__avg")
         ]
@@ -779,6 +789,7 @@ def get_individual_opinions_for_radar(
         for judge_list in data_for_radar
     ]
 
+    # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
     return data_for_radar_dropmissing
 
 

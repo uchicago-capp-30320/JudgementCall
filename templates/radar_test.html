@@ -4,12 +4,11 @@
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
-<h3>Radar Chart: {{court_name}}</h3>
-
+<h3><i>Issue Area Scores:</i> How do your judges rule on the issues you care about?</h3>
 <p>
-    This radar chart shows the percent of the time that the Supreme Court
-    ruled to protect a handful of rights, only counting cases where the right
-    was a point of contention.
+    Select one or two judges and see how high they score at protecting your rights. If
+    your judge scores inside the <span class="dashed-underline">dashed circle</span>,
+    they tend to either <b><i>infringe or refuse to protect</i></b> that right.
 </p>
 
 <div class="radarChart"></div>
@@ -28,50 +27,21 @@
     //////////////////////// Set-Up //////////////////////////////
     //////////////////////////////////////////////////////////////
 
-    var margin = { top: 100, right: 100, bottom: 100, left: 100 },
+    var margin = { top: 100, right: 50, bottom: 100, left: 250 },
         width = Math.min(700, window.innerWidth - 10) - margin.left - margin.right,
-        height = Math.min(width, window.innerHeight - margin.top - margin.bottom - 20);
+        height = Math.min(width - 100, window.innerHeight - margin.top - margin.bottom - 20);
 
     //////////////////////////////////////////////////////////////
     ////////////////////////// Data //////////////////////////////
     //////////////////////////////////////////////////////////////
     const radar_data = JSON.parse(document.getElementById('radar_data').textContent);
-    var data = [
-        [//iPhone
-            { axis: "Battery Life", value: 0.22 },
-            { axis: "Brand", value: 0.28 },
-            { axis: "Contract Cost", value: 0.29 },
-            { axis: "Design And Quality", value: 0.17 },
-            { axis: "Have Internet Connectivity", value: 0.22 },
-            { axis: "Large Screen", value: 0.02 },
-            { axis: "Price Of Device", value: 0.21 },
-            { axis: "To Be A Smartphone", value: 0.50 }
-        ], [//Samsung
-            { axis: "Battery Life", value: 0.27 },
-            { axis: "Brand", value: 0.16 },
-            { axis: "Contract Cost", value: 0.35 },
-            { axis: "Design And Quality", value: 0.13 },
-            { axis: "Have Internet Connectivity", value: 0.20 },
-            { axis: "Large Screen", value: 0.13 },
-            { axis: "Price Of Device", value: 0.35 },
-            { axis: "To Be A Smartphone", value: 0.38 }
-        ], [//Nokia Smartphone
-            { axis: "Battery Life", value: 0.26 },
-            { axis: "Brand", value: 0.10 },
-            { axis: "Contract Cost", value: 0.30 },
-            { axis: "Design And Quality", value: 0.14 },
-            { axis: "Have Internet Connectivity", value: 0.22 },
-            { axis: "Large Screen", value: 0.04 },
-            { axis: "Price Of Device", value: 0.41 },
-            { axis: "To Be A Smartphone", value: 0.30 }
-        ]
-    ];
+
     //////////////////////////////////////////////////////////////
     //////////////////// Draw the Chart //////////////////////////
     //////////////////////////////////////////////////////////////
 
     var color = d3.scaleOrdinal()
-        .range(["#EDC951", "#CC333F", "#00A0B0"]);
+        .range(["#40B0A6", "#E1BE6A"]); // , "#009E73"
 
     var radarChartOptions = {
         w: width,
