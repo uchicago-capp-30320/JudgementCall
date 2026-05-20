@@ -9,6 +9,7 @@ import us
 import json
 import hashlib
 
+from ingest_sc_cases import scrape_scdb
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
@@ -19,8 +20,8 @@ QUERY_TIMES = []
 SKIPS = {"case_id": [], "num_skips": 0}
 
 
-# Manually enumerate rights here, but
-# programmatically create dataframe columns with these names later
+# Creating the data structure for Gemini output after analyzing a case
+# Create a dictionary enumerating the rights potentially affected by a case
 class RightsDict(BaseModel):
     environment: str = Field(
         description="The effect of the court's decision on environmental rights"
@@ -50,6 +51,7 @@ class RightsDict(BaseModel):
     worker_rights: str = Field(description="The effect of the court's decision on worker rights")
 
 
+# Create a dictionary for an individual opinion
 class IndividualOpinion(BaseModel):
     judge_name: str = Field(description="The full name of the judge giving an opinion.")
     ruling: str = Field(
@@ -60,6 +62,7 @@ class IndividualOpinion(BaseModel):
     )
 
 
+# Create a dictionary for a case containing the rights dictionary and individual opinion dictionary
 class Case(BaseModel):
     issue_debate: str = Field(
         description='A phrase starting with "Whether" that summarizes '
@@ -116,7 +119,12 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
                 },
             )
             structured_output = Case.model_validate_json(genai_resp.text).model_dump()
-
+            end = datetime.now()
+            time_diff = (end - start).total_seconds()
+            QUERY_TIMES.append(time_diff)
+            return structured_output
+        # Server errors with Gemini occur when a model is experiencing high
+        # demand. Pausing and waiting before querying again.
         except errors.ServerError as e:
             print("Ran into server error due to high demand")
             print(f"Waiting for {wait_time} seconds before calling again")
@@ -126,11 +134,6 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
             if wait_time > 60:
                 print("Wait time exceeds 1 minute")
                 raise e
-        end = datetime.now()
-        time_diff = (end - start).total_seconds()
-        QUERY_TIMES.append(time_diff)
-
-        return structured_output
 
 
 def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: dict):
@@ -160,7 +163,7 @@ def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: d
 
         try:
             opinion_resp = read_opinion(pdf_link, model_id, client, prompt_start)
-        except ValidationError:
+        except (ValidationError, errors.ClientError):
             message = f"{row['title']} - Skipped because LLM output"
             message += "did not follow enforced data structure"
             print(message)
@@ -311,10 +314,12 @@ def produce_tables(
     Inputs:
     - case_df: pd.DataFrame
     - prompt_path: str
+    - model_id: str
+    - use_existing: bool
+    - write_on: bool
 
     Outputs:
     - rd: dict
-    - llm_run_metadata: dict
 
     This function takes dataframes of cases and judges, and iterates state
     by state to iteratively create the opinion and case tables. Returns
@@ -324,8 +329,10 @@ def produce_tables(
     cases_list = []
     opinion_list = []
     cases_path = Path(__file__).parent.parent / "data" / "cases"
+    cases_path.mkdir(parents=True, exist_ok=True)
     case_files = [file.name.replace(".csv", "") for file in cases_path.iterdir()]
     opinions_path = Path(__file__).parent.parent / "data" / "opinions"
+    opinions_path.mkdir(parents=True, exist_ok=True)
     opinion_files = [file.name.replace(".csv", "") for file in opinions_path.iterdir()]
 
     for state in states:
@@ -398,14 +405,13 @@ def produce_tables(
 
 
 if __name__ == "__main__":
-    cases_path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
-    case_df = pd.read_csv(cases_path)
+    case_df = scrape_scdb()
 
     prompt_path = Path(__file__).parent.parent / "ingestion" / "prompt.txt"
 
     start = datetime.now()
     print("Getting cases and opinions...")
-    produce_tables(case_df, prompt_path, use_existing=False)
+    produce_tables(case_df, prompt_path, use_existing=True)
     end = datetime.now()
     time_diff = (end - start).total_seconds() / 60
     print(f"Ingestion complete after {round(time_diff, 2)} minutes.")

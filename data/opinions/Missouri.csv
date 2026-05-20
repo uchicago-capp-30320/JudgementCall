@@ -1,156 +1,141 @@
 case_id,name,description,ruling
-SC101581_Missouri_2026/05/12_2,Ginger K. Gooch,"Concurred, argued that the plain language of the Missouri Constitution does not provide for automatic suspension of a legislative act merely upon the filing of a referendum petition, but requires the signature requirement to be met and the petition to be certified as sufficient through the statutory process.",concur
-2516-CV29597_Missouri_2026/05/12_3,W. Brent Powell,"Concurred, argued that the appellants failed to demonstrate the 2025 Map clearly and undoubtedly violates the Missouri Constitution's requirements for compactness, contiguity, and equal population.",concur
-SC101412_Missouri_2026/03/24_27,Zel M. Fischer,"Concurred, argued that the Missouri Constitution only limits the General Assembly's plenary legislative power when expressly restrained, and article III, section 45's use of ""when"" does not mean ""only when"" but rather triggers an obligation to redistrict at least once per decade.",concur
-SC101412_Missouri_2026/03/24_27,"Powell, C.J.",Concurred with majority opinion.,concur
-SC101412_Missouri_2026/03/24_27,"Broniec, J.",Concurred with majority opinion.,concur
-SC101412_Missouri_2026/03/24_27,"Gooch, J.",Concurred with majority opinion.,concur
-SC101412_Missouri_2026/03/24_27,"Wilson, J.","Dissented, argued that article III, section 45 was intended to limit the General Assembly's authority to redistrict only ""when"" and ""how"" specified, implying a prohibition on mid-decade redistricting, and that the historical context and convention debates support this limitation.",dissent
-SC101412_Missouri_2026/03/24_27,"Ransom, J.","Dissented, concurred in the opinion of Wilson, J.",dissent
-SC101412_Missouri_2026/03/24_27,"Russell, J.","Dissented, concurred in the opinion of Wilson, J.",dissent
-SC100965_Missouri_2026/03/24_34,W. Brent Powell,"Concurred, argued that Appellants lacked standing to challenge HB 1878, thus the circuit court's alternative merits determination must be reversed.",concur
-SC100965_Missouri_2026/03/24_34,Broniec,Concurred with majority opinion.,concur
-SC100965_Missouri_2026/03/24_34,Gooch,Concurred with majority opinion.,concur
-SC100965_Missouri_2026/03/24_34,Russell,Concurred with majority opinion.,concur
-SC100965_Missouri_2026/03/24_34,Zel M. Fischer,"Concurred in result only, arguing that the parties proved organizational standing and the circuit court's judgment on the merits, finding HB 1878 constitutional, should be affirmed.",concur
-SC100965_Missouri_2026/03/24_34,Ransom,Concurred with the opinion of Judge Fischer.,concur
-SC100965_Missouri_2026/03/24_34,Wilson,Concurred with the opinion of Judge Fischer.,concur
-SC100997_Missouri_2026/03/24_35,Mary R. Russell,"Concurred, argued that the challenged provisions impermissibly restrict core political speech and are not narrowly tailored to any compelling state interest, thus violating the Missouri Constitution.",concur
-SC100997_Missouri_2026/03/24_35,"Powell, C.J.",Concurred with majority opinion,concur
-SC100997_Missouri_2026/03/24_35,"Wilson, J.",Concurred with majority opinion,concur
-SC100997_Missouri_2026/03/24_35,"Ransom, J.",Concurred with majority opinion,concur
-SC100997_Missouri_2026/03/24_35,Ginger K. Gooch,"Dissented, arguing that three of the challenged provisions in section 115.205.1 regulate non-expressive conduct and are constitutional under rational-basis review, while agreeing that the provision in section 115.279.2 is unconstitutional.",dissent
-SC100997_Missouri_2026/03/24_35,"Fischer, J.","Dissented, concurring in the opinion of Gooch, J.",dissent
-SC100997_Missouri_2026/03/24_35,"Broniec, J.","Dissented, concurring in the opinion of Gooch, J.",dissent
-WD88392_Missouri_2025/12/04_55,Janet Sutton,"Concurred, argued that HJR 73 met the single-subject rule but its ballot language was insufficient and unfair, requiring the court to certify new language.",concur
-WD88392_Missouri_2025/12/04_55,Thomas N. Chapman,Concurred with majority opinion.,concur
-WD88392_Missouri_2025/12/04_55,W. Douglas Thomson,Concurred with majority opinion.,concur
-SC101308_Missouri_2026/01/23_56,W. Brent Powell,"Concurred, argued that SB 22 violated the original purpose requirement of the Missouri Constitution because the amendment to section 526.010 was not germane to the bill's initial purpose related to ballot summaries, and the offending provision could not be severed.",concur
-SC100933_Missouri_2026/01/13_64,KELLY C. BRONIEC,"Concurred, argued that the SAFE Act and Medicaid ban are constitutionally valid under rational-basis review, as they classify based on age and medical use, serve a legitimate state interest in safeguarding minors, and do not infringe on fundamental rights.",concur
-SC100132_Missouri_2023/07/20_108,Paul C. Wilson,"Concurred, argued that the Attorney General's review power is limited to the legal content and form of fiscal note summaries, not the substance of the fiscal impact assessment.",concur
-SC100132_Missouri_2023/07/20_108,"Russell, C.J.",Concurred with majority opinion.,concur
-SC100132_Missouri_2023/07/20_108,"Powell, J.",Concurred with majority opinion.,concur
-SC100132_Missouri_2023/07/20_108,"Breckenridge, J.",Concurred with majority opinion.,concur
-SC100132_Missouri_2023/07/20_108,"Fischer, J.",Concurred with majority opinion.,concur
-SC100132_Missouri_2023/07/20_108,"Ransom, J.",Concurred with majority opinion.,concur
-SC100132_Missouri_2023/07/20_108,"Draper, J.",Not participating.,other
-SC100898_Missouri_2025/07/22_151,Mary R. Russell,"Concurred, argued that the plain language of the Missouri Constitution defines ""local government"" differently for incorporated and unincorporated areas, limiting a county's authority to impose the sales tax on non-medical marijuana to unincorporated areas only.",concur
-SC100898_Missouri_2025/07/22_151,"Powell, C.J.",Concurred with majority opinion.,concur
-SC100898_Missouri_2025/07/22_151,Ransom,Concurred with majority opinion.,concur
-SC100898_Missouri_2025/07/22_151,Wilson,Concurred with majority opinion.,concur
-SC100898_Missouri_2025/07/22_151,Broniec,Concurred with majority opinion.,concur
-SC100898_Missouri_2025/07/22_151,Gooch,Concurred with majority opinion.,concur
-SC100898_Missouri_2025/07/22_151,Zel. M Fischer,"Dissented, argued that the plain text of the Missouri Constitution defines a county as a ""local government"" in both incorporated and unincorporated areas, allowing counties to impose the three percent sales tax on recreational marijuana in incorporated areas within their borders.",dissent
-SC100876_Missouri_2025/04/29_198,Mary R. Russell,"Concurred, argued that the summary statement and fiscal note summary were not materially inaccurate or misleading and did not constitute an election irregularity sufficient to cast doubt on the election results, thus upholding Proposition A.",concur
-SC100876_Missouri_2025/04/29_198,Powell,Concurred with majority opinion.,concur
-SC100876_Missouri_2025/04/29_198,Fischer,Concurred with majority opinion.,concur
-SC100876_Missouri_2025/04/29_198,Wilson,Concurred with majority opinion.,concur
-SC100876_Missouri_2025/04/29_198,Broniec,Concurred with majority opinion.,concur
-SC100876_Missouri_2025/04/29_198,Gooch,Concurred with majority opinion.,concur
-SC100876_Missouri_2025/04/29_198,"Ransom, J.","Dissented, argued that the Court lacks original jurisdiction over election contests of this nature, but agreed with the dismissal of single subject and clear title claims for lack of jurisdiction.",dissent
-SC100742_Missouri_2024/09/20_306,Paul C. Wilson,Concurred with majority opinion.,concur
-SC100742_Missouri_2024/09/20_306,"Russell, C.J.",Concurred with majority opinion.,concur
-SC100742_Missouri_2024/09/20_306,"Ransom, J.",Concurred with majority opinion.,concur
-SC100742_Missouri_2024/09/20_306,W. Brent Powell,"Concurred, argued that section 116.050.2(2) applies only to constitutional provisions the proposed amendment would repeal, not statutes, and that the statute only requires identifying text explicitly sought to be repealed or modified, not impliedly affected provisions.",concur
-SC100742_Missouri_2024/09/20_306,Kelly C. Broniec,"Dissented, argued that Amendment 3 failed to comply with section 116.050.2(2) by not including all statutes and constitutional provisions that would be repealed by the measure, as the term ""repeal"" applies to both.",dissent
-SC100742_Missouri_2024/09/20_306,"Fischer, J.","Dissented, concurred with Judge Broniec's dissenting opinion.",dissent
-SC100742_Missouri_2024/09/20_306,"Gooch, J.","Dissented, concurred with Judge Broniec's dissenting opinion.",dissent
-SC100352_Missouri_2024/06/04_358,Zel M. Fischer,"Concurred, argued that the Governor has absolute constitutional discretion over clemency, a reprieve creates no rights and can be rescinded, and Williams has no due process right to the board of inquiry process.",concur
-SC99931_Missouri_2024/04/30_382,Paul C. Wilson,"Concurred, argued that the fiscal note summary was materially inaccurate and misleading, casting doubt on the election's validity, and ordered a new election.",concur
-SC99931_Missouri_2024/04/30_382,"Russell, CJ",Concurred with majority opinion.,concur
-SC99931_Missouri_2024/04/30_382,Powell,Concurred with majority opinion.,concur
-SC99931_Missouri_2024/04/30_382,"Broniec, JJ",Concurred with majority opinion.,concur
-SC99931_Missouri_2024/04/30_382,Ginger K. Gooch,"Concurred in part and dissented in part, argued that the Court has original jurisdiction based on stare decisis but fundamentally disagreed that Article VII, Section 5 of the Missouri Constitution grants the Court original jurisdiction for election contests involving constitutional amendments, believing it applies only to public officers.",other
-SC99931_Missouri_2024/04/30_382,"Fischer, J","Concurred in part and dissented in part, agreeing with Judge Gooch's separate opinion regarding the Court's original jurisdiction.",other
-SC99931_Missouri_2024/04/30_382,Robin Ransom,"Dissenting, argued that Lucas failed to file a verified petition within the statutory timeframe, did not meet the burden of proof to show the ballot title was insufficient or unfair, and believed the court lacked original jurisdiction to hear the contest.",dissent
-SC99966_Missouri_2024/02/14_445,W. Brent Powell,"Concurred, argued that the circuit court's judgment for Planned Parenthood must be affirmed because the State did not appeal the equal protection claim, providing an independent legal basis for the affirmation.",concur
-SC99966_Missouri_2024/02/14_445,"Russell, C.J.",Concurred with majority opinion.,concur
-SC99966_Missouri_2024/02/14_445,Ransom,Concurred with majority opinion.,concur
-SC99966_Missouri_2024/02/14_445,Wilson,Concurred with majority opinion.,concur
-SC99966_Missouri_2024/02/14_445,Broniec,Concurred with majority opinion.,concur
-SC99966_Missouri_2024/02/14_445,Gooch,Concurred with majority opinion.,concur
-SC99966_Missouri_2024/02/14_445,Zel M. Fischer,"Concurred, argued that article III, § 23 of the Missouri Constitution unambiguously exempts appropriation bills from the single subject requirement, and past decisions holding otherwise are incorrect.",concur
-No.-SC100277_Missouri_2024/02/14_458,KELLY C. BRONIEC,"Concurred, argued that the Senate Map is constitutional, that compactness takes priority over community preservation, that mathematical calculations are permissible for compactness, and that the appellants failed to prove the map unconstitutional or preserve their equal population claim.",concur
-No.-SC100277_Missouri_2024/02/14_458,"Russell, C.J.",Concurred with majority opinion.,concur
-No.-SC100277_Missouri_2024/02/14_458,Fischer,Concurred with majority opinion.,concur
-No.-SC100277_Missouri_2024/02/14_458,Ransom,Concurred with majority opinion.,concur
-No.-SC100277_Missouri_2024/02/14_458,Gooch,Concurred with majority opinion.,concur
-No.-SC100277_Missouri_2024/02/14_458,"Powell, J.","Dissented, argued that the appellants preserved their constitutional challenge, and that the Senate Map violates the Missouri Constitution by allowing population deviation greater than one percent for districts containing split communities and failing to preserve those communities, thereby diluting votes and improperly prioritizing compactness over equal population.",dissent
-No.-SC100277_Missouri_2024/02/14_458,"Wilson, J.","Dissented, argued that the Senate Map violates the Missouri Constitution by allowing population deviation greater than one percent for districts containing split communities and failing to preserve those communities, thereby diluting votes and improperly prioritizing compactness over equal population.",dissent
-2322-CC00120_Missouri_2024/06/14_460,Judge Jason M. Sengheiser,"Concurred, argued that the challenged abortion provisions, including the total abortion ban and the declaration that life begins at conception, do not violate the Missouri Constitution's Establishment Clauses, as the language is permissible and consistent with historical practices, and the determination of when life begins is not strictly a religious one.",concur
-SC99876_Missouri_2024/01/30_507,KELLY C. BRONIEC,"Concurred, delivering the opinion of the Court, which found that the unfunded mandate claim was sufficiently pleaded to survive a motion for judgment on the pleadings, but affirmed the constitutionality of SB 26 on all other points.",concur
-SC99876_Missouri_2024/01/30_507,"Russell, C.J.",Concurred with majority opinion.,concur
-SC99876_Missouri_2024/01/30_507,"Powell, J.",Concurred with majority opinion.,concur
-SC99876_Missouri_2024/01/30_507,"Fischer, J.",Concurred with majority opinion.,concur
-SC99876_Missouri_2024/01/30_507,"Ransom, J.",Concurred with majority opinion.,concur
-SC99876_Missouri_2024/01/30_507,"Wilson, J.",Concurred with majority opinion.,concur
-SC99876_Missouri_2024/01/30_507,"Gooch, J.",Did not participate in the decision.,other
-WD86595_Missouri_2023/10/31_521,Lisa White Hardwick,Concurred with majority opinion.,concur
-WD86595_Missouri_2023/10/31_521,"Edward R. Ardini, Jr.",Concurred with majority opinion.,concur
-WD86595_Missouri_2023/10/31_521,Thomas N. Chapman,Concurred with majority opinion.,concur
-SC100045_Missouri_2023/12/19_527,Paul C. Wilson,"Concurred, argued that TAFP HB 1606 violated the single subject requirement of the Missouri Constitution because section 67.2300, which addresses homelessness, was not germane to the bill's subject of ""political subdivisions,"" rendering the entire bill invalid.",concur
-SC100045_Missouri_2023/12/19_527,"Russell, C.J.",Concurred with majority opinion.,concur
-SC100045_Missouri_2023/12/19_527,"Powell, J.",Concurred with majority opinion.,concur
-SC100045_Missouri_2023/12/19_527,"Fischer, J.",Concurred with majority opinion.,concur
-SC100045_Missouri_2023/12/19_527,"Ransom, J.",Concurred with majority opinion.,concur
-SC100045_Missouri_2023/12/19_527,"Broniec, J.",Concurred with majority opinion.,concur
-SC100045_Missouri_2023/12/19_527,"Gooch, J.",Not participating.,other
-SC99092_Missouri_2023/06/13_592,"Wilson, CJ",Concurred with majority opinion,concur
-SC99092_Missouri_2023/06/13_592,"Russell, J",Concurred with majority opinion,concur
-SC99092_Missouri_2023/06/13_592,"Ransom, J",Concurred with majority opinion,concur
-SC99092_Missouri_2023/06/13_592,"Draper, J",Concurred with majority opinion,concur
-SC99092_Missouri_2023/06/13_592,"Patricia Breckenridge, Judge","Dissented, argued that the principal opinion incorrectly construes Article IV, sections 40-44 in isolation, failing to consider other constitutional provisions that grant the General Assembly the power of appropriation and specify requirements for withdrawing money from the treasury.",dissent
-SC99092_Missouri_2023/06/13_592,"Powell, J",Concurred with the dissenting opinion of Judge Breckenridge.,dissent
-SC99092_Missouri_2023/06/13_592,"Fischer, J",Concurred with the dissenting opinion of Judge Breckenridge.,dissent
-SC99554_Missouri_2023/06/13_593,W. Brent Powell,"Concurred, argued that the jury instructions did not violate the right to a unanimous verdict because the evidence did not sufficiently distinguish between repeated acts of abuse to create a risk of non-unanimity.",concur
-SC99554_Missouri_2023/06/13_593,"Wilson, C.J.",Concurred with majority opinion.,concur
-SC99554_Missouri_2023/06/13_593,"Russell, J.",Concurred with majority opinion.,concur
-SC99554_Missouri_2023/06/13_593,"Fischer, J.",Concurred with majority opinion.,concur
-SC99554_Missouri_2023/06/13_593,"Ransom, J.",Concurred with majority opinion.,concur
-SC99554_Missouri_2023/06/13_593,"Breckenridge, J.","Dissented, argued that the circuit court erred by not requiring jury unanimity on specific criminal acts, as the evidence presented distinct acts of abuse, thereby violating the defendant's right to a unanimous verdict.",dissent
-SC99554_Missouri_2023/06/13_593,"Draper, J.","Dissented, concurred in the dissenting opinion of Breckenridge, J., arguing that the circuit court erred by not requiring jury unanimity on specific criminal acts.",dissent
-SC99794_Missouri_2023/05/16_615,W. Brent Powell,"Concurred, argued that the circuit court lacked authority to hold the clerk in contempt for failing to perform statutory administrative duties unrelated to the court's judicial function, as such action is not necessary for the proper functioning of the court.",concur
-SC98907_Missouri_2023/03/07_664,PATRICIA BRECKENRIDGE,"Concurred, delivering the majority opinion that found parts of the parking statutes unconstitutional for creating duties for municipal offices but held that these invalid provisions were severable from the rest of the statutes.",concur
-SC-99419_Missouri_2023/01/31_679,ROBIN RANSOM,"Concurred, argued that there was no irreconcilable conflict between the City's charter notice requirement and the cited state statutes, thus affirming the circuit court's judgment.",concur
-SC-99419_Missouri_2023/01/31_679,"Wilson, C.J.",Concurred with majority opinion,concur
-SC-99419_Missouri_2023/01/31_679,Russell,Concurred with majority opinion,concur
-SC-99419_Missouri_2023/01/31_679,Powell,Concurred with majority opinion,concur
-SC-99419_Missouri_2023/01/31_679,Breckenridge,Concurred with majority opinion,concur
-SC-99419_Missouri_2023/01/31_679,Draper,Concurred with majority opinion,concur
-SC-99419_Missouri_2023/01/31_679,Fischer,Concurred in result,concur
-SC-99179_Missouri_2022/10/04_729,W. Brent Powell,"Concurred, argued that SB 1007 mandates at-will employment for non-merit state employees, does not infringe on the constitutional right to bargain collectively or impair contracts, but that many PAB rules are unauthorized expansions of SB 1007.",concur
-SC99211_Missouri_2022/08/30_762,GEORGE W. DRAPER III,"Concurred, argued that section 565.091 is not overbroad, there was sufficient evidence to support the second-degree harassment conviction, and sentencing for both offenses did not violate double jeopardy.",concur
-SC-99007_Missouri_2022/04/05_856,W. Brent Powell,"Concurred, argued that the circuit court's application of the punitive damages cap did not violate All Star's right to a jury trial, and the reduced award did not violate HALO's due process rights.",concur
-SC-99007_Missouri_2022/04/05_856,"Wilson, C.J.",Concurred with majority opinion.,concur
-SC-99007_Missouri_2022/04/05_856,"Russell, J.",Concurred with majority opinion.,concur
-SC-99007_Missouri_2022/04/05_856,"Breckenridge, J.",Concurred with majority opinion.,concur
-SC-99007_Missouri_2022/04/05_856,"Fischer, J.",Concurred with majority opinion.,concur
-SC-99007_Missouri_2022/04/05_856,"Ransom, J.",Concurred with majority opinion.,concur
-SC-99007_Missouri_2022/04/05_856,"Draper, J.",Dissented with majority opinion.,dissent
-SC-98879_Missouri_2022/02/08_880,Mary R. Russell,"Concurred, argued that the challenged statutes unconstitutionally interfere with and impede the right of referendum by unreasonably shortening the timeframe for petition circulation.",concur
-SC-98879_Missouri_2022/02/08_880,"Wilson, C.J.",Concurred with majority opinion.,concur
-SC-98879_Missouri_2022/02/08_880,Breckenridge,Concurred with majority opinion.,concur
-SC-98879_Missouri_2022/02/08_880,Draper,Concurred with majority opinion.,concur
-SC-98879_Missouri_2022/02/08_880,Ransom,Concurred with majority opinion.,concur
-SC-98879_Missouri_2022/02/08_880,W. Brent Powell,"Dissented, argued that Challengers failed to demonstrate the statutes are facially invalid and that circumstances exist where the statutes could be applied constitutionally without impeding the right of referendum.",dissent
-SC-98879_Missouri_2022/02/08_880,Fischer,"Dissented, argued that Challengers failed to demonstrate the statutes are facially invalid and that circumstances exist where the statutes could be applied constitutionally without impeding the right of referendum.",dissent
-SC-98977_Missouri_2021/07/22_973,Zel M. Fischer,"Concurred, argued that medical negligence is a statutorily created cause of action, allowing the legislature to impose non-economic damage caps without violating the right to trial by jury.",concur
-SC-98977_Missouri_2021/07/22_973,"Wilson, C.J.",Concurred with majority opinion.,concur
-SC-98977_Missouri_2021/07/22_973,"Russell, J.",Concurred with majority opinion.,concur
-SC-98977_Missouri_2021/07/22_973,"Powell, J.",Concurred with majority opinion.,concur
-SC-98977_Missouri_2021/07/22_973,"Breckenridge, J.",Concurred with majority opinion.,concur
-SC-98977_Missouri_2021/07/22_973,George W. Draper III,"Dissented, argued that the majority opinion allows the legislature to unconstitutionally limit the right to trial by jury by reclassifying common law medical malpractice as a statutory cause of action to re-impose caps previously struck down.",dissent
-SC-98977_Missouri_2021/07/22_973,"Ransom, J.",Did not participate in the decision.,other
-SC-98412_Missouri_2021/06/01_1015,Mary R. Russell,"Concurred, argued that the exemption of public safety labor organizations in HB 1413 violates equal protection and is not severable, thus the entire bill is void.",concur
-SC-98412_Missouri_2021/06/01_1015,"Draper, C.J.",Concurred with majority opinion.,concur
-SC-98412_Missouri_2021/06/01_1015,"Wilson, J.",Concurred with majority opinion.,concur
-SC-98412_Missouri_2021/06/01_1015,"Breckenridge, J.",Concurred with majority opinion.,concur
-SC-98412_Missouri_2021/06/01_1015,"Stith, Sr.J.",Concurred with majority opinion.,concur
-SC-98412_Missouri_2021/06/01_1015,W. Brent Powell,"Dissented, argued that the public safety exemption is constitutional and does not violate equal protection, therefore HB 1413 should not be invalidated.",dissent
-SC-98412_Missouri_2021/06/01_1015,"Fischer, J.","Dissented, concurred with Judge Powell's dissenting opinion.",dissent
-SC-97653_Missouri_2021/04/20_1038,Patricia Breckenridge,"Concurred, argued that a rational basis supports the classification scheme of the challenged statutes, the fee is not a tax on Crestwood residents, and section 72.418.2 does not create an unfunded mandate.",concur
-SC-97653_Missouri_2021/04/20_1038,"Draper, C.J.",Concurred with majority opinion.,concur
-SC-97653_Missouri_2021/04/20_1038,Wilson,Concurred with majority opinion.,concur
-SC-97653_Missouri_2021/04/20_1038,Russell,Concurred with majority opinion.,concur
-SC-97653_Missouri_2021/04/20_1038,Powell,Concurred with majority opinion.,concur
-SC-97653_Missouri_2021/04/20_1038,Fischer,Concurred with majority opinion.,concur
+SC101581_Missouri_2026/05/12,Ginger K. Gooch,"Concurred, argued that the plain language of the Missouri Constitution does not provide for automatic suspension of a legislative act merely upon the filing of a referendum petition; rather, a petition must be legal, sufficient, and timely, which is determined through a certification process.",concur
+2516-CV29597_Missouri_2026/05/12,W. Brent Powell,"Concurred, argued that the Appellants failed to demonstrate that the 2025 Map clearly and undoubtedly violates the Missouri Constitution's requirements for compactness, contiguity, and equal population.",concur
+SC101412_Missouri_2026/03/24,Zel M. Fischer,"Concurred, argued that the Missouri Constitution only limits the General Assembly's plenary legislative power when expressly restrained, and article III, section 45's use of ""when"" does not mean ""only when"" but rather triggers an obligation to redistrict at least once per decade.",concur
+SC101412_Missouri_2026/03/24,"Powell, C.J.",Concurred with majority opinion.,concur
+SC101412_Missouri_2026/03/24,"Broniec, J.",Concurred with majority opinion.,concur
+SC101412_Missouri_2026/03/24,"Gooch, J.",Concurred with majority opinion.,concur
+SC101412_Missouri_2026/03/24,"Wilson, J.","Dissented, argued that article III, section 45 was intended to limit the General Assembly's authority to redistrict only ""when"" and ""how"" specified, implying a prohibition on mid-decade redistricting, and that the historical context and convention debates support this limitation.",dissent
+SC101412_Missouri_2026/03/24,"Ransom, J.","Dissented, concurred in the opinion of Wilson, J.",dissent
+SC101412_Missouri_2026/03/24,"Russell, J.","Dissented, concurred in the opinion of Wilson, J.",dissent
+WD88392_Missouri_2025/12/04,Janet Sutton,"Concurred, argued that the summary statement and fair ballot language for HJR 73 were insufficient and unfair, requiring revisions to accurately inform voters about the repeal of existing reproductive rights and the imposition of new restrictions.",concur
+WD88392_Missouri_2025/12/04,"Thomas N. Chapman, P.J.",Concurred with majority opinion.,concur
+WD88392_Missouri_2025/12/04,"W. Douglas Thomson, J.",Concurred with majority opinion.,concur
+SC101308_Missouri_2026/01/23,W. Brent Powell,"Concurred, argued that SB 22 violated the Missouri Constitution's original purpose requirement because the amendment to section 526.010 was not germane to the bill's original purpose, and the offending provision could not be severed, leading to the invalidation of the entire bill.",concur
+SC100933_Missouri_2026/01/13,KELLY C. BRONIEC,"Concurred, argued that the SAFE Act and Medicaid ban are constitutionally valid under rational-basis review, as they classify based on age and medical use, serve a legitimate state interest in safeguarding minors, and do not infringe on fundamental rights.",concur
+SC100132_Missouri_2023/07/20,Paul C. Wilson,"Concurred, argued that the Attorney General's review power is limited to the legal content and form of fiscal note summaries, not the substance of the fiscal impact assessment.",concur
+SC100132_Missouri_2023/07/20,"Russell, C.J.",Concurred with majority opinion.,concur
+SC100132_Missouri_2023/07/20,"Powell, J.",Concurred with majority opinion.,concur
+SC100132_Missouri_2023/07/20,"Breckenridge, J.",Concurred with majority opinion.,concur
+SC100132_Missouri_2023/07/20,"Fischer, J.",Concurred with majority opinion.,concur
+SC100132_Missouri_2023/07/20,"Ransom, J.",Concurred with majority opinion.,concur
+SC100132_Missouri_2023/07/20,"Draper, J.",Not participating.,other
+SC100898_Missouri_2025/07/22,Mary R. Russell,"Concurred, argued that the plain language of the Missouri Constitution defines 'local government' differently for incorporated and unincorporated areas, meaning counties cannot impose a sales tax on non-medical marijuana in incorporated areas.",concur
+SC100898_Missouri_2025/07/22,"Powell, C.J.",Concurred with majority opinion.,concur
+SC100898_Missouri_2025/07/22,Ransom,Concurred with majority opinion.,concur
+SC100898_Missouri_2025/07/22,Wilson Broniec,Concurred with majority opinion.,concur
+SC100898_Missouri_2025/07/22,Gooch,Concurred with majority opinion.,concur
+SC100898_Missouri_2025/07/22,"Fischer, J.","Dissented, argued that the plain text of the Missouri Constitution defines a county as a 'local government' in both incorporated and unincorporated areas, allowing counties to impose the sales tax in incorporated areas.",dissent
+SC100876_Missouri_2025/04/29,Mary R. Russell,"Concurred, argued that the summary statement and fiscal note summary were not insufficient or unfair, and the contestants failed to demonstrate an election irregularity sufficient to cast doubt on the election's validity.",concur
+SC100876_Missouri_2025/04/29,Powell,Concurred with majority opinion.,concur
+SC100876_Missouri_2025/04/29,Fischer,Concurred with majority opinion.,concur
+SC100876_Missouri_2025/04/29,Wilson,Concurred with majority opinion.,concur
+SC100876_Missouri_2025/04/29,Broniec,Concurred with majority opinion.,concur
+SC100876_Missouri_2025/04/29,Gooch,Concurred with majority opinion.,concur
+SC100876_Missouri_2025/04/29,"Ransom, J.","Dissented, argued that the Court lacks original jurisdiction over election contests of this nature, but would have concurred with the principal opinion's conclusion on the ballot title's lack of irregularity if jurisdiction were assumed.",dissent
+SC100742_Missouri_2024/09/20,Paul C. Wilson,"Concurred, argued that the circuit court's legal conclusions were erroneous and Amendment 3 complies with constitutional and statutory requirements for initiative petitions.",concur
+SC100742_Missouri_2024/09/20,"Russell, C.J.",Concurred with majority opinion,concur
+SC100742_Missouri_2024/09/20,"Ransom, J.",Concurred with majority opinion,concur
+SC100742_Missouri_2024/09/20,"Powell, J.","Concurred, argued that section 116.050.2(2) applies only to constitutional provisions, not statutes, and only requires identifying explicitly repealed text, not implicitly affected laws, and that the circuit court erred in its interpretation.",concur
+SC100742_Missouri_2024/09/20,"Broniec, J.","Dissented, argued that Amendment 3 failed to comply with section 116.050.2(2) by not listing all statutes and constitutional provisions that would be repealed by the measure, and that a constitutional provision can repeal a statute.",dissent
+SC100742_Missouri_2024/09/20,Fischer,"Dissented, argued that Amendment 3 failed to comply with section 116.050.2(2) by not listing all statutes and constitutional provisions that would be repealed by the measure, and that a constitutional provision can repeal a statute.",dissent
+SC100742_Missouri_2024/09/20,"Gooch, J.J.","Dissented, argued that Amendment 3 failed to comply with section 116.050.2(2) by not listing all statutes and constitutional provisions that would be repealed by the measure, and that a constitutional provision can repeal a statute.",dissent
+SC100352_Missouri_2024/06/04,Zel M. Fischer,"Concurred, argued that the Governor has exclusive constitutional authority over clemency and can rescind a reprieve, and that Williams has no due process right to a board of inquiry process.",concur
+SC99931_Missouri_2024/04/30,Paul C. Wilson,"Concurred, argued that the fiscal note summary was materially inaccurate and misleading, casting doubt on the election's validity, and ordered a new election.",concur
+SC99931_Missouri_2024/04/30,"Russell, CJ",Concurred with majority opinion.,concur
+SC99931_Missouri_2024/04/30,Powell,Concurred with majority opinion.,concur
+SC99931_Missouri_2024/04/30,"Broniec, JJ",Concurred with majority opinion.,concur
+SC99931_Missouri_2024/04/30,Ginger K. Gooch,"Concurred in part and dissented in part, argued that the Court has original jurisdiction based on stare decisis but fundamentally disagreed that Article VII, Section 5 of the Missouri Constitution grants the Court original jurisdiction for election contests involving constitutional amendments, believing it applies only to public officers.",other
+SC99931_Missouri_2024/04/30,"Fischer, J","Concurred in part and dissented in part, agreeing with Judge Gooch's separate opinion regarding the Court's original jurisdiction.",other
+SC99931_Missouri_2024/04/30,Robin Ransom,"Dissenting, argued that Lucas failed to file a verified petition within the statutory timeframe, did not meet the burden of proof to show the ballot title was insufficient or unfair, and believed the court lacked original jurisdiction to hear the contest.",dissent
+SC99966_Missouri_2024/02/14,W. Brent Powell,"Concurred, argued that the circuit court's judgment for Planned Parenthood must be affirmed because the State did not appeal the equal protection claim, providing an independent legal basis for the affirmation.",concur
+SC99966_Missouri_2024/02/14,"Russell, C.J.",Concurred with majority opinion.,concur
+SC99966_Missouri_2024/02/14,Ransom,Concurred with majority opinion.,concur
+SC99966_Missouri_2024/02/14,Wilson,Concurred with majority opinion.,concur
+SC99966_Missouri_2024/02/14,Broniec,Concurred with majority opinion.,concur
+SC99966_Missouri_2024/02/14,Gooch,Concurred with majority opinion.,concur
+SC99966_Missouri_2024/02/14,Zel M. Fischer,"Concurred, argued that article III, § 23 of the Missouri Constitution unambiguously exempts appropriation bills from the single subject requirement, and past decisions holding otherwise are incorrect.",concur
+No.-SC100277_Missouri_2024/02/14,KELLY C. BRONIEC,"Concurred, argued that the Senate Map is constitutional, that compactness takes priority over community preservation, that mathematical calculations are permissible for compactness, and that the appellants failed to prove the map unconstitutional or preserve their equal population claim.",concur
+No.-SC100277_Missouri_2024/02/14,"Russell, C.J.",Concurred with majority opinion.,concur
+No.-SC100277_Missouri_2024/02/14,Fischer,Concurred with majority opinion.,concur
+No.-SC100277_Missouri_2024/02/14,Ransom,Concurred with majority opinion.,concur
+No.-SC100277_Missouri_2024/02/14,Gooch,Concurred with majority opinion.,concur
+No.-SC100277_Missouri_2024/02/14,"Powell, J.","Dissented, argued that the appellants preserved their constitutional challenge, and that the Senate Map violates the Missouri Constitution by allowing population deviation greater than one percent for districts containing split communities and failing to preserve those communities, thereby diluting votes and improperly prioritizing compactness over equal population.",dissent
+No.-SC100277_Missouri_2024/02/14,"Wilson, J.","Dissented, argued that the Senate Map violates the Missouri Constitution by allowing population deviation greater than one percent for districts containing split communities and failing to preserve those communities, thereby diluting votes and improperly prioritizing compactness over equal population.",dissent
+2322-CC00120_Missouri_2024/06/14,Judge Jason M. Sengheiser,"Concurred, argued that the challenged abortion provisions, including the total abortion ban and the declaration that life begins at conception, do not violate the Missouri Constitution's Establishment Clauses, as the language is permissible and consistent with historical practices, and the determination of when life begins is not strictly a religious one.",concur
+SC99876_Missouri_2024/01/30,KELLY C. BRONIEC,"Concurred, delivered the majority opinion.",concur
+SC99876_Missouri_2024/01/30,"Russell, C.J.",Concurred with majority opinion.,concur
+SC99876_Missouri_2024/01/30,"Powell, J.",Concurred with majority opinion.,concur
+SC99876_Missouri_2024/01/30,"Fischer, J.",Concurred with majority opinion.,concur
+SC99876_Missouri_2024/01/30,"Ransom, J.",Concurred with majority opinion.,concur
+SC99876_Missouri_2024/01/30,"Wilson, J.",Concurred with majority opinion.,concur
+SC99876_Missouri_2024/01/30,"Gooch, J.",Not participating.,other
+WD86595_Missouri_2023/10/31,Lisa White Hardwick,Concurred with majority opinion.,concur
+WD86595_Missouri_2023/10/31,"Edward R. Ardini, Jr.",Concurred with majority opinion.,concur
+WD86595_Missouri_2023/10/31,Thomas N. Chapman,"Concurred, arguing that the circuit court's judgment was affirmed in part and reversed in part, and certified alternative summary statements.",concur
+SC100045_Missouri_2023/12/19,Paul C. Wilson,"Concurred, argued that TAFP HB 1606 violated the single subject requirement of the Missouri Constitution by introducing the subject of homelessness, which was not germane to the bill's title of political subdivisions, thus invalidating the entire bill.",concur
+SC100045_Missouri_2023/12/19,"Russell, C.J.",Concurred with majority opinion,concur
+SC100045_Missouri_2023/12/19,"Powell, J.",Concurred with majority opinion,concur
+SC100045_Missouri_2023/12/19,"Fischer, J.",Concurred with majority opinion,concur
+SC100045_Missouri_2023/12/19,"Ransom, J.",Concurred with majority opinion,concur
+SC100045_Missouri_2023/12/19,"Broniec, J.",Concurred with majority opinion,concur
+SC100045_Missouri_2023/12/19,"Gooch, J.",Did not participate in the decision.,other
+SC99092_Missouri_2023/06/13,"Wilson, CJ",Concurred with majority opinion.,concur
+SC99092_Missouri_2023/06/13,"Russell, J",Concurred with majority opinion.,concur
+SC99092_Missouri_2023/06/13,"Ransom, J",Concurred with majority opinion.,concur
+SC99092_Missouri_2023/06/13,"Draper, J",Concurred with majority opinion.,concur
+SC99092_Missouri_2023/06/13,"PATRICIA BRECKENRIDGE, JUDGE","Dissented, argued that the principal opinion construes Article IV, sections 40-44 in isolation, contrary to prior holdings that the constitution must be read as a whole, and that the General Assembly's power of appropriation, including determining purposes, is not expressly limited by the conservation commission provisions.",dissent
+SC99092_Missouri_2023/06/13,"Powell, J","Dissented, argued that the principal opinion construes Article IV, sections 40-44 in isolation, contrary to prior holdings that the constitution must be read as a whole, and that the General Assembly's power of appropriation, including determining purposes, is not expressly limited by the conservation commission provisions.",dissent
+SC99092_Missouri_2023/06/13,"Fischer, J","Dissented, argued that the principal opinion construes Article IV, sections 40-44 in isolation, contrary to prior holdings that the constitution must be read as a whole, and that the General Assembly's power of appropriation, including determining purposes, is not expressly limited by the conservation commission provisions.",dissent
+SC99554_Missouri_2023/06/13,W. Brent Powell,"Concurred, argued that the jury instructions did not violate the right to a unanimous verdict because the evidence did not sufficiently distinguish between repeated acts of abuse to create a risk of non-unanimity.",concur
+SC99554_Missouri_2023/06/13,"Wilson, C.J.",Concurred with majority opinion.,concur
+SC99554_Missouri_2023/06/13,"Russell, J.",Concurred with majority opinion.,concur
+SC99554_Missouri_2023/06/13,"Fischer, J.",Concurred with majority opinion.,concur
+SC99554_Missouri_2023/06/13,"Ransom, J.",Concurred with majority opinion.,concur
+SC99554_Missouri_2023/06/13,"Breckenridge, J.","Dissented, argued that the circuit court erred by not requiring jury unanimity on specific criminal acts, as the evidence presented distinct acts of abuse, thereby violating the defendant's right to a unanimous verdict.",dissent
+SC99554_Missouri_2023/06/13,"Draper, J.","Dissented, concurred in the dissenting opinion of Breckenridge, J., arguing that the circuit court erred by not requiring jury unanimity on specific criminal acts.",dissent
+SC99794_Missouri_2023/05/16,W. Brent Powell,"Concurred, argued that the circuit court lacked authority to hold the clerk in contempt for failing to perform statutory administrative duties unrelated to the court's judicial function, as such action is not necessary for the proper functioning of the court.",concur
+SC98907_Missouri_2023/03/07,PATRICIA BRECKENRIDGE,"Concurred, delivering the majority opinion that found parts of the parking statutes unconstitutional for creating duties for municipal offices but held that these invalid provisions were severable from the rest of the statutes.",concur
+SC-99419_Missouri_2023/01/31,ROBIN RANSOM,"Concurred, argued that the City's charter notice requirement does not irreconcilably conflict with state statutes because it merely supplements state law and notice requirements have a different origin and purpose than statutes of limitations.",concur
+SC-99419_Missouri_2023/01/31,"Wilson, C.J.",Concurred with majority opinion.,concur
+SC-99419_Missouri_2023/01/31,"Russell, J.",Concurred with majority opinion.,concur
+SC-99419_Missouri_2023/01/31,"Powell, J.",Concurred with majority opinion.,concur
+SC-99419_Missouri_2023/01/31,"Breckenridge, J.",Concurred with majority opinion.,concur
+SC-99419_Missouri_2023/01/31,"Draper, J.",Concurred with majority opinion.,concur
+SC-99419_Missouri_2023/01/31,"Fischer, J.","Concurred in result, agreeing with the outcome but not necessarily the majority's reasoning.",concur
+SC-99179_Missouri_2022/10/04,W. Brent Powell,"Concurred, argued that SB 1007 mandates at-will employment for non-merit state employees, does not infringe on the constitutional right to bargain collectively or impair contracts, but that many PAB rules are unauthorized expansions of SB 1007.",concur
+SC99211_Missouri_2022/08/30,GEORGE W. DRAPER III,"Concurred, argued that the second-degree harassment statute is not overbroad, there was sufficient evidence to support the harassment conviction, and sentencing for both tampering with a judicial officer and second-degree harassment did not violate double jeopardy.",concur
+SC-99007_Missouri_2022/04/05,W. Brent Powell,"Concurred, arguing that the circuit court's application of the punitive damages cap did not violate the right to a jury trial, and the reduced award did not violate due process.",concur
+SC-99007_Missouri_2022/04/05,"Wilson, C.J.",Concurred with majority opinion,concur
+SC-99007_Missouri_2022/04/05,Russell,Concurred with majority opinion,concur
+SC-99007_Missouri_2022/04/05,Breckenridge,Concurred with majority opinion,concur
+SC-99007_Missouri_2022/04/05,Fischer,Concurred with majority opinion,concur
+SC-99007_Missouri_2022/04/05,Ransom,Concurred with majority opinion,concur
+SC-99007_Missouri_2022/04/05,"Draper, J.",Dissented with majority opinion,dissent
+SC-98879_Missouri_2022/02/08,Mary R. Russell,"Concurred, argued that the challenged statutes unconstitutionally interfere with and impede the right of referendum by unreasonably shortening the timeframe for petition circulation.",concur
+SC-98879_Missouri_2022/02/08,"Wilson, C.J.",Concurred with majority opinion.,concur
+SC-98879_Missouri_2022/02/08,Breckenridge,Concurred with majority opinion.,concur
+SC-98879_Missouri_2022/02/08,Draper,Concurred with majority opinion.,concur
+SC-98879_Missouri_2022/02/08,Ransom,Concurred with majority opinion.,concur
+SC-98879_Missouri_2022/02/08,W. Brent Powell,"Dissented, argued that Challengers failed to demonstrate the statutes are facially invalid and that circumstances exist where the statutes could be applied constitutionally without impeding the right of referendum.",dissent
+SC-98879_Missouri_2022/02/08,Fischer,"Dissented, argued that Challengers failed to demonstrate the statutes are facially invalid and that circumstances exist where the statutes could be applied constitutionally without impeding the right of referendum.",dissent
+SC-98977_Missouri_2021/07/22,Zel M. Fischer,"Concurred, argued that the non-economic damage caps are constitutional because medical negligence actions are now statutorily created causes of action, allowing the legislature to define remedies, and that the circuit court correctly applied the catastrophic injury cap with the 2019 inflation adjustment.",concur
+SC-98977_Missouri_2021/07/22,"Wilson, C.J.",Concurred with majority opinion.,concur
+SC-98977_Missouri_2021/07/22,"Russell, J.",Concurred with majority opinion.,concur
+SC-98977_Missouri_2021/07/22,"Powell, J.",Concurred with majority opinion.,concur
+SC-98977_Missouri_2021/07/22,"Breckenridge, J.",Concurred with majority opinion.,concur
+SC-98977_Missouri_2021/07/22,"Draper, J.","Dissented, argued that the legislature's re-imposition of statutory caps on non-economic damages for medical malpractice, by converting a common law action into a statutory one, is an unconstitutional circumvention of the right to trial by jury.",dissent
+SC-98977_Missouri_2021/07/22,"Ransom, J.",Not participating in the decision.,other
+SC-98412_Missouri_2021/06/01,Mary R. Russell,"Concurred, argued that the exemption for public safety labor organizations in HB 1413 violates equal protection and is not severable, rendering the entire bill void.",concur
+SC-98412_Missouri_2021/06/01,"Draper, C.J.",Concurred with majority opinion.,concur
+SC-98412_Missouri_2021/06/01,"Wilson, J.",Concurred with majority opinion.,concur
+SC-98412_Missouri_2021/06/01,"Breckenridge, J.",Concurred with majority opinion.,concur
+SC-98412_Missouri_2021/06/01,"Stith, Sr.J.",Concurred with majority opinion.,concur
+SC-98412_Missouri_2021/06/01,W. Brent Powell,"Dissented, argued that the public safety exemption is constitutional and does not warrant invalidating HB 1413.",dissent
+SC-98412_Missouri_2021/06/01,"Fischer, J.","Dissented, concurred with Judge Powell's dissenting opinion.",dissent
+SC-97653_Missouri_2021/04/20,Patricia Breckenridge,"Concurred, argued that a rational basis supports the classification scheme, the fee is not a tax on Crestwood residents, and the statute does not create an unfunded mandate.",concur
+SC-97653_Missouri_2021/04/20,"Draper, C.J.",Concurred with majority opinion.,concur
+SC-97653_Missouri_2021/04/20,"Wilson, J.",Concurred with majority opinion.,concur
+SC-97653_Missouri_2021/04/20,"Russell, J.",Concurred with majority opinion.,concur
+SC-97653_Missouri_2021/04/20,"Powell, J.",Concurred with majority opinion.,concur
+SC-97653_Missouri_2021/04/20,"Fischer, J.",Concurred with majority opinion.,concur

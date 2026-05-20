@@ -1,83 +1,84 @@
 case_id,name,description,ruling
-CR-24-690_Arkansas_2026/03/05_20,BARBARA W. WEBB,"Concurred, argued that State v. Sullivan was incorrectly decided as a matter of state constitutional law and that Gamble's arrest was proper because he committed a violation of law in the officer's presence.",concur
-CR-24-690_Arkansas_2026/03/05_20,"BAKER, C.J.","Dissented, joined Justice Hudson's opinion.",dissent
-CR-24-690_Arkansas_2026/03/05_20,COURTNEY RAE HUDSON,"Dissented, argued that the majority improperly raised the issue of overruling State v. Sullivan sua sponte, violating the party-presentation principle and representing a fundamental shift in Arkansas jurisprudence that undermines fairness and objectivity in criminal appeals.",dissent
-CV-24-704_Arkansas_2025/12/11_61,CODY HILAND,"Concurred, argued that the General Assembly has the authority to amend voter-initiated laws under article 5, section 1, and that the word ""section"" in amendment 98, section 23(a) was a drafting error and should be read as ""amendment.""",concur
-CV-24-704_Arkansas_2025/12/11_61,BARBARA HALSEY,Concurred with majority opinion.,concur
-CV-24-704_Arkansas_2025/12/11_61,DON CURDIE,Concurred with majority opinion.,concur
-CV-24-704_Arkansas_2025/12/11_61,"BAKER, C.J.",Concurred with majority opinion.,concur
-CV-24-704_Arkansas_2025/12/11_61,RHONDA K. WOOD,"Concurred, argued that the General Assembly has the power to make legislative amendments to amendment 98, but overruling Arkansas Game & Fish Commission v. Edgmon was an unnecessary and advisory resolution.",concur
-CV-24-704_Arkansas_2025/12/11_61,SHAWN A. WOMACK,"Concurred, argued that the General Assembly has the authority to amend voter-initiated laws and that ""section"" should be read as ""amendment,"" but the case should have been reversed and dismissed solely on the basis of sovereign immunity.",concur
-CV-24-704_Arkansas_2025/12/11_61,"HUDSON, J.",Not participating.,other
-CV-24-704_Arkansas_2025/12/11_61,"BRONNI, J.",Not participating.,other
-CV-24-645_Arkansas_2025/06/05_103,NICHOLAS J. BRONNI,"Concurred, argued that the Commissioner's August 2021 notice was reasonably calculated to inform BAS of the tax sale, satisfying due process, and thus sovereign immunity bars BAS's claims.",concur
-CV-24-645_Arkansas_2025/06/05_103,"WEBB, J.",Concurred with majority opinion.,concur
-CV-24-645_Arkansas_2025/06/05_103,"KAREN R. BAKER, Chief Justice","Concurred in part, argued to reverse state claims due to sovereign immunity, but dissented in part, arguing that sovereign immunity cannot bar federal claims and issues of material fact remain for federal claims.",other
-CV-24-645_Arkansas_2025/06/05_103,"COURTNEY RAE HUDSON, Justice","Dissented, argued that sovereign immunity is not applicable when a plaintiff alleges unconstitutional state action and seeks injunctive relief, and that material facts remain disputed regarding the adequacy of notice.",dissent
-CV-24-645_Arkansas_2025/06/05_103,"SHAWN A. WOMACK, Justice","Dissented, argued that sovereign immunity should not bar federal claims due to the Supremacy Clause and that Article 2, Section 22 of the Arkansas Constitution provides an exception for state law claims regarding property rights.",dissent
--CR-25-66_Arkansas_2025/05/29_121,COURTNEY RAE HUDSON,"Concurred, arguing that the circuit court's gag order was an abuse of discretion because it was overly broad, vague, lacked a factual basis, and violated free speech and due process rights.",concur
--CR-25-66_Arkansas_2025/05/29_121,WOOD,Concurred with majority opinion,concur
--CR-25-66_Arkansas_2025/05/29_121,WOMACK,Concurred with majority opinion,concur
--CR-25-66_Arkansas_2025/05/29_121,HILAND,Concurred with majority opinion,concur
--CR-25-66_Arkansas_2025/05/29_121,BRONNI,Concurred with majority opinion,concur
-CV-24-492_Arkansas_2024/10/17_283,KAREN R. BAKER,"Concurred, argued that the popular name and ballot title are intelligible, honest, and impartial, providing adequate and fair representation of the Proposed Amendment to voters.",concur
-CV-24-492_Arkansas_2024/10/17_283,"WOOD, J.",Concurred with majority opinion,concur
-CV-24-492_Arkansas_2024/10/17_283,"WOMACK, J.","Dissented, argued that the ballot title was misleading because it did not explicitly state that a previously issued license in Pope County would be revoked and that the majority's interpretation went too far.",dissent
-CV-24-652_Arkansas_2024/10/21_290,SHAWN A. WOMACK,"Concurred, argued that the proposed amendment's popular name and ballot title were misleading because they suggested it was only about medical marijuana while also legalizing recreational use and altering constitutional amendment processes without clear disclosure.",concur
-CV-24-652_Arkansas_2024/10/21_290,DON CURDIE,Concurred with majority opinion.,concur
-CV-24-652_Arkansas_2024/10/21_290,BILENDA HARRIS-RITTER,Concurred with majority opinion.,concur
-CV-24-652_Arkansas_2024/10/21_290,CODY HILAND,"Dissented, argued that the majority disregarded decades-long legal precedent regarding the sufficiency of popular names and ballot titles, and that the popular name and ballot title were not misleading when read together.",dissent
-CV-24-652_Arkansas_2024/10/21_290,BAKER,Dissented with Justice Hiland.,dissent
-CV-24-652_Arkansas_2024/10/21_290,WOOD,Dissented with Justice Hiland.,dissent
-CV-24-652_Arkansas_2024/10/21_290,"KEMP, C.J.",Not participating in the decision.,other
-CV-24-652_Arkansas_2024/10/21_290,"HUDSON, J.",Not participating in the decision.,other
-CV-22-190_Arkansas_2024/05/16_371,CODY HILAND,"Concurred, argued that the challenged Acts are constitutional and the lower court erred by applying strict scrutiny.",concur
-CV-22-190_Arkansas_2024/05/16_371,"KEMP, C.J.",Concurred with majority opinion.,concur
-CV-22-190_Arkansas_2024/05/16_371,BARBARA W. WEBB,"Concurred, argued that the lower court incorrectly applied strict scrutiny to election regulations, which should be reviewed under a rational-basis standard.",concur
-CV-22-190_Arkansas_2024/05/16_371,SHAWN A. WOMACK,"Concurred, argued that the case should be dismissed based on Article 5, Section 20 of the Arkansas Constitution concerning sovereign immunity.",concur
-CV-23-468_Arkansas_2023/10/12_523,BARBARA W. WEBB,"Concurred, argued that the legislative journals are the sole official record for determining if an emergency clause was properly passed, and the journals show it was.",concur
-CV-23-468_Arkansas_2023/10/12_523,KAREN R. BAKER,"Concurred, argued that the lead opinion's sovereign-immunity analysis conflicts with prior precedent and that suits against the State are barred.",concur
-CV-23-468_Arkansas_2023/10/12_523,RHONDA K. WOOD,"Concurred, argued that the case presents a nonjusticiable political question regarding legislative procedure, which violates separation of powers.",concur
-CV-23-468_Arkansas_2023/10/12_523,SHAWN A. WOMACK,"Concurred, argued that the case should be dismissed solely based on sovereign immunity under article 5, section 20 of the Arkansas Constitution.",concur
-CV-23-468_Arkansas_2023/10/12_523,Special Justice CORY COX,Concurred with the majority opinion.,concur
-CV-23-468_Arkansas_2023/10/12_523,JOHN DAN KEMP,"Dissented, argued that the case is moot because the LEARNS Act is already in effect and the public-interest exception does not apply.",dissent
-CV-23-468_Arkansas_2023/10/12_523,"HILAND, J.",Did not participate in the decision.,other
-CV-22-482_Arkansas_2022/09/22_742,ROBIN F. WYNNE,"Concurred, argued that the statute granting discretion to the Board of Election Commissioners was unconstitutional and the ballot title was sufficient.",concur
-CV-22-482_Arkansas_2022/09/22_742,Rhonda K. Wood,"Concurred, argued that courts should limit their role in the ballot initiative process and trust voters to make informed decisions.",concur
-CV-22-482_Arkansas_2022/09/22_742,Shawn A. Womack,"Concurred in part and dissented in part, argued that the statute was unconstitutional but the ballot title was misleading regarding child protection and the scope of changes.",other
-CV-22-482_Arkansas_2022/09/22_742,"Webb, J.","Dissented, argued that the ballot title was insufficient.",dissent
-CV-21-505_Arkansas_2022/06/16_815,BARBARA W. WEBB,"Concurred, argued that sovereign immunity does not bar writs of mandamus due to constitutional provisions, but it does bar declaratory relief because illegal/unconstitutional actions were not sufficiently pleaded, and subject-matter jurisdiction is lacking for APA claims.",concur
-CV-21-505_Arkansas_2022/06/16_815,Special Justice Emily White,Concurred with majority opinion.,concur
-CV-21-505_Arkansas_2022/06/16_815,"Baker, J.",Concurred with majority opinion.,concur
-CV-21-505_Arkansas_2022/06/16_815,Robin F. Wynne,"Concurred that sovereign immunity does not bar mandamus but dissented, arguing it should not bar declaratory relief as illegal acts were sufficiently pleaded, and the trial court has subject-matter jurisdiction for declaratory relief.",other
-CV-21-505_Arkansas_2022/06/16_815,Shawn A. Womack,"Dissented, arguing that the Arkansas Constitution's sovereign immunity provision (art. 5, § 20) bars the entire lawsuit against the State, including both mandamus and declaratory judgment.",dissent
-CV-21-505_Arkansas_2022/06/16_815,"Hudson, J.",Did not participate in the decision.,other
-CV-21-624_Arkansas_2022/06/02_824,COURTNEY RAE HUDSON,"Concurred, argued that the appellants' claims were speculative, hypothetical, and failed to demonstrate actual or imminent injury, thus lacking standing and being unripe and nonjusticiable.",concur
-CV-21-624_Arkansas_2022/06/02_824,Shawn A. Womack,"Concurred, argued that while agreeing with the majority's disposition, Article 5, Section 20 of the Arkansas Constitution precludes this action against a State entity, suggesting the claims should be brought before the Claims Commission.",concur
-CV-21-624_Arkansas_2022/06/02_824,Barbara W. Webb,"Concurred, argued that she agrees with Justice Womack's concurring opinion except for the assertion that Article 5, Section 20 of the Arkansas Constitution precludes the action against the State.",concur
-CV-21-517_Arkansas_2022/04/14_850,RHONDA K. WOOD,"Concurred, arguing that the Attorney General has sovereign immunity for injunctive relief claims as plaintiffs failed to show ultra vires acts, and statutory immunity for individual-capacity illegal exaction claims as plaintiffs failed to allege malicious acts.",concur
-CV-21-517_Arkansas_2022/04/14_850,John R. Scott,Concurred with majority opinion.,concur
-CV-21-517_Arkansas_2022/04/14_850,Shawn A. Womack,"Concurred, arguing that the constitutional provision for illegal exactions allows citizens to sue the state, forming an exception to general sovereign immunity.",concur
-CV-21-517_Arkansas_2022/04/14_850,Karen R. Baker,"Concurred with the majority's findings on sovereign and statutory immunity but dissented on the remainder of the opinion, referencing her position in a previous case.",other
-CV-21-517_Arkansas_2022/04/14_850,Robin F. Wynne,"Concurred on sovereign immunity and illegal exaction but dissented on statutory immunity, arguing it does not apply to injunctive relief claims against a state officer in her individual capacity.",other
-CV-21-517_Arkansas_2022/04/14_850,"Webb, J.",Not participating in the decision.,other
-CV-21-498_Arkansas_2022/04/14_851,"JOHN DAN KEMP, Chief Justice","Concurred, argued that the circuit court abused its discretion in granting the TRO because the parents failed to establish a constitutional rights violation or lack of district authority, and did not demonstrate irreparable harm.",concur
-CV-21-498_Arkansas_2022/04/14_851,Special Justice Howard W. Brill,Concurred with majority opinion.,concur
-CV-21-498_Arkansas_2022/04/14_851,"Shawn A. Womack, Justice","Concurred, argued that the case is moot due to the lapsed policy and that the substantial-public-interest exception is not fully satisfied, thus the appeal should be reversed and dismissed.",concur
-CV-21-498_Arkansas_2022/04/14_851,"Barbara W. Webb, Justice","Dissented, argued that the circuit court's TRO should not have been reversed unless there was an abuse of discretion, and that the majority improperly delved into the merits of the case and undermined parental constitutional rights to make health-related decisions for their children.",dissent
-CV-21-498_Arkansas_2022/04/14_851,"Wood, J.",Not participating in the decision.,other
-CV-21-319_Arkansas_2022/02/24_872,JOHN DAN KEMP,"Concurred, argued that the circuit court had subject-matter jurisdiction over Solomon's due process claim, but not his equal protection claim, and remanded the preliminary injunction for further findings.",concur
-CV-21-319_Arkansas_2022/02/24_872,Karen R. Baker,"Dissented, argued that the preliminary injunction should be reversed and dismissed based on prior precedent regarding sovereign immunity.",dissent
-CV-21-319_Arkansas_2022/02/24_872,Shawn A. Womack,"Dissented, argued that sovereign immunity bars the complaint against state entities, and the circuit court's order should be reversed and dismissed in its entirety.",dissent
-CV-20-492_Arkansas_2021/06/17_979,ROBIN F. WYNNE,"Concurred, argued that the statute is more substantive than procedural and therefore constitutional, not violating the separation-of-powers doctrine.",concur
-CV-20-492_Arkansas_2021/06/17_979,Rhonda K. Wood,"Concurred, argued that the statute is constitutional because it is substantive, and would overrule Mendoza v. WIS International, Inc.",concur
-CV-20-492_Arkansas_2021/06/17_979,"Mark Wankum, Special Justice","Concurred in judgment, argued that the foundational flaw in Johnson must be explicitly addressed and corrected.",concur
-CV-20-492_Arkansas_2021/06/17_979,Shawn A. Womack,"Concurred in judgment, but dissented on the court's failure to explicitly abandon the bright-line rule of Johnson and its progeny.",concur
-CV-20-492_Arkansas_2021/06/17_979,Barbara W. Webb,"Concurred that the statute is constitutional, but dissented on the court's failure to overturn Johnson and Mendoza precedents.",concur
-CV-20-492_Arkansas_2021/06/17_979,"Kemp, C.J.",Not participating.,other
-CV-20-164_Arkansas_2021/05/06_1028,BARBARA W. WEBB,"Concurred, argued that the statute unconstitutionally delegates legislative appointment power to private organizations not accountable to the people.",concur
-CV-20-164_Arkansas_2021/05/06_1028,Karen R. Baker,"Dissented, argued that the circuit court's finding that the statute was constitutional should be affirmed.",dissent
-CV-20-562_Arkansas_2021/03/11_1060,KAREN R. BAKER,"Concurred, arguing that the circuit court did not abuse its discretion in finding that compliance with the statute's federal background check requirements was impossible, thus affirming the preliminary injunction.",concur
-CV-20-216_Arkansas_2021/01/28_1080,COURTNEY RAE HUDSON,"Concurred, delivering the majority opinion that affirmed in part, reversed and remanded in part, and dismissed as moot in part.",concur
-CV-20-216_Arkansas_2021/01/28_1080,Barbara W. Webb,"Concurred, argued that strict scrutiny is not the appropriate standard for reviewing the City's ordinance, which is a valid exercise of police power for public health and safety, and should be reviewed under a rational-basis standard.",concur
-CV-20-216_Arkansas_2021/01/28_1080,Rhonda K. Wood,"Dissented, argued that the case should not be remanded for further proceedings on as-applied constitutional claims because Convent failed to properly appeal, nonsuited claims, and the court should have ruled on the merits of summary judgment.",dissent
+CV-26-116_Arkansas_2026/04/30,CODY HILAND,"Concurred, argued that Act 975 is unconstitutional as it attempts to strip circuit courts of original jurisdiction and assign it to the appellate court, which Amendment 80 forbids.",concur
+CV-26-116_Arkansas_2026/04/30,BARBARA HALSEY,Concurred with majority opinion,concur
+CV-26-116_Arkansas_2026/04/30,"WOMACK, J.",Did not participate in the decision.,other
+CR-24-690_Arkansas_2026/03/05,BARBARA W. WEBB,"Concurred, arguing that State v. Sullivan was incorrectly decided as a matter of state constitutional law and that Gamble's arrest was proper based on probable cause for drug paraphernalia.",concur
+CR-24-690_Arkansas_2026/03/05,"BAKER, C.J.",Dissented with majority opinion.,dissent
+CR-24-690_Arkansas_2026/03/05,COURTNEY RAE HUDSON,"Dissented, arguing that the majority sua sponte raised the issue of overruling precedent, acting as an advocate for the State, which represents a fundamental shift in Arkansas jurisprudence and infringes on the party-presentation principle.",dissent
+CV-24-704_Arkansas_2025/12/11,CODY HILAND,"Concurred, argued that the General Assembly has the authority to amend voter-initiated laws under article 5, section 1, and that the word 'section' in Amendment 98's germaneness requirement should be construed as 'amendment' due to a drafting error, thus overruling *Edgmon*.",concur
+CV-24-704_Arkansas_2025/12/11,BARBARA HALSEY,Concurred with majority opinion.,concur
+CV-24-704_Arkansas_2025/12/11,DON CURDIE,Concurred with majority opinion.,concur
+CV-24-704_Arkansas_2025/12/11,"BAKER, C.J.",Concurred with majority opinion.,concur
+CV-24-704_Arkansas_2025/12/11,RHONDA K. WOOD,"Concurred, argued that overruling *Arkansas Game & Fish Commission v. Edgmon* was unnecessary and advisory because Amendment 98 itself explicitly provides for legislative amendment, making *Edgmon* not directly on point.",concur
+CV-24-704_Arkansas_2025/12/11,SHAWN A. WOMACK,"Concurred, agreed with the majority on legislative authority and the 'scrivener's error' interpretation, but argued that the case should have been reversed and dismissed solely on the basis of sovereign immunity.",concur
+CV-24-645_Arkansas_2025/06/05,NICHOLAS J. BRONNI,"Concurred, argued that the Commissioner's August 2021 certified mail notice to BAS's last known address was reasonably calculated to inform BAS of the tax sale, satisfying due process, and thus sovereign immunity applies.",concur
+CV-24-645_Arkansas_2025/06/05,"WEBB, J.",Concurred with majority opinion.,concur
+CV-24-645_Arkansas_2025/06/05,KAREN R. BAKER,"Concurred in part and dissented in part, argued that the majority's decision to reverse state claims based on sovereign immunity precedent was correct, but dissented regarding federal claims, asserting sovereign immunity cannot bar them and material facts remain.",other
+CV-24-645_Arkansas_2025/06/05,COURTNEY RAE HUDSON,"Dissented, argued that sovereign immunity is not applicable when a plaintiff alleges unconstitutional state action and seeks injunctive relief, and that genuine issues of material fact remain regarding the adequacy of notice.",dissent
+CV-24-645_Arkansas_2025/06/05,SHAWN A. WOMACK,"Dissented, argued that sovereign immunity should not bar BAS's federal claims due to the Supremacy Clause and that the Arkansas Constitution provides an exception to sovereign immunity for state law claims regarding property rights.",dissent
+-CR-25-66_Arkansas_2025/05/29,COURTNEY RAE HUDSON,"Concurred, argued that the circuit court's gag order was an abuse of discretion, overly broad, vague, and lacked factual basis, violating First Amendment and due process rights.",concur
+-CR-25-66_Arkansas_2025/05/29,WOOD,Concurred with majority opinion.,concur
+-CR-25-66_Arkansas_2025/05/29,WOMACK,Concurred with majority opinion.,concur
+-CR-25-66_Arkansas_2025/05/29,HILAND,Concurred with majority opinion.,concur
+-CR-25-66_Arkansas_2025/05/29,BRONNI,Concurred with majority opinion.,concur
+CV-24-492_Arkansas_2024/10/17,KAREN R. BAKER,"Concurred, argued that the popular name and ballot title are an intelligible, honest, and impartial means of presenting the Proposed Amendment to the people for their consideration.",concur
+CV-24-492_Arkansas_2024/10/17,"WOOD, J.",Concurred with majority opinion.,concur
+CV-24-492_Arkansas_2024/10/17,"WOMACK, J.","Dissented, argued that the ballot title is misleading because it fails to explicitly state that a previously issued license in Pope County would be revoked and incorrectly implies that the only existing licenses are in other counties.",dissent
+CV-24-652_Arkansas_2024/10/21,SHAWN A. WOMACK,"Concurred, argued that the popular name and ballot title were misleading as they suggested the amendment was only about medical marijuana but also included recreational use and changes to legislative power, thus preventing fair voter understanding.",concur
+CV-24-652_Arkansas_2024/10/21,DON CURDIE,Concurred with majority opinion.,concur
+CV-24-652_Arkansas_2024/10/21,BILENDA HARRIS-RITTER,Concurred with majority opinion.,concur
+CV-24-652_Arkansas_2024/10/21,BAKER,"Dissented, arguing that the majority disregarded established legal precedent for evaluating ballot titles and popular names.",dissent
+CV-24-652_Arkansas_2024/10/21,WOOD,"Dissented with BAKER, J.",dissent
+CV-24-652_Arkansas_2024/10/21,CODY HILAND,"Dissented, arguing that the majority misapplied legal precedent by introducing a new ""scope requirement"" for popular names and that the ballot title was not misleading.",dissent
+CV-24-652_Arkansas_2024/10/21,"KEMP, C.J.",Not participating in the decision.,other
+CV-24-652_Arkansas_2024/10/21,"HUDSON, J.",Not participating in the decision.,other
+CV-22-190_Arkansas_2024/05/16,CODY HILAND,"Concurred, argued that the challenged Acts are constitutional and the lower court erred by applying strict scrutiny.",concur
+CV-22-190_Arkansas_2024/05/16,"KEMP, C.J.",Concurred with majority opinion.,concur
+CV-22-190_Arkansas_2024/05/16,BARBARA W. WEBB,"Concurred, argued that the lower court incorrectly applied strict scrutiny to election regulations, which should be reviewed under a rational-basis standard.",concur
+CV-22-190_Arkansas_2024/05/16,SHAWN A. WOMACK,"Concurred, argued that the case should be dismissed based on Article 5, Section 20 of the Arkansas Constitution concerning sovereign immunity.",concur
+CV-23-468_Arkansas_2023/10/12,BARBARA W. WEBB,"Concurred, argued that the legislative journals are the sole official record of legislative proceedings, and the emergency clause was passed in compliance with the Arkansas Constitution.",concur
+CV-23-468_Arkansas_2023/10/12,KAREN R. BAKER,"Concurred, argued that the lawsuit is barred by sovereign immunity, as claims seeking to control state actions are generally prohibited.",concur
+CV-23-468_Arkansas_2023/10/12,RHONDA K. WOOD,"Concurred, argued that the case presents a nonjusticiable political question because assessing how the General Assembly conducts its proceedings would violate separation of powers.",concur
+CV-23-468_Arkansas_2023/10/12,CORY ALLEN COX,Concurred with Justice Wood's opinion regarding the political question doctrine.,concur
+CV-23-468_Arkansas_2023/10/12,SHAWN A. WOMACK,"Concurred, argued that the case should be dismissed based on sovereign immunity under article 5, section 20 of the Arkansas Constitution.",concur
+CV-23-468_Arkansas_2023/10/12,JOHN DAN KEMP,"Dissented, argued that the case is moot because the LEARNS Act became operative on August 1, 2023, and the court's decision would have no practical legal effect.",dissent
+CV-23-468_Arkansas_2023/10/12,"HILAND, J.",Not participating.,other
+CV-22-482_Arkansas_2022/09/22,ROBIN F. WYNNE,"Concurred, argued that the statute granting discretion to the Board of Election Commissioners was unconstitutional and the ballot title was sufficient.",concur
+CV-22-482_Arkansas_2022/09/22,Rhonda K. Wood,"Concurred, argued that courts should limit their role in the ballot initiative process and trust voters to make informed decisions.",concur
+CV-22-482_Arkansas_2022/09/22,Shawn A. Womack,"Concurred in part and dissented in part, argued that the statute was unconstitutional but the ballot title was misleading regarding child protection and the scope of changes.",other
+CV-22-482_Arkansas_2022/09/22,"Webb, J.","Dissented, argued that the ballot title was insufficient.",dissent
+CV-21-505_Arkansas_2022/06/16,BARBARA W. WEBB,"Concurred, argued that sovereign immunity does not bar writs of mandamus due to constitutional provisions, but it does bar declaratory relief because illegal/unconstitutional actions were not sufficiently pleaded, and subject-matter jurisdiction is lacking for APA claims.",concur
+CV-21-505_Arkansas_2022/06/16,Special Justice Emily White,Concurred with majority opinion.,concur
+CV-21-505_Arkansas_2022/06/16,"Baker, J.",Concurred with majority opinion.,concur
+CV-21-505_Arkansas_2022/06/16,Robin F. Wynne,"Concurred that sovereign immunity does not bar mandamus but dissented, arguing it should not bar declaratory relief as illegal acts were sufficiently pleaded, and the trial court has subject-matter jurisdiction for declaratory relief.",other
+CV-21-505_Arkansas_2022/06/16,Shawn A. Womack,"Dissented, arguing that the Arkansas Constitution's sovereign immunity provision (art. 5, § 20) bars the entire lawsuit against the State, including both mandamus and declaratory judgment.",dissent
+CV-21-505_Arkansas_2022/06/16,"Hudson, J.",Did not participate in the decision.,other
+CV-21-624_Arkansas_2022/06/02,COURTNEY RAE HUDSON,"Concurred, argued that the appellants' claims were speculative, hypothetical, and failed to demonstrate actual or imminent injury, thus lacking standing and being unripe and nonjusticiable.",concur
+CV-21-624_Arkansas_2022/06/02,Shawn A. Womack,"Concurred, argued that while agreeing with the majority's disposition, Article 5, Section 20 of the Arkansas Constitution precludes this action against a State entity, suggesting the claims should be brought before the Claims Commission.",concur
+CV-21-624_Arkansas_2022/06/02,Barbara W. Webb,"Concurred, argued that she agrees with Justice Womack's concurring opinion except for the assertion that Article 5, Section 20 of the Arkansas Constitution precludes the action against the State.",concur
+CV-21-517_Arkansas_2022/04/14,RHONDA K. WOOD,"Concurred, argued that the Attorney General has sovereign immunity for injunctive relief claims and statutory immunity for individual-capacity illegal exaction claims.",concur
+CV-21-517_Arkansas_2022/04/14,John R. Scott,Concurred with majority opinion.,concur
+CV-21-517_Arkansas_2022/04/14,Shawn A. Womack,"Concurred, argued that the decision aligns with the constitutional exception for illegal exactions.",concur
+CV-21-517_Arkansas_2022/04/14,Karen R. Baker,"Concurred in part and dissented in part, argued that her position in Bd. of Trustees of Univ. of Arkansas v. Andrews informed her disagreement with the remainder of the opinion.",dissent
+CV-21-517_Arkansas_2022/04/14,Robin F. Wynne,"Concurred in part and dissented in part, argued that statutory immunity does not apply to injunctive relief claims against the Attorney General in her individual capacity.",dissent
+CV-21-517_Arkansas_2022/04/14,"Webb, J.",Did not participate in the case.,other
+CV-21-498_Arkansas_2022/04/14,JOHN DAN KEMP,"Concurred, argued that the circuit court abused its discretion in granting the TRO because the parents failed to show a likelihood of success on the merits regarding constitutional rights and the District's authority.",concur
+CV-21-498_Arkansas_2022/04/14,Shawn A. Womack,"Concurred, argued that the case is moot because the mask policy lapsed and the substantial-public-interest exception is not fully satisfied, as a separate appeal will address the constitutionality of the mask mandate ban.",concur
+CV-21-498_Arkansas_2022/04/14,Special Justice Howard W. Brill,"Concurred, argued that parents' fundamental liberty interest in raising their children is not absolute and does not grant them the right to micromanage school operations, including health policies like mask mandates.",concur
+CV-21-498_Arkansas_2022/04/14,Barbara W. Webb,"Dissented, argued that the circuit court's TRO should not have been reversed on appeal unless there was an abuse of discretion, and the majority improperly delved into the merits of the constitutional question at this preliminary stage.",dissent
+CV-21-498_Arkansas_2022/04/14,"Wood, J.",Not participating.,other
+CV-21-319_Arkansas_2022/02/24,JOHN DAN KEMP,"Concurred with the majority opinion, affirming in part, reversing and dismissing in part, and reversing and remanding in part.",concur
+CV-21-319_Arkansas_2022/02/24,Karen R. Baker,"Dissented, argued that based on prior cases, the preliminary injunction should be reversed and dismissed.",dissent
+CV-21-319_Arkansas_2022/02/24,Shawn A. Womack,"Dissented, argued that the doctrine of sovereign immunity, as interpreted by the Arkansas Constitution, bars lawsuits against state entities, and thus the circuit court's order should be reversed and the action dismissed.",dissent
+CV-20-492_Arkansas_2021/06/17,ROBIN F. WYNNE,"Concurred, argued that the statute is more substantive than procedural and therefore constitutional, not violating the separation-of-powers doctrine.",concur
+CV-20-492_Arkansas_2021/06/17,Rhonda K. Wood,"Concurred, argued that the statute is constitutional because it is substantive, and would overrule Mendoza v. WIS International, Inc.",concur
+CV-20-492_Arkansas_2021/06/17,"Mark Wankum, Special Justice","Concurred in judgment, argued that the foundational flaw in Johnson must be explicitly addressed and corrected.",concur
+CV-20-492_Arkansas_2021/06/17,Shawn A. Womack,"Concurred in judgment, but dissented on the court's failure to explicitly abandon the bright-line rule of Johnson and its progeny.",concur
+CV-20-492_Arkansas_2021/06/17,Barbara W. Webb,"Concurred that the statute is constitutional, but dissented on the court's failure to overturn Johnson and Mendoza precedents.",concur
+CV-20-492_Arkansas_2021/06/17,"Kemp, C.J.",Not participating.,other
+CV-20-164_Arkansas_2021/05/06,BARBARA W. WEBB,"Concurred, argued that the statute unconstitutionally delegates legislative appointment power to private organizations not accountable to the people.",concur
+CV-20-164_Arkansas_2021/05/06,Karen R. Baker,"Dissented, argued that the circuit court's finding that the statute was constitutional should be affirmed.",dissent
+CV-20-562_Arkansas_2021/03/11,KAREN R. BAKER,"Concurred, arguing that the circuit court did not abuse its discretion in finding that compliance with the statute's federal background check requirements was impossible, thus affirming the preliminary injunction.",concur
+CV-20-216_Arkansas_2021/01/28,COURTNEY RAE HUDSON,"Concurred, argued that the court affirmed in part, reversed and remanded in part, and dismissed as moot in part, upholding the facial constitutionality of the City's condemnation ordinance but remanding as-applied claims and claims dismissed for failure to exhaust administrative remedies.",concur
+CV-20-216_Arkansas_2021/01/28,Barbara W. Webb,"Concurred, argued that strict scrutiny is not appropriate for reviewing the City's municipal code, as it is a valid exercise of the City's police power to protect public health and safety, and should be reviewed under a rational-basis standard.",concur
+CV-20-216_Arkansas_2021/01/28,Rhonda K. Wood,"Dissented, argued that the majority erred in remanding Convent's as-applied constitutional claims because Convent failed to properly appeal the denial of reinstatement, nonsuited its claims, and did not include them in its refiled petition, and the court should have ruled on the merits of the summary judgment.",dissent
