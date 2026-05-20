@@ -282,7 +282,7 @@ def elections_state_county(request, state, county):
     elections = {
         e.court.name: {
             "date": e.election_date.strftime("%m-%d-%Y"),
-            "type": e.court.selection_method,
+            "type": e.court.selection_method.title(),
         }
         for e in local_elections_list
     }
