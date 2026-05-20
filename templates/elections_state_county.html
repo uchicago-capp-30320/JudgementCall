@@ -29,7 +29,10 @@ Judgement Call
 </head>
 
 <body>
-    <h1 class="below-nav-header">Upcoming elections in {{ county }}, {{ state }} </h1>
+    <div class="below-nav-and-back">
+        <h1 class="below-nav-header">Upcoming elections in {{ county }}, {{ state }} </h1>
+        {% include "back-arrow.html" with fallback_url=fallback_url %}
+    </div>
     {% for court_name, details in elections.items %}
     <div class="collapsible-container">
         <h2>{{court_name}} Election on {{details.date}}</h2>
