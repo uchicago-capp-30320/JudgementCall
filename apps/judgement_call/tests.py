@@ -22,6 +22,7 @@ from apps.judgement_call.models import (
 )
 from datetime import date, timedelta
 
+
 class HomepageTestCase(TestCase):
     """Tests for the homepage"""
 
@@ -36,6 +37,7 @@ class HomepageTestCase(TestCase):
         assert "Your Judges" in response.content.decode()
         assert "Elections" in response.content.decode()
         assert "Analysis" in response.content.decode()
+
 
 class JudgesTestCase(TestCase):
     """Tests for the judge / court lookup page"""
@@ -67,7 +69,7 @@ class JudgesStateCountyTestCase(TestCase):
             selection_jurisdiction=SelectionJurisdictionType.DISTRICT,
             selection_method="Partisan election with retention votes",
             term_length=10,
-            url="https://www.illinoiscourts.gov"
+            url="https://www.illinoiscourts.gov",
         )
 
         # create a CountyToCourt + add it to the join table
@@ -82,7 +84,7 @@ class JudgesStateCountyTestCase(TestCase):
             race=PersonRace.BLACK,
             party_registration=PartyAffiliation.DEM,
             professional_experience="Big law baby. Before that worked in gov.",
-            law_school="UCLA"
+            law_school="UCLA",
         )
 
         # create a second Person
@@ -93,53 +95,53 @@ class JudgesStateCountyTestCase(TestCase):
             race=PersonRace.WHITE,
             party_registration=PartyAffiliation.REP,
             professional_experience="Social worker",
-            law_school="Penn"
+            law_school="Penn",
         )
 
-        # create three tenures, two for Joey one for Jackie 
+        # create three tenures, two for Joey one for Jackie
         Tenure.objects.create(
             court=court,
             person=self.person1,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() + timedelta(days=100),
             selection_type=SelectionType.PARTISAN,
             ticket_party=PartyAffiliation.DEM,
             appointer_name="",
             appointer_party="",
-            chief_justice=False
+            chief_justice=False,
         )
 
         Tenure.objects.create(
             court=court,
             person=self.person1,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() + timedelta(days=100),
             selection_type=SelectionType.PARTISAN,
             ticket_party=PartyAffiliation.DEM,
             appointer_name="",
             appointer_party="",
-            chief_justice=False
+            chief_justice=False,
         )
 
         Tenure.objects.create(
             court=court,
             person=self.person2,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() + timedelta(days=100),
             selection_type=SelectionType.NONPARTISAN,
             ticket_party=PartyAffiliation.DEM,
-            chief_justice=True
+            chief_justice=True,
         )
 
         # this tenure is in the past
         Tenure.objects.create(
             court=court,
             person=self.person2,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() - timedelta(days=100),
             selection_type=SelectionType.NONPARTISAN,
             ticket_party=PartyAffiliation.DEM,
-            chief_justice=True
+            chief_justice=True,
         )
 
     def test_judges_state_county_returns_200(self):
@@ -186,26 +188,29 @@ class JudgesStateCountyTestCase(TestCase):
         """Make sure the quick stats are generating the correct age
         don't double count one person even if they have multiple tenures"""
         response = self.client.get("/judges/?state=IL&county=Cook", follow=True)
-        courts = response.context['courts']
-        court_data = courts['Illinois Lower Court First District']
+        courts = response.context["courts"]
+        court_data = courts["Illinois Lower Court First District"]
 
         # Check average age (will start breaking in a few years but works for now)
-        assert 40 < court_data['avg_age'] < 50
+        assert 40 < court_data["avg_age"] < 50
 
         # Check gender counts (1 male, 1 female)
-        gender_data = {item['person__gender']: item['count'] for item in court_data['gender_data']}
-        assert gender_data['m'] == 1
-        assert gender_data['f'] == 1
+        gender_data = {item["person__gender"]: item["count"] for item in court_data["gender_data"]}
+        assert gender_data["m"] == 1
+        assert gender_data["f"] == 1
 
         # Check race counts (1 black, 1 white)
-        race_data = {item['person__race']: item['count'] for item in court_data['race_data']}
-        assert race_data['black or african american'] == 1
-        assert race_data['white'] == 1
+        race_data = {item["person__race"]: item["count"] for item in court_data["race_data"]}
+        assert race_data["black or african american"] == 1
+        assert race_data["white"] == 1
 
         # Check party counts (1 dem, 1 rep)
-        party_data = {item['person__party_registration']: item['count'] for item in court_data['party_data']}
-        assert party_data['democrat'] == 1
-        assert party_data['republican'] == 1
+        party_data = {
+            item["person__party_registration"]: item["count"] for item in court_data["party_data"]
+        }
+        assert party_data["democrat"] == 1
+        assert party_data["republican"] == 1
+
 
 class ElectionsTestCase(TestCase):
     """Tests for the election lookup page"""
@@ -220,6 +225,7 @@ class ElectionsTestCase(TestCase):
         response = self.client.get("/elections/")
         assert "states" in response.context
         assert len(response.context["states"]) > 0
+
 
 class ElectionsStateCountyTestCase(TestCase):
     """Test for specific state county elections view"""
@@ -236,7 +242,7 @@ class ElectionsStateCountyTestCase(TestCase):
             selection_jurisdiction=SelectionJurisdictionType.DISTRICT,
             selection_method="Partisan election with retention votes",
             term_length=10,
-            url="https://www.illinoiscourts.gov"
+            url="https://www.illinoiscourts.gov",
         )
 
         # create a CountyToCourt + add it to the join table
@@ -251,7 +257,7 @@ class ElectionsStateCountyTestCase(TestCase):
             race=PersonRace.BLACK,
             party_registration=PartyAffiliation.DEM,
             professional_experience="Big law baby. Before that worked in gov.",
-            law_school="UCLA"
+            law_school="UCLA",
         )
 
         # create a second Person
@@ -262,63 +268,61 @@ class ElectionsStateCountyTestCase(TestCase):
             race=PersonRace.WHITE,
             party_registration=PartyAffiliation.REP,
             professional_experience="Social worker",
-            law_school="Penn"
+            law_school="Penn",
         )
 
-        # create three tenures, two for Joey one for Jackie 
+        # create three tenures, two for Joey one for Jackie
         tenure1 = Tenure.objects.create(
             court=court,
             person=self.person1,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() + timedelta(days=100),
             selection_type=SelectionType.PARTISAN,
             ticket_party=PartyAffiliation.DEM,
             appointer_name="",
             appointer_party="",
-            chief_justice=False
+            chief_justice=False,
         )
 
-        tenure2 = Tenure.objects.create(
+        Tenure.objects.create(
             court=court,
             person=self.person1,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() + timedelta(days=100),
             selection_type=SelectionType.PARTISAN,
             ticket_party=PartyAffiliation.DEM,
             appointer_name="",
             appointer_party="",
-            chief_justice=False
+            chief_justice=False,
         )
 
-        tenure3 = Tenure.objects.create(
+        Tenure.objects.create(
             court=court,
             person=self.person2,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() + timedelta(days=100),
             selection_type=SelectionType.NONPARTISAN,
             ticket_party=PartyAffiliation.DEM,
-            chief_justice=True
+            chief_justice=True,
         )
 
         # this tenure is in the past
-        tenure4 = Tenure.objects.create(
+        Tenure.objects.create(
             court=court,
             person=self.person2,
-            start_date=date.today() - timedelta(days=365*15),
+            start_date=date.today() - timedelta(days=365 * 15),
             end_date=date.today() - timedelta(days=100),
             selection_type=SelectionType.NONPARTISAN,
             ticket_party=PartyAffiliation.DEM,
-            chief_justice=True
+            chief_justice=True,
         )
 
         election = Election.objects.create(
-            court=court,
-            election_date = date.today() + timedelta(days=90),
-            incumbent = tenure1
+            court=court, election_date=date.today() + timedelta(days=90), incumbent=tenure1
         )
 
-        candidacy1 = Candidacy.objects.create(person=self.person1, election=election)
-        candidacy2 = Candidacy.objects.create(person=self.person2, election=election)
+        Candidacy.objects.create(person=self.person1, election=election)
+        Candidacy.objects.create(person=self.person2, election=election)
 
     def test_elections_state_county_returns_200(self):
         """Make sure the elections landing page loads"""
@@ -338,44 +342,45 @@ class ElectionsStateCountyTestCase(TestCase):
     def test_elections_state_county_shows_incumbent(self):
         """Test that the incumbent judge appears for the election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
-        elections = response.context['elections']
+        elections = response.context["elections"]
         first_election = list(elections.values())[0]
-        if 'incumbent' in first_election:
-            assert first_election['incumbent'].person.name_canonical == "Joey Baga-Donuts"
+        if "incumbent" in first_election:
+            assert first_election["incumbent"].person.name_canonical == "Joey Baga-Donuts"
 
     def test_elections_state_county_shows_non_incumbent(self):
         """Test that the non-incumbent candidates appear for the election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
-        elections = response.context['elections']
-        illinois_election = elections['Illinois Lower Court First District']
-        candidates = illinois_election['candidates']
-        candidate_names = [c['name'] for c in candidates]
-        assert 'Jackie Potatohead' in candidate_names
+        elections = response.context["elections"]
+        illinois_election = elections["Illinois Lower Court First District"]
+        candidates = illinois_election["candidates"]
+        candidate_names = [c["name"] for c in candidates]
+        assert "Jackie Potatohead" in candidate_names
 
     def test_elections_shows_election_date(self):
         """Make sure the election date appears for each election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
-        elections = response.context['elections']
-        illinois_election = elections['Illinois Lower Court First District']
-        assert illinois_election['date'] == (date.today() + timedelta(days=90)).strftime("%m-%d-%Y")
-    
+        elections = response.context["elections"]
+        illinois_election = elections["Illinois Lower Court First District"]
+        assert illinois_election["date"] == (date.today() + timedelta(days=90)).strftime("%m-%d-%Y")
+
     def test_elections_shows_election_type(self):
         """Make sure the election date appears for each election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
-        elections = response.context['elections']
-        illinois_election = elections['Illinois Lower Court First District']
-        assert illinois_election['type'] == "Partisan election with retention votes"
+        elections = response.context["elections"]
+        illinois_election = elections["Illinois Lower Court First District"]
+        assert illinois_election["type"] == "Partisan election with retention votes"
 
     def test_candidate_more_details_link(self):
         """Make sure the details link on candidates leads to valid person page"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
-        elections = response.context['elections']
-        illinois_election = elections['Illinois Lower Court First District']
-        candidates = illinois_election['candidates']
+        elections = response.context["elections"]
+        illinois_election = elections["Illinois Lower Court First District"]
+        candidates = illinois_election["candidates"]
         for candidate in candidates:
-            candidate_link = candidate['more_info']
+            candidate_link = candidate["more_info"]
             person_response = self.client.get(candidate_link, follow=True)
             assert person_response.status_code == 200
+
 
 class AnalysisTestCase(TestCase):
     """Tests for the analysis lookup page"""

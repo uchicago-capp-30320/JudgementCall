@@ -97,10 +97,18 @@ def judges_state_county(request, state, county):
 
             # get demographics for the court
             court_tenures = tenures.filter(court=tenure.court)
-            gender_counts = list(court_tenures.values("person__gender").annotate(count=Count("person", distinct=True)))
-            race_counts = list(court_tenures.values("person__race").annotate(count=Count("person", distinct=True)))
+            gender_counts = list(
+                court_tenures.values("person__gender").annotate(
+                    count=Count("person", distinct=True)
+                )
+            )
+            race_counts = list(
+                court_tenures.values("person__race").annotate(count=Count("person", distinct=True))
+            )
             party_counts = list(
-                court_tenures.values("person__party_registration").annotate(count=Count("person", distinct=True))
+                court_tenures.values("person__party_registration").annotate(
+                    count=Count("person", distinct=True)
+                )
             )
             birth_years = [
                 tenure.person.birth_date.year
