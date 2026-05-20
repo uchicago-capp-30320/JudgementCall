@@ -97,10 +97,10 @@ def judges_state_county(request, state, county):
 
             # get demographics for the court
             court_tenures = tenures.filter(court=tenure.court)
-            gender_counts = list(court_tenures.values("person__gender").annotate(count=Count("id")))
-            race_counts = list(court_tenures.values("person__race").annotate(count=Count("id")))
+            gender_counts = list(court_tenures.values("person__gender").annotate(count=Count("person", distinct=True)))
+            race_counts = list(court_tenures.values("person__race").annotate(count=Count("person", distinct=True)))
             party_counts = list(
-                court_tenures.values("person__party_registration").annotate(count=Count("id"))
+                court_tenures.values("person__party_registration").annotate(count=Count("person", distinct=True))
             )
             birth_years = [
                 tenure.person.birth_date.year
@@ -265,6 +265,8 @@ def check_incumbent(candidate, court):
 def elections_state_county(request, state, county):
     # grab all the courts associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    if not geo_c2c.exists():
+        raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
 
     # want to retrieve soonest elections
