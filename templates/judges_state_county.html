@@ -78,7 +78,6 @@ Judgement Call
     {% empty %}
     <p>No courts found for {{ county }}, {{ state }}.</p>
     {% endfor %}
-    {% include "back.html" with fallback_url=fallback_url %}
     <script>
         document.querySelectorAll('.collapsible-container').forEach(function (container) {
             container.addEventListener('click', function () {
