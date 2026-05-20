@@ -42,6 +42,8 @@ from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 
+# comment to push
+
 
 def judges(request):
     """Judges landing page. Has dropdowns to find your judges."""
@@ -72,7 +74,32 @@ def get_counties(request, state):
     return JsonResponse(list(counties), safe=False)
 
 
+def judge_sort(judge_lst):
+    ordered_lst = []
+
+    for j in judge_lst:
+        if j["chief_justice"]:
+            chief_j = j
+        else:
+            if len(ordered_lst) == 0:
+                ordered_lst.append(j)
+            for i, sj in enumerate(ordered_lst):
+                if sj["name"] > j["name"]:
+                    ordered_lst.insert((i - 1), j)
+
+    return [chief_j] + ordered_lst
+
+
 def judges_state_county(request, state, county):
+    """
+    courts structure --
+    courts {
+        court_name: {
+            upcoming_election: T/F
+            judges: [judge1_dict, judge2_dict, judge3_dict...]
+        }
+    }
+    """
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
     if not geo_c2c.exists():
@@ -147,6 +174,9 @@ def judges_state_county(request, state, county):
             }
         )
 
+    # for c in courts.keys():
+    #     c["judges"] = judge_sort(c["judges"])
+
     context = {
         "courts": courts,
         "state": state,
@@ -177,11 +207,11 @@ def show_person(request, person_id):
     person_info = {
         "name": person.name_canonical,
         "birth_date": person.birth_date,
-        "gender": person.gender,
-        "race": person.race,
+        "gender": person.gender.title(),
+        "race": person.race.title(),
         "party_registration": person.party_registration.title(),
-        "professional_experience": person.professional_experience,
-        "law_school": person.law_school,
+        "professional_experience": person.professional_experience.title(),
+        "law_school": person.law_school.title(),
     }
 
     person_tenures = []
@@ -191,10 +221,10 @@ def show_person(request, person_id):
                 "court": tenure.court.name,
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
-                "selection_type": tenure.selection_type,
-                "ticket_party": tenure.ticket_party,
-                "appointer_name": tenure.appointer_name,
-                "appointer_party": tenure.appointer_party,
+                "selection_type": tenure.selection_type.title(),
+                "ticket_party": tenure.ticket_party.title(),
+                "appointer_name": tenure.appointer_name.title(),
+                "appointer_party": tenure.appointer_party.title(),
                 "chief_justice": tenure.chief_justice,
             }
         )
@@ -297,7 +327,7 @@ def elections_state_county(request, state, county):
 
     # want to retrieve soonest elections
     local_elections_list = get_upcoming_elections(local_courts_list)
-    elctions = {
+    elections = {
         e.court.name: {
             "date": e.election_date.strftime("%m-%d-%Y"),
             "type": e.court.selection_method.title(),
@@ -308,7 +338,7 @@ def elections_state_county(request, state, county):
     # link a list of candidate objects to corresponding election
     for e in local_elections_list:
         candidates = Candidacy.objects.filter(election=e)
-        elctions[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
+        elections[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
 
     context = {
         "elections": elctions,

@@ -1,21 +1,44 @@
-import requests
+import curl_cffi
 import lxml.html
 import time
 import pandas as pd
+from pathlib import Path
+from datetime import datetime
 
 
-def make_request(url: str):
+def generate_case_id(docket_no, state, date):
+    docket_no = docket_no.replace(" ", "-")
+    state = "-".join(state.split(" "))
+    date = str(datetime.strptime(date, "%B %d, %Y"))[:10].replace("-", "/")
+    case_id = "_".join([docket_no, state, date])
+
+    return case_id
+
+
+def make_request(url):
     """
-    Makes a request to the given url. If the request returns a 429 status code,
-    the function waits 2.5 seconds and then repeats the request.
+    Function makes request to url. If the request responds with a 429 status
+    code, the request is made again after 2.5 seconds until. The process
+    repeats until the response responds with a 200 code.
     """
-    resp = requests.get(url)
+    wait_time = 10
 
-    if resp.status_code == 429:
-        time.sleep(2.5)
-        resp = make_request(url)
-    elif resp.status_code == 200:
-        return resp
+    while True:
+        try:
+            resp = curl_cffi.get(url, impersonate="chrome")
+            if resp.status_code == 429:
+                print("Ran into 429 error, sleeping for 2.5 seconds")
+                time.sleep(2.5)
+                continue
+            elif resp.status_code == 200:
+                return resp
+        except curl_cffi.exceptions.ConnectionError as ce:
+            if wait_time > 60:
+                print("Wait time larger than one minute, aborting")
+                raise ce
+            print(f"Ran into connection error, waiting for {wait_time} seconds")
+            time.sleep(wait_time)
+            wait_time += 1
 
 
 def scrape_case(case_url):
@@ -38,6 +61,7 @@ def scrape_case(case_url):
     root = lxml.html.fromstring(make_request(url).text)
 
     rd = {
+        "case_id": None,
         "docket_no": None,
         "title": None,
         "state": None,
@@ -106,6 +130,8 @@ def scrape_case(case_url):
         base_url = "https://statecourtreport.org"
         rd["opinion_link"] = base_url + opinion_link[0]
 
+    rd["case_id"] = generate_case_id(rd["docket_no"], rd["state"], rd["date"])
+
     return rd
 
 
@@ -171,6 +197,7 @@ def multi_page(start_url):
     url_base = "https://statecourtreport.org/state-case-database"
 
     rd = {
+        "case_id": [],
         "docket_no": [],
         "title": [],
         "state": [],
@@ -180,19 +207,61 @@ def multi_page(start_url):
         "opinion_link": [],
     }
 
+    print("Beginning webscraping of State Case Database...")
+    page_num = 1
     while True:
+        time.sleep(2.5)
         page_info = scrape_page(url, rd)
 
         url = url_base + next_page_url(url)
         rd = page_info
 
         if url == url_base:
+            print("State Case Database webscrape complete!")
             break
 
-    return rd
+        print(f"Scraped page {page_num}")
+        page_num += 1
+
+    return pd.DataFrame(rd)
 
 
-cases_pd = multi_page("https://statecourtreport.org/state-case-database")
+def handle_duplicate_id(input_df: pd.DataFrame, series_name: str):
+    id_series = input_df[series_name].copy()
 
-case_df = pd.DataFrame(cases_pd).drop_duplicates(keep=False)
-case_df = case_df[~case_df["pending"]].reset_index(drop=True)
+    dupes = id_series[id_series.duplicated()]
+
+    if not dupes.empty:
+        for dupe_id in dupes:
+            dupe_series = id_series[id_series == dupe_id]
+
+            attachment = 0
+            for index, val in dupe_series.items():
+                if attachment != 0:
+                    id_series.iloc[index] = val + f"_{attachment}"
+                attachment += 1
+
+    input_df[series_name] = id_series
+
+
+def scrape_scdb(write_on=True):
+    case_df = multi_page("https://statecourtreport.org/state-case-database")
+
+    # Dropping non-decided cases, and cases with no opinion documents
+    case_df = case_df[~case_df["pending"]]
+    case_df = case_df[case_df["opinion_link"].str.contains("https", na=False)]
+
+    # Handling duplicates and duplicate IDs
+    case_df = case_df.drop_duplicates(keep=False).reset_index(drop=True)
+    handle_duplicate_id(case_df, "case_id")
+
+    # Writing csv file
+    if write_on:
+        path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
+        case_df.to_csv(path, index=False)
+
+    return case_df
+
+
+if __name__ == "__main__":
+    scrape_scdb()
