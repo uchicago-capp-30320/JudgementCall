@@ -28,11 +28,7 @@ from apps.judgement_call.models import (
 from django.db import IntegrityError
 
 """
-TO DO: decide how to format this - one ingest function to be called
-from the command line for each dataset?
-courts will probably need to be created once,
-people and tenure will need to be updated occasionally,
-cases will need to be updated regularly
+
 """
 
 app = Typer()
@@ -127,7 +123,9 @@ def command(self, data: str):
                     indop["judge_alias"] = alias
                     indop["case"] = lookup_case
                     print(indop)
-                    indop, created = IndividualOpinion.objects.update_or_create(**indop)
+                    indop, created = IndividualOpinion.objects.update_or_create(
+                        case=lookup_case, judge_alias=alias, defaults=indop
+                    )
                     print(indop, created)
                     opinions_created += created
             print(f"Opinions created: {opinions_created}")
