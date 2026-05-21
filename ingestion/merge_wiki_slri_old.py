@@ -156,7 +156,10 @@ def merge_sources(wikipedia: pd.DataFrame, slri: pd.DataFrame) -> pd.DataFrame:
     print("\n--- Name Matches ---")
     for _, row in bridge.iterrows():
         print(
-            f"  [{row['state']}] SLRI: '{row['slri_name']}' -> WIKI: '{row['wiki_name']}' ({row['match_quality']})"
+            f"  [{row['state']}] "
+            f"SLRI: '{row['slri_name']}' -> "
+            f"WIKI: '{row['wiki_name']}' "
+            f"({row['match_quality']})"
         )
 
     # attach bridge to slri rows
