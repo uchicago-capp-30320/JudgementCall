@@ -67,7 +67,7 @@ class JudgesStateCountyTestCase(TestCase):
             bench_size=24,
             selection_type=SelectionType.PARTISAN,
             selection_jurisdiction=SelectionJurisdictionType.DISTRICT,
-            selection_method="Partisan election with retention votes",
+            selection_method="Partisan Election With Retention Votes",
             term_length=10,
             url="https://www.illinoiscourts.gov",
         )
@@ -240,7 +240,7 @@ class ElectionsStateCountyTestCase(TestCase):
             bench_size=24,
             selection_type=SelectionType.PARTISAN,
             selection_jurisdiction=SelectionJurisdictionType.DISTRICT,
-            selection_method="Partisan election with retention votes",
+            selection_method="Partisan Election With Retention Votes",
             term_length=10,
             url="https://www.illinoiscourts.gov",
         )
