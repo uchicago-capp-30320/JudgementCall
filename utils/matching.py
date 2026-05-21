@@ -43,7 +43,7 @@ def standardize_name(name: str):
 def standardize_alias(alias: str):
     for end in ENDINGS:
         if alias.endswith(end):
-            alias = alias.removesuffix(end, "")
+            alias = alias.removesuffix(end)
 
     alias = alias.strip().lower().translate(str.maketrans("", "", punctuation))
 
@@ -78,7 +78,7 @@ def find_best_match(alias: str, names: list[str]):
         return top_match
 
     # If the top-matching name has a 0.9+ JW score return the match
-    elif matches[top_match]["score"] > 0.9:
+    elif matches[top_match] > 0.9:
         return top_match
 
     else:
@@ -93,7 +93,7 @@ def find_best_match(alias: str, names: list[str]):
             build_out_term = " ".join([term, build_out_term]).strip()
             matches = analyze_potential_matches(build_out_term, names, num_words=i + 1)
             top_match = max(matches, key=lambda k: matches[k])
-            build_out_name = " ".join(top_match.split(" ")[-i:]).strip()
+            build_out_name = standardize_name(" ".join(top_match.split(" ")[-(i + 1) :]).strip())
 
             # If the build out top-matching name and build out alias
             # are the same, return the match

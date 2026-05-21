@@ -266,6 +266,8 @@ class Alias(models.Model):
                     self.save()
                     break
 
+        return self.tenure
+
     class Meta:
         verbose_name_plural = "Aliases"
 
