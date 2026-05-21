@@ -368,7 +368,7 @@ class ElectionsStateCountyTestCase(TestCase):
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         elections = response.context["elections"]
         illinois_election = elections["Illinois Lower Court First District"]
-        assert illinois_election["type"] == "Partisan election with retention votes"
+        assert illinois_election["type"] == "Partisan Election With Retention Votes"
 
     def test_candidate_more_details_link(self):
         """Make sure the details link on candidates leads to valid person page"""
