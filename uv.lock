@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -505,17 +505,16 @@ wheels = [
 
 [[package]]
 name = "django-typer"
-version = "3.5.1"
+version = "3.7.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "django" },
-    { name = "shellingham" },
-    { name = "typer-slim" },
+    { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/69/ad177aa9acd536f4b6f45a46cf25c4549e2f88169115492a87666e2c84ac/django_typer-3.5.1.tar.gz", hash = "sha256:9e9a6e9093b97fcb61c003a192f4398249830346c64f60276485f4c8b1e331f8", size = 3083716, upload-time = "2026-01-14T15:42:17.499Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/8c/f99263dbdb200ddc5e44fc380c34aab0d5e02011c83c3be6de42322159bf/django_typer-3.7.2.tar.gz", hash = "sha256:93b404784ef3b4e413086afb6a8c5a4c0f7ba0e22968e7d2dd33326f0254774d", size = 2975511, upload-time = "2026-04-27T05:10:25.822Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/1d/891bffc8d93000f91e06d598bee625d7a47df6fd7c7908b746070d5660d6/django_typer-3.5.1-py3-none-any.whl", hash = "sha256:e8a68aa6f95bf40f8fff66a2af16d90e6a21c7963564c3aecb25a0e37c47033d", size = 295789, upload-time = "2026-01-14T15:42:15.804Z" },
+    { url = "https://files.pythonhosted.org/packages/83/17/b76bdee5184848cc9ef500edb57a0bdf75ad70a73d6791c5def6073b2a53/django_typer-3.7.2-py3-none-any.whl", hash = "sha256:2cde81d0f5aff5c04f44de18ef830ca7c7a452f4b9c70bdaeed977d45350dc56", size = 296772, upload-time = "2026-04-27T05:10:24.37Z" },
 ]
 
 [[package]]
@@ -548,6 +547,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/7f/13/6741787bd91c4109c7bed047d68273965cd52ce8a5f773c471b949334b6d/faker-40.15.0.tar.gz", hash = "sha256:20f3a6ec8c266b74d4c554e34118b21c3c2056c0b4a519d15c8decb3a4e6e795", size = 1967447, upload-time = "2026-04-17T20:05:27.555Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/a7/a600f8f30d4505e89166de51dd121bd540ab8e560e8cf0901de00a81de8c/faker-40.15.0-py3-none-any.whl", hash = "sha256:71ab3c3370da9d2205ab74ffb0fd51273063ad562b3a3bb69d0026a20923e318", size = 2004447, upload-time = "2026-04-17T20:05:25.437Z" },
+]
+
+[[package]]
+name = "fastjsonschema"
+version = "2.21.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/20/b5/23b216d9d985a956623b6bd12d4086b60f0059b27799f23016af04a74ea1/fastjsonschema-2.21.2.tar.gz", hash = "sha256:b1eb43748041c880796cd077f1a07c3d94e93ae84bba5ed36800a33554ae05de", size = 374130, upload-time = "2025-08-14T18:49:36.666Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cb/a8/20d0723294217e47de6d9e2e40fd4a9d2f7c4b6ef974babd482a59743694/fastjsonschema-2.21.2-py3-none-any.whl", hash = "sha256:1c797122d0a86c5cace2e54bf4e819c36223b552017172f32c5c024a6b77e463", size = 24024, upload-time = "2025-08-14T18:49:34.776Z" },
 ]
 
 [[package]]
@@ -608,6 +616,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/44/ae/8504f6fa44aae887909c3fda1d49c6ffe129225b68f6f63b8904c49e7e90/google_genai-2.0.1.tar.gz", hash = "sha256:32cec7c07157c0e65e4dfc740e3288ff8e8bfc2d506cde49f884d79ed8377867", size = 537456, upload-time = "2026-05-09T01:37:12.693Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a1/20/7f427041c3660fabd4c396e80b27dd40b7d89b121ba384d69005a764910d/google_genai-2.0.1-py3-none-any.whl", hash = "sha256:5cb61ff5b8d33129bb7f5df0b5384ed2e71e5dd06ccc012cdbad28b070f6ce99", size = 791449, upload-time = "2026-05-09T01:37:10.841Z" },
+]
+
+[[package]]
+name = "gower"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7c/b8/f02ffa72009105e981b21fe957895107d1b3c81dece43167d28d8acfdfb0/gower-0.1.2.tar.gz", hash = "sha256:34ddb5158f0e8bfba093dca06b9f887bda244998d10af2a3ad8c74a6efa1b5f6", size = 5637, upload-time = "2022-11-13T20:23:20.493Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/23/88b526457ea992e0a47147a886db3d749d07347c8d3a303f6076deee7299/gower-0.1.2-py3-none-any.whl", hash = "sha256:cb46e18243e1d88d2fa0a23d20afb71e5469f25db4ee6236db40f897dfea9e6f", size = 5168, upload-time = "2022-11-13T20:23:18.387Z" },
 ]
 
 [[package]]
@@ -860,10 +881,13 @@ dependencies = [
     { name = "faker" },
     { name = "google" },
     { name = "google-genai" },
+    { name = "gower" },
     { name = "gunicorn" },
     { name = "httpx" },
     { name = "lxml" },
+    { name = "nbformat" },
     { name = "pandas" },
+    { name = "plotly" },
     { name = "pre-commit" },
     { name = "pydantic" },
     { name = "pypdf" },
@@ -894,15 +918,18 @@ requires-dist = [
     { name = "django-environ", specifier = ">=0.12.0,<1" },
     { name = "django-localflavor", specifier = ">=5.0" },
     { name = "django-structlog", specifier = ">=9.1.0,<10" },
-    { name = "django-typer", specifier = ">=3.1.0,<4" },
+    { name = "django-typer", specifier = ">=3.6.0" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "faker", specifier = ">=40.15.0" },
     { name = "google", specifier = ">=3.0.0" },
     { name = "google-genai", specifier = ">=1.73.1" },
+    { name = "gower", specifier = ">=0.1.2" },
     { name = "gunicorn", specifier = ">=23.0.0" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "lxml", specifier = ">=6.0.4" },
+    { name = "nbformat", specifier = ">=5.10.4" },
     { name = "pandas", specifier = ">=3.0.2" },
+    { name = "plotly", specifier = ">=6.7.0" },
     { name = "pre-commit", specifier = ">=4.2.0" },
     { name = "pydantic", specifier = ">=2.13.3" },
     { name = "pypdf", specifier = ">=6.10.2" },
@@ -912,8 +939,7 @@ requires-dist = [
     { name = "ruff", specifier = ">=0.11.4" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "tabulate", specifier = ">=0.10.0" },
-    { name = "typer", specifier = "==0.11.1" },
-    { name = "typer-slim", specifier = ">=0.21.2" },
+    { name = "typer", specifier = ">=0.25.1" },
     { name = "us", specifier = ">=3.2.0" },
     { name = "whitenoise", specifier = ">=6.9.0,<7" },
 ]
@@ -1136,6 +1162,21 @@ wheels = [
 ]
 
 [[package]]
+name = "nbformat"
+version = "5.10.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "fastjsonschema" },
+    { name = "jsonschema" },
+    { name = "jupyter-core" },
+    { name = "traitlets" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6d/fd/91545e604bc3dad7dca9ed03284086039b294c6b3d75c0d2fa45f9e9caf3/nbformat-5.10.4.tar.gz", hash = "sha256:322168b14f937a5d11362988ecac2a4952d3d8e3a2cbeb2319584631226d5b3a", size = 142749, upload-time = "2024-04-04T11:20:37.371Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a9/82/0340caa499416c78e5d8f5f05947ae4bc3cba53c9f038ab6e9ed964e22f1/nbformat-5.10.4-py3-none-any.whl", hash = "sha256:3b48d6c8fbca4b299bf3982ea7db1af21580e4fec269ad087b9e81588891200b", size = 78454, upload-time = "2024-04-04T11:20:34.895Z" },
+]
+
+[[package]]
 name = "nest-asyncio"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1303,6 +1344,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/9f/4a/0883b8e3802965322523f0b200ecf33d31f10991d0401162f4b23c698b42/platformdirs-4.9.6.tar.gz", hash = "sha256:3bfa75b0ad0db84096ae777218481852c0ebc6c727b3168c1b9e0118e458cf0a", size = 29400, upload-time = "2026-04-09T00:04:10.812Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/75/a6/a0a304dc33b49145b21f4808d763822111e67d1c3a32b524a1baf947b6e1/platformdirs-4.9.6-py3-none-any.whl", hash = "sha256:e61adb1d5e5cb3441b4b7710bea7e4c12250ca49439228cc1021c00dcfac0917", size = 21348, upload-time = "2026-04-09T00:04:09.463Z" },
+]
+
+[[package]]
+name = "plotly"
+version = "6.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "narwhals" },
+    { name = "packaging" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3a/7f/0f100df1172aadf88a929a9dbb902656b0880ba4b960fe5224867159d8f4/plotly-6.7.0.tar.gz", hash = "sha256:45eea0ff27e2a23ccd62776f77eb43aa1ca03df4192b76036e380bb479b892c6", size = 6911286, upload-time = "2026-04-09T20:36:45.738Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/90/ad/cba91b3bcf04073e4d1655a5c1710ef3f457f56f7d1b79dcc3d72f4dd912/plotly-6.7.0-py3-none-any.whl", hash = "sha256:ac8aca1c25c663a59b5b9140a549264a5badde2e057d79b8c772ae2920e32ff0", size = 9898444, upload-time = "2026-04-09T20:36:39.812Z" },
 ]
 
 [[package]]
@@ -2071,28 +2125,17 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.11.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/54/99/610ff2ca9c62cfb1ebfd40b2f509295d5992b51fba3684c9eaf465df54d5/typer-0.11.1.tar.gz", hash = "sha256:f5ae987b97ebbbd59182f8e84407bbc925bc636867fa007bce87a7a71ac81d5c", size = 87143, upload-time = "2024-03-28T23:22:13.895Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/14/6c702faa2b1105a8d74ae3f5c6045d4fb88e85bb9dd219f4d8ec10a479d4/typer-0.11.1-py3-none-any.whl", hash = "sha256:4ce7b2a60b8543816ca97d5ec016026cbe95d1a7a931083b988c1d3682548fe7", size = 43579, upload-time = "2024-03-28T23:22:11.79Z" },
-]
-
-[[package]]
-name = "typer-slim"
-version = "0.21.2"
+version = "0.25.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
     { name = "click" },
+    { name = "rich" },
+    { name = "shellingham" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a5/ca/0d9d822fd8a4c7e830cba36a2557b070d4b4a9558a0460377a61f8fb315d/typer_slim-0.21.2.tar.gz", hash = "sha256:78f20d793036a62aaf9c3798306142b08261d4b2a941c6e463081239f062a2f9", size = 120497, upload-time = "2026-02-10T19:33:45.836Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/51/9aed62104cea109b820bbd6c14245af756112017d309da813ef107d42e7e/typer-0.25.1.tar.gz", hash = "sha256:9616eb8853a09ffeabab1698952f33c6f29ffdbceb4eaeecf571880e8d7664cc", size = 122276, upload-time = "2026-04-30T19:32:16.964Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/54/03/e09325cfc40a33a82b31ba1a3f1d97e85246736856a45a43b19fcb48b1c2/typer_slim-0.21.2-py3-none-any.whl", hash = "sha256:4705082bb6c66c090f60e47c8be09a93158c139ce0aa98df7c6c47e723395e5f", size = 56790, upload-time = "2026-02-10T19:33:47.221Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/f9/2b3ff4e56e5fa7debfaf9eb135d0da96f3e9a1d5b27222223c7296336e5f/typer-0.25.1-py3-none-any.whl", hash = "sha256:75caa44ed46a03fb2dab8808753ffacdbfea88495e74c85a28c5eefcf5f39c89", size = 58409, upload-time = "2026-04-30T19:32:18.271Z" },
 ]
 
 [[package]]

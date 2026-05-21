@@ -26,3 +26,5 @@ data/
 # env
 .env
 .DS_Store
+data
+data/courts/*.csv

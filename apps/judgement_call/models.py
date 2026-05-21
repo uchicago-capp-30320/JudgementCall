@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.http import JsonResponse
 from datetime import date
 from localflavor.us.models import USStateField
 from django.db import connection
@@ -154,6 +155,28 @@ class Court(models.Model):
 
     def __str__(self):
         return self.name
+
+    def gantt_json(self):
+        data = list(
+            Tenure.objects.filter(
+                court=self, start_date__lte=date.today(), end_date__gte=date.today()
+            ).values(
+                "id",
+                "person__name_canonical",
+                "start_date",
+                "end_date",
+                "ticket_party",
+                "appointer_name",
+                "appointer_party",
+                "chief_justice",
+                "person__birth_date",
+                "person__gender",
+                "person__race",
+                "court__selection_method",
+                "court__selection_type",
+            )
+        )
+        return JsonResponse(data, safe=False)
 
 
 class CountyToCourt(models.Model):

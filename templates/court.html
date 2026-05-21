@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+{% if radar_data %}
+{% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
+{% endif %}
+
+{% if gantt_data %}
+{% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
+{% endif %}
+
+{% endblock %}

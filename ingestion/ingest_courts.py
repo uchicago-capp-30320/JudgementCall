@@ -351,10 +351,12 @@ def create_merged_courts_df():
                     return selection_type
 
     merged_df["selection_type"] = merged_df["selection_method"].apply(get_selection_type)
-    merged_df["term_length"] = merged_df["subsequent_term_length"].apply(
-        lambda s: s.replace(" yrs", "").replace("yrs", "").replace(" years", "")
-        if isinstance(s, str)
-        else s
+    merged_df["term_length"] = merged_df["term_length"].apply(
+        lambda s: (
+            s.replace(" yrs", "").replace("yrs", "").replace(" years", "")
+            if isinstance(s, str)
+            else s
+        )
     )
     # the New Jersey exception
     merged_df["term_length"] = merged_df["term_length"].apply(
