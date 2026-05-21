@@ -1,8 +1,7 @@
-# import ingestion.ingest_courts_data
-# import ingestion.merge_courts_data
 import csv
 import pathlib
 import string
+import json
 import us
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
@@ -15,6 +14,7 @@ from datetime import date, datetime
 from apps.judgement_call.models import (
     Court,
     CountyToCourt,
+    CaseProcessingRun,
     Case,
     IndividualOpinion,
     Person,
@@ -55,15 +55,26 @@ def command(self, data: str):
                         court[field] = empty_string_to_none(court[field])
 
                     print(court)
-                    Court.objects.update_or_create(**court)
+                    court, created = Court.objects.update_or_create(
+                        court_id=court["court_id"], defaults={**court}
+                    )
+                    print(court, created)
 
     if data == "cases":
-        cases_created = 0
+        with open("./data/run_metadata/llm_run_05-15-2026.json") as file:
+            d = json.load(file)
+            d.pop("cases_processed")
+            print(d)
+            d["timestamp"] = datetime.strptime(d["timestamp"], "%m-%d-%Y")
+            cpr, cpr_created = CaseProcessingRun.objects.get_or_create(**d)
+            print(cpr, cpr_created)
 
+        cases_created = 0
         for state in us.STATES:
             print(state.name)
             state_case_path = pathlib.Path(f"./data/cases/{state.name}.csv")
             print(f"{state.name} file found: {state_case_path.is_file()}")
+
             court_id = COURT_LOOKUP_LONG[state.name]
             lookup_court = Court.objects.get(court_id=court_id)
 
@@ -74,11 +85,15 @@ def command(self, data: str):
                     break
                 for row in reader:
                     row_dict = dict(zip(headers, row))
-                    case = build_case(row_dict)
-                    case["court"] = lookup_court
+                    case_dict = build_case(row_dict)
+                    case_dict["court"] = lookup_court
                     # case["decision_date"] = case["decision_date"].replace("/", "-")
-                    print(case)
-                    case, created = Case.objects.update_or_create(**case)
+                    case_dict["case_processing_run"] = cpr
+                    print(cpr)
+                    print(case_dict)
+                    case, created = Case.objects.update_or_create(
+                        case_id=case_dict["case_id"], defaults=case_dict
+                    )
                     print(case, created)
                     cases_created += created
             print(f"Cases created: {cases_created}")
@@ -145,6 +160,7 @@ def command(self, data: str):
             lookup_court = Court.objects.get(court_id=court)
             county, created = CountyToCourt.objects.update_or_create(**county)
             county.court.add(lookup_court)
+            print(f"county:{county}, created: {created}")
 
     if data == "tenures":
         with open("./data/judges_slri.csv", encoding="utf-8") as file:
@@ -218,6 +234,9 @@ def build_indop(row_dict: dict):
 
 def build_case(row_dict: dict):
     case_fields = case_model_cols
+    row_dict["case_type"] = row_dict["type"]
+    row_dict["decision_date"] = row_dict["date"]
+    row_dict["case_title"] = row_dict["title"]
     return {k: v for k, v in row_dict.items() if k in case_fields}
 
 

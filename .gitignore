@@ -19,6 +19,7 @@ apikeys.txt
 
 # local files
 *_local.csv
+data/
 # env
 .env
 .DS_Store
