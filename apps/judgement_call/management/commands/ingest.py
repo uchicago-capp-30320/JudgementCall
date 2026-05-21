@@ -119,8 +119,9 @@ def command(self, data: str):
                     case_id = row_dict["case_id"]
                     lookup_case = Case.objects.get(case_id=case_id)
                     # link to alias
-                    alias = standardize_alias(row_dict["name"])
-                    alias, found = Alias.objects.get_or_create(alias=alias, court=lookup_case.court)
+                    alias, found = Alias.objects.get_or_create(
+                        alias=row_dict["name"], court=lookup_case.court
+                    )
                     # create indop dict
                     indop = build_indop(row_dict)
                     indop["judge_alias"] = alias
@@ -143,7 +144,7 @@ def command(self, data: str):
                 case_id = row_dict["case_id"]
                 lookup_case = Case.objects.get(case_id=case_id)
                 # link to alias
-                alias = standardize_alias(row_dict["name"])
+                alias = row_dict["name"]
                 alias, found = Alias.objects.get_or_create(alias=alias, court=lookup_case.court)
                 # create indop dict
                 indop = build_indop(row_dict)
@@ -221,10 +222,6 @@ def command(self, data: str):
 
 def empty_string_to_none(value):
     return value if value != "" else None
-
-
-def standardize_alias(alias: str):
-    return alias.strip().lower().translate(str.maketrans("", "", string.punctuation))
 
 
 def build_indop(row_dict: dict):
