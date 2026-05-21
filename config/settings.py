@@ -78,6 +78,7 @@ INSTALLED_APPS = [
     "django_structlog",
     "django_typer",
     # "apps.accounts",
+    "debug_toolbar",
     "apps.judgement_call",
 ]
 
@@ -96,7 +97,6 @@ MIDDLEWARE = [
 # Debug Toolbar needs to be configured after INSTALLED_APPS
 #  recommend leaving this here.
 if DEBUG and not IS_TESTING:
-    INSTALLED_APPS += ["debug_toolbar"]
     MIDDLEWARE.insert(
         2,
         "debug_toolbar.middleware.DebugToolbarMiddleware",
@@ -274,11 +274,18 @@ structlog.configure(
 # Static File Config (per whitenoise) -----
 
 # TODO: make configurable
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+if "test" in sys.argv:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
 
 STATIC_ROOT = BASE_DIR / "_staticfiles"
 STATIC_URL = "static/"
