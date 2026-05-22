@@ -22,7 +22,6 @@ apikeys.txt
 s
 # local files
 *_local.csv
-data/
 # env
 .env
 .DS_Store
