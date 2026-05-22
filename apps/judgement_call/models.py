@@ -368,6 +368,22 @@ class Case(models.Model):
     worker_rights = models.CharField(choices=TopicAlignment, blank=True)
     case_processing_run = models.ForeignKey(CaseProcessingRun, on_delete=models.SET_NULL, null=True)
 
+    def topic_flags(self):
+        return [
+            "environment",
+            "consumers",
+            "reproductive_rights",
+            "democratic_norms",
+            "free_press",
+            "public_health",
+            "separation_church_state",
+            "voting_access",
+            "public_education",
+            "free_speech",
+            "privacy",
+            "worker_rights",
+        ]
+
     def __str__(self):
         return f"{self.case_title} /{self.docket_no}, {self.court}"
 
