@@ -52,6 +52,12 @@ class SelectionType(models.TextChoices):
     LEGISLATURE = "elected by legislature"
 
 
+class ElectionType(models.TextChoices):
+    PARTISAN = "partisan election"
+    NONPARTISAN = "nonpartisan election"
+    RETENTION = "retention election"
+
+
 class SelectionJurisdictionType(models.TextChoices):
     STATEWIDE = "statewide"
     DISTRICT = "district"
@@ -104,6 +110,7 @@ class PartyAffiliation(models.TextChoices):
     DEM = "democrat"
     IND = "independent"
     OTHER = "other"
+    UNKNOWN = "unknown"
 
 
 class PersonGender(models.TextChoices):
@@ -134,6 +141,16 @@ class Court(models.Model):
     selection_method = models.TextField(blank=True)
     selection_jurisdiction = models.CharField(choices=SelectionJurisdictionType, blank=True)
     term_length = models.PositiveSmallIntegerField(blank=True, null=True)
+    initial_term_length = models.TextField(blank=True)
+    retention_method = models.TextField(blank=True)
+    subsequent_term_length = models.TextField(blank=True)
+    interim_selection_method = models.TextField(blank=True)
+    interim_term_length = models.TextField(blank=True)
+    chief_justice_selection_method = models.TextField(blank=True)
+    chief_justice_term_length = models.TextField(blank=True)
+    qualifications = models.TextField(blank=True)
+    constitutional_reference = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     url = models.URLField(blank=True)
     # can add more fields from NCSC data and/or courtlistener data as needed
 
@@ -181,7 +198,9 @@ class Person(models.Model):
     birth_date = models.DateField(blank=True, null=True)
     gender = models.CharField(choices=PersonGender, blank=True, null=True)
     race = models.CharField(choices=PersonRace, blank=True, null=True)
-    party_registration = models.CharField(choices=PartyAffiliation, blank=True, null=True)
+    party_registration = models.CharField(
+        choices=PartyAffiliation, blank=True, default=PartyAffiliation.UNKNOWN
+    )
     professional_experience = models.TextField(blank=True)
     law_school = models.TextField(blank=True)
 
@@ -209,12 +228,14 @@ class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     start_date = models.DateField()
-    end_date = models.DateField(blank=True)
+    end_date = models.DateField(blank=True, null=True)
     selection_type = models.CharField(choices=SelectionType)
     ticket_party = models.CharField(choices=PartyAffiliation, blank=True)
     appointer_name = models.CharField(blank=True)
     appointer_party = models.CharField(choices=PartyAffiliation, blank=True)
     chief_justice = models.BooleanField(default=False)
+    source_url = models.URLField(blank=True, null=True)
+    scraped_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.person} - {self.court}"
@@ -235,6 +256,7 @@ class Tenure(models.Model):
 class Election(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     election_date = models.DateField()
+    election_type = models.CharField(choices=ElectionType, null=True)
     incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT, null=True, blank=True)
 
     def deduce_elections(self):
@@ -244,9 +266,17 @@ class Election(models.Model):
         for index, row in election_df.iterrows():
             tenure = Tenure.objects.get(pk=row["id"])
             court = Court.objects.get(pk=row["court_id"])
+
             term_end = row["end_date"]
             elect_date = term_end.replace(year=term_end.year - 1, month=11, day=5)
-            Election.objects.create(court=court, election_date=elect_date, incumbent=tenure)
+            if "election" in court.selection_type:
+                print(court, elect_date, court.selection_type, tenure)
+                Election.objects.create(
+                    court=court,
+                    election_date=elect_date,
+                    election_type=court.selection_type,
+                    incumbent=tenure,
+                )
 
     def __str__(self):
         return f"{self.election_date} election for {self.court}"
@@ -295,7 +325,18 @@ class Alias(models.Model):
         verbose_name_plural = "Aliases"
 
     def __str__(self):
-        return f"{self.tenure} / {self.alias} ({self.court})"
+        return f"{self.tenure}: {self.alias} ({self.court})"
+
+
+class CaseProcessingRun(models.Model):
+    timestamp = models.DateField(default=date.today)
+    prompt_start = models.TextField(blank=True, null=True)
+    model_id = models.CharField(default="gemini-2.5-flash")
+    skips = models.TextField(null=True)
+    avg_case_query_time = models.FloatField(null=True)
+
+    def __str__(self):
+        return f"{self.id}: {self.model_id} run, timestamp: {self.timestamp}"
 
 
 class Case(models.Model):
@@ -325,6 +366,23 @@ class Case(models.Model):
     free_speech = models.CharField(choices=TopicAlignment, blank=True)
     privacy = models.CharField(choices=TopicAlignment, blank=True)
     worker_rights = models.CharField(choices=TopicAlignment, blank=True)
+    case_processing_run = models.ForeignKey(CaseProcessingRun, on_delete=models.SET_NULL, null=True)
+
+    def topic_flags(self):
+        return [
+            "environment",
+            "consumers",
+            "reproductive_rights",
+            "democratic_norms",
+            "free_press",
+            "public_health",
+            "separation_church_state",
+            "voting_access",
+            "public_education",
+            "free_speech",
+            "privacy",
+            "worker_rights",
+        ]
 
     def __str__(self):
         return f"{self.case_title} /{self.docket_no}, {self.court}"

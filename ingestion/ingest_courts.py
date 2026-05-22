@@ -328,9 +328,18 @@ def create_merged_courts_df():
         "id": "court_id",
         "full_name": "name",
         "Number of Judgeships": "bench_size",
+        "Number of Districts/Circuits": "num_districts",
         "Geographic Basis for Selection": "selection_jurisdiction",
         "Method of Selection (full term)": "selection_method",
-        "Length of Subsequent Terms": "term_length",
+        "Length of Term": "initial_term_length",
+        "Method of Retention": "retention_method",
+        "Length of Subsequent Terms": "subsequent_term_length",
+        "Method of Filling Interim Vacancies": "interim_selection_method",
+        "When Interim Judges Stand for Election/Appointment": "interim_term_length",
+        "Selection of Chief Judge/Justice": "chief_justice_selection_method",
+        "Term of Office for Chief Judge/Justice": "chief_justice_term_length",
+        "Qualifications": "qualifications",
+        "Source": "notes",
     }
     merged_df = merged_df.rename(columns=rename)
     merged_df = merged_df.set_index("court_id")
@@ -359,7 +368,6 @@ def create_merged_courts_df():
         merged_df[field] = merged_df[field].apply(
             lambda s: s.replace("*", "").replace("---", "") if isinstance(s, str) else s
         )
-
     return merged_df[
         [
             "name",
@@ -367,10 +375,20 @@ def create_merged_courts_df():
             "court_level",
             "court_type",
             "bench_size",
+            "selection_type",
             "selection_jurisdiction",
             "selection_method",
-            "selection_type",
             "term_length",
+            "initial_term_length",
+            "retention_method",
+            "subsequent_term_length",
+            "interim_selection_method",
+            "interim_term_length",
+            "chief_justice_selection_method",
+            "chief_justice_term_length",
+            "qualifications",
+            # "constitutional_reference",
+            "notes",
             "url",
         ]
     ]
