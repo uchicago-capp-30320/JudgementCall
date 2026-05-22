@@ -330,7 +330,9 @@ slri_gender = {
 slri_party = {
     "democrat": PartyAffiliation.DEM,
     "republican": PartyAffiliation.REP,
-    "unsure": "",
+    "independent": PartyAffiliation.IND,
+    "unsure": "",  # PartyAffiliation.UNKNOWN?
+    "": "",  # PartyAffiliation.UNKNOWN?
 }
 
 slri_selection_type = {
