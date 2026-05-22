@@ -19,10 +19,16 @@ body {
 }
 
 .navbar {
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
     padding-top: 5px;
     background-color: #4a3a8c;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand {
+    width: 35%
 }
 
 .home-logo {
@@ -31,15 +37,32 @@ body {
     font-family: "Playfair Display SC", serif;
 }
 
+.navbar-item-logo {
+    color: #f9fbff;
+    text-decoration: none;
+}
+
 .navbar-menu {
+    width: 65%;
     display: flex;
     align-items: center;
-    gap: 10px;
+}
+
+.navbar-end {
+    display: flex;
+    margin-left: auto;
 }
 
 .navbar-item {
     color: #f9fbff;
     text-decoration: none;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.navbar-item:hover {
+    color: #4a3a8c;
+    background-color: #f9fbff;
 }
 
 .service {
@@ -149,6 +172,10 @@ footer {
 
 .below-nav-header {
     padding-top: 20px;
+}
+
+.material-icons.md-60 {
+    font-size: 60px;
 }
 
 .material-symbols-outlined {
