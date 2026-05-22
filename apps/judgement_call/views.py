@@ -1,5 +1,9 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponse, Http404
+from django.db.models import Avg, Count, When, Value, Q
+from django.db.models import Case as Case_
+
+# from django.http import HttpResponse
 from .models import (
     Court,
     Person,
@@ -22,6 +26,10 @@ from .models import (
     PartyAffiliation,
 )
 from datetime import date, datetime
+from django.utils import timezone
+
+# from django.db.models import Count, Avg
+from django.db.models.functions import ExtractYear
 
 # from dateutil.relativedelta import relativedelta
 import random
@@ -30,6 +38,7 @@ from faker import Faker
 # from django.db.models import Q, Count, Sum, When, FloatField
 # from django.core.paginator import Paginator
 # from urllib.parse import urlparse
+from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 
@@ -50,7 +59,9 @@ def judges(request):
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
         # "radar_data": get_radar_example_data(request),
+        "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
+        "fallback_url": reverse("judgement_call:landing"),
     }
 
     return render(request, "judges.html", context)
@@ -91,9 +102,15 @@ def judges_state_county(request, state, county):
     """
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    if not geo_c2c.exists():
+        raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
     elections_soon = get_upcoming_elections(local_courts_list)
-    tenures = Tenure.objects.filter(court__in=local_courts_list)
+
+    # only get current judges
+    tenures = Tenure.objects.filter(
+        court__in=local_courts_list, end_date__isnull=True
+    ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
     courts = {}
 
     # iterate through all the tenures and courts associated with them
@@ -107,7 +124,44 @@ def judges_state_county(request, state, county):
             else:
                 courts[court_name]["upcoming_election"] = False
 
-        # For each tenure associated with a court, add it to a list in that's
+            # get demographics for the court
+            court_tenures = tenures.filter(court=tenure.court)
+            gender_counts = list(
+                court_tenures.values("person__gender").annotate(
+                    count=Count("person", distinct=True)
+                )
+            )
+            race_counts = list(
+                court_tenures.values("person__race").annotate(count=Count("person", distinct=True))
+            )
+            party_counts = list(
+                court_tenures.values("person__party_registration").annotate(
+                    count=Count("person", distinct=True)
+                )
+            )
+            birth_years = [
+                tenure.person.birth_date.year
+                for tenure in court_tenures
+                if tenure.person.birth_date
+            ]
+            if birth_years:
+                avg_age = timezone.now().year - (sum(birth_years) / len(birth_years))
+            else:
+                avg_age = None
+
+            # for each court, add the demographic data
+            courts[court_name]["gender_data"] = [
+                item for item in gender_counts if item["person__gender"] is not None
+            ]
+            courts[court_name]["race_data"] = [
+                item for item in race_counts if item["person__race"] is not None
+            ]
+            courts[court_name]["party_data"] = [
+                item for item in party_counts if item["person__party_registration"] is not None
+            ]
+            courts[court_name]["avg_age"] = avg_age
+
+        # For each tenure associated with a court, add it to a list that's
         # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name]["judges"].append(
             {
@@ -127,12 +181,27 @@ def judges_state_county(request, state, county):
         "courts": courts,
         "state": state,
         "county": county,
+        "fallback_url": reverse("judgement_call:judges"),
     }
     return render(request, "judges_state_county.html", context)
 
 
+def court_full_view(request, court_id):
+    court = Court.objects.get(court_id=court_id)
+    judges = get_current_judges_for_court(court_id)
+
+    context = {
+        "court": court,
+        "court_name": court.name,
+        "gantt_data": court.gantt_json().text,
+        "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+    }
+
+    return render(request, "court.html", context)
+
+
 def show_person(request, person_id):
-    person = Person.objects.get(id=person_id)
+    person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
 
     person_info = {
@@ -200,6 +269,7 @@ def elections(request):
         and county to learn about any upcoming judicial elections.""",
         "states": US_STATES,
         "button_name": "Find Elections",
+        "fallback_url": reverse("judgement_call:landing"),
     }
 
     return render(request, "elections.html", context)
@@ -251,6 +321,8 @@ def check_incumbent(candidate, court):
 def elections_state_county(request, state, county):
     # grab all the courts associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    if not geo_c2c.exists():
+        raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
 
     # want to retrieve soonest elections
@@ -272,6 +344,7 @@ def elections_state_county(request, state, county):
         "elections": elections,
         "state": state,
         "county": county,
+        "fallback_url": reverse("judgement_call:elections"),
     }
 
     return render(request, "elections_state_county.html", context)
@@ -286,15 +359,74 @@ def candidates(request):
     return render(request, "dropdown.html", context)
 
 
+def gantt(request):
+    """Gantt chart prototype."""
+
+    state = request.GET.get("state", "AZSUP")
+    print(state)
+    court = Court.objects.get(court_id=state)
+    json = court.gantt_json()
+
+    context = {"gantt_data": json.text, "court_id": state, "court_name": court.name}
+
+    return render(request, "gantt.html", context)
+
+
+def get_current_judges_for_court(court_id):
+    """
+    Helper function to generate radar chart data for analysis page.
+    """
+    return list(
+        (
+            Tenure.objects.filter(court__court_id=court_id, end_date__isnull=True)
+            | Tenure.objects.filter(court__court_id=court_id, end_date__gt=timezone.now())
+        ).values_list("person__name_canonical", flat=True)
+    )
+
+
 def analysis(request):
     """Elections landing page."""
+
+    state = request.GET.get("state")
+    county = request.GET.get("county")
+    court_id = None
+    court_name = None
+    gantt_data = None
+    radar_data = None
+
+    if state and county:
+        geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+        if geo_c2c.exists():
+            local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+            # court = local_courts_list[0]
+            court = local_courts_list.first()
+            if court:
+                court_id = court.court_id
+                court_name = court.name
+                gantt_data = court.gantt_json().text
+
+    # use dynamic radar if court selected, fallback to example data
+    if court_id:
+        judges = get_current_judges_for_court(court_id)
+        print("court_id:", court_id)
+        print("judges:", judges)
+        radar_data = get_individual_opinions_for_radar(request, court_id=court_id, persons=judges)
+        print("radar_data:", radar_data)
+
+    print("gantt_data:", gantt_data)
+    print("court_name:", court_name)
+
     context = {
         "msg": "Pending!",
         "header": "Analysis",
         "preamble": "Apply filters to see judicial analytics.",
         "states": US_STATES,
-        "radar_data": get_radar_example_data(request),
+        "radar_data": radar_data,
         "button_name": """Generate Analytics""",
+        "state": court_id,
+        "court_name": court_name,
+        "gantt_data": gantt_data,
+        "fallback_url": reverse("judgement_call:landing"),
     }
 
     return render(request, "analysis.html", context)
@@ -304,15 +436,78 @@ def add_fake_data(request):
     fake = Faker("en_US")
 
     # create Persons
-    for _ in range(10):
+    for _ in range(30):
         Person.objects.create(
             name_canonical=fake.name(),
-            birth_date=fake.date_between(start_date="-150y", end_date="-22y"),
+            birth_date=fake.date_between(start_date="-70y", end_date="-22y"),
             gender=random.choice(PersonGender.values),
             race=random.choice(PersonRace.values),
             party_registration=random.choice(PartyAffiliation.values),
-            professional_experience=fake.text(),
-            law_school=fake.text(),
+            professional_experience=random.choice(
+                [
+                    "After working as a public defender in Phoenix for 12 "
+                    "years, defending the underdog became her calling. Now on "
+                    "the Arizona Superior Court, she brings a fierce "
+                    "commitment to defendants' rights and has pioneered "
+                    "restorative justice programs in her district.",
+                    "A former jazz musician turned lawyer, he still keeps a "
+                    "saxophone in his chambers and is known for making "
+                    "procedural decisions with unexpected creative flair. On "
+                    "the Illinois Appellate Court, he's become famous for "
+                    "opinions that read like carefully composed arguments.",
+                    "he spent two decades as a corporate litigator in Chicago "
+                    "before realizing she wanted to serve the public good "
+                    "instead of billionaires. Now presiding over family law "
+                    "cases, she's developed an uncanny ability to see through "
+                    "legal maneuvering to what's truly in a child's best "
+                    "interest.",
+                    "An immigrant from Sudan who worked his way through "
+                    "law school driving a cab, he never forgot his roots in "
+                    "community. On the Phoenix bench, he's known for taking "
+                    "time with self-represented litigants and mentoring young "
+                    "attorneys from underrepresented backgrounds.",
+                    "A former investigative journalist who went to law school "
+                    "at 35, she brings a reporter's eye for truth to appellate "
+                    "work in Illinois. Her opinions are meticulously "
+                    "researched masterpieces that have influenced criminal "
+                    "justice policy statewide.",
+                    "A Marine veteran and former construction worker, he "
+                    "built himself up from nothing through grit and night "
+                    "school. Now on the Arizona bench, he's the judge everyone "
+                    "respects because they know he's earned every credential "
+                    "through sacrifice.",
+                    "Raised by two trial lawyers in suburban Chicago, she "
+                    "practically grew up in courtrooms, but she chose a "
+                    "different path as a mediator first. Her transition to "
+                    "the bench brought a collaborative spirit that's "
+                    "transformed how her court handles disputes.",
+                    "She escaped a rough South Phoenix neighborhood through "
+                    "education and returned as a legal aid attorney for 15 "
+                    "years before taking the bench. Her rulings balance mercy "
+                    "with accountability in ways that have made her a "
+                    "lightning rod for both praise and controversy.",
+                    "A Catholic seminarian-turned-lawyer who still teaches "
+                    "philosophy part-time, he approaches Illinois cases with "
+                    "almost theological rigor. His written decisions are dense "
+                    "with legal philosophy and unexpected references to "
+                    "Aquinas.",
+                    "A trailblazing immigration attorney who won landmark "
+                    "cases protecting asylum seekers, she was appointed to "
+                    "the Arizona bench despite fierce opposition from "
+                    "anti-immigration groups. Her courtroom is a battle "
+                    "zone between her progressive interpretation of law and "
+                    "conservative politicians trying to restrict her "
+                    "authority.",
+                ]
+            ),
+            law_school=random.choice(
+                [
+                    "ASU Law",
+                    "University of Chicago Law School",
+                    "University of Arizona Law School",
+                    "Penn Carey Law",
+                ]
+            ),
         )
 
     # create courts
@@ -378,6 +573,7 @@ def add_fake_data(request):
             ctc.court.add(court)
 
     # create elections
+    # comment to commit
 
     # make a dictionary of the courts
     court_objects = {}
@@ -387,32 +583,34 @@ def add_fake_data(request):
     elections = [
         {
             "court": court_objects["ILSUP"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["AZSUP"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2028, 11, 7),
+            "election_date": date(2028, 11, 7),
         },
         {
             "court": court_objects["ILSUP"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
         {
             "court": court_objects["AZSUP"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
         {
             "court": court_objects["ILAPP1"],
-            "date": date(2024, 11, 7),
+            "election_date": date(2024, 11, 7),
         },
     ]
 
     for election_data in elections:
-        Election.objects.get_or_create(court=election_data["court"], date=election_data["date"])
+        Election.objects.get_or_create(
+            court=election_data["court"], election_date=election_data["election_date"]
+        )
 
     # create candidacies
     persons = list(Person.objects.all())
@@ -428,8 +626,8 @@ def add_fake_data(request):
         for person in persons:
             court = random.choice(list(court_objects.values()))
             selection = random.choice(SelectionType.values)
-            start = fake.date_between(start_date=date(1950, 1, 1), end_date=date(2020, 1, 1))
-            end = fake.date_between(start_date=start, end_date=date(2024, 1, 1))
+            start = fake.date_between(start_date=date(1990, 1, 1), end_date=date(2026, 1, 1))
+            end = fake.date_between(start_date=start, end_date=date(2040, 1, 1))
             appointer_party = (
                 random.choice(PartyAffiliation.values)
                 if selection == SelectionType.APPOINTMENT
@@ -456,10 +654,11 @@ def add_fake_data(request):
                 },
             )
 
+    # create alieses
     tenures = list(Tenure.objects.all())
     for tenure in tenures:
         Alias.objects.get_or_create(
-            alias=fake.name(),
+            alias=random.choice([tenure.person.name_canonical, tenure.person.name_canonical[1:]]),
             defaults={
                 "tenure": tenure,
                 "court": tenure.court,
@@ -467,7 +666,7 @@ def add_fake_data(request):
         )
 
     # create cases
-    for _ in range(10):
+    for _ in range(30):
         Case.objects.create(
             court=random.choice(list(Court.objects.all())),
             docket_no=fake.bothify(text="??-####"),
@@ -507,21 +706,36 @@ def add_fake_data(request):
 
     aliases = list(Alias.objects.all())
     for case in cases:
-        opinion_writers = random.sample(aliases, k=random.randint(2, 3))
+        opinion_writers = random.sample(aliases, k=random.randint(8, 10))
         for alias in opinion_writers:
             IndividualOpinion.objects.get_or_create(
                 case=case,
                 judge_alias=alias,
-                defaults={"description": fake.text(), "ruling": random.choice(RulingType.values)},
+                defaults={
+                    "description": fake.text(),
+                    "ruling": random.choices(
+                        [RulingType.CONCUR, RulingType.DISSENT, RulingType.OTHER],
+                        weights=[70, 28, 2],
+                        k=1,
+                    )[0],
+                },
             )
 
     return HttpResponse("Done!")
 
 
-def get_individual_opinions_for_radar(request):
+def get_individual_opinions_for_radar(
+    request,
+    court_id: str = "wis",
+    persons: list[str] = ["Rebecca Grassl Bradley", "Jill J. Karofsky"],
+):
     """
-    Query multiple justices' ruling propensities to test out D3
-    Radar charts in `radar_test.html`
+    Query multiple justices' ruling propensities to build
+    Radar charts in `radar_test.html`.
+
+    `court_id` and `persons` could come from judges_state_county(), but
+    in any case we need all tenures in a selected court for selected
+    persons.
 
     Returns:
         A list of lists of dicts. Each sublist represents data for a
@@ -534,10 +748,99 @@ def get_individual_opinions_for_radar(request):
         to protect that right.
 
         This format plugs right into radarChart.js for any number
-        of justices and rights
+        of justices and rights.
     """
-    # Query only IndividualOpinions in a single state from justices X and Y
-    pass
+    # ERROR: My query duplicates judges with multiple aliases (there are many)
+
+    # TO REMOVE (only allow 2 judges as input at a time so
+    # there is enough data overlap to build radar)
+    persons = persons[:2]
+
+    # Query all cases that had individual opinions authored by
+    # (any!) tenures of the given persons in the given court.
+    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-13:-1]
+    indops = (
+        IndividualOpinion.objects.filter(
+            judge_alias__tenure__person__name_canonical__in=persons
+        ).filter(case__court__court_id=court_id)
+    ).values("ruling", "judge_alias__tenure__person__name_canonical", *case_rights)
+
+    # Transform those individual opinions into protected percentages and infringed percentages,
+    # grouped by judge (person). This is "Stat option 2".
+    def make_pro_right_case_when(right):
+        """Helper function for converting linked IndividualOpinion data to pro/con scores"""
+        kwarg_protected = {right: "protected"}
+        kwarg_infringed = {right: "infringed"}
+
+        case_when_statement = Case_(
+            When(  # Ruled to protect a right, or tried stopping court from infringing
+                (Q(**kwarg_protected) & Q(ruling="concur"))
+                | (Q(**kwarg_infringed) & Q(ruling="dissent")),
+                then=Value(1),
+            ),
+            When(  # Ruled to infringe on a right, or tried stopping court from protecting
+                (Q(**kwarg_infringed) & Q(ruling="concur"))
+                | (Q(**kwarg_protected) & Q(ruling="dissent")),
+                then=Value(0),
+            ),
+            # Case_ defaults to None otherwise
+        )
+
+        return case_when_statement
+
+    right_avgs_by_judge_kwargs = {
+        "pro_" + case_right: make_pro_right_case_when(case_right) for case_right in case_rights
+    }
+    pro_right_kwargs = {
+        f"pro_{case_right.replace('case__', '')}__avg": Avg(f"pro_{case_right}")
+        for case_right in case_rights
+    }  # Avg() helpfully excludes `None` values by default
+
+    pro_right_avgs_by_judge = (
+        indops.annotate(**right_avgs_by_judge_kwargs)
+        .values("judge_alias__tenure__person__name_canonical")
+        .annotate(**pro_right_kwargs)
+    )
+
+    # Convert from List of Dicts (each a judge) to List of Lists (each a judge) of Dicts.
+    # TODO: Radar chart has no legend, but we will add judge name here later for that.
+    # TODO: Handle missing data. What to show when Judge A is missing church-state cases,
+    # and Judge B is missing free press cases? Drop both for both judges? CANNOT DEFAULT TO 0.
+    # For now, drop a right (axis) if EITHER judge has not ruled on a related case
+    data_for_radar = [
+        [
+            {
+                "axis": key.replace("pro_", "").replace("__avg", "").replace("_", " "),
+                "value": val,
+                "name": judge_dict["judge_alias__tenure__person__name_canonical"],
+            }
+            for key, val in judge_dict.items()
+            if key.endswith("__avg")
+        ]
+        for judge_dict in list(pro_right_avgs_by_judge)
+    ]
+
+    # Drop judges with no data at all
+    data_for_radar = [
+        judge_list
+        for judge_list in data_for_radar
+        if any(d["value"] is not None for d in judge_list)
+    ]
+
+    missing_axes = []
+    for judge_list in data_for_radar:
+        missing_axes += [
+            data_dict["axis"] for data_dict in judge_list if data_dict["value"] is None
+        ]
+    missing_axes = set(missing_axes)
+
+    data_for_radar_dropmissing = [
+        [data_dict for data_dict in judge_list if data_dict["axis"] not in missing_axes]
+        for judge_list in data_for_radar
+    ]
+
+    # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
+    return data_for_radar_dropmissing
 
 
 def get_radar_example_data(request):
@@ -567,7 +870,6 @@ def get_radar_example_data(request):
     # Query only Cases in Alaska from selected rights
     test_state = "Alaska"
     test_rights = ["environment", "democratic_norms", "free_speech"]
-    # Need to unpack dict to query Django by variable-named columns
 
     cases = Case.objects.filter(case_id__contains=test_state)
 
@@ -587,11 +889,3 @@ def get_radar_example_data(request):
         resp[0].append({"axis": right, "value": frac_protected})
 
     return resp
-
-    # resp_example = [
-    #     [ # This list corresponds to one Case
-    #         {"axis": "made", "value": 0.1}, # This dict corresponds to one right
-    #         {"axis": "up", "value": 0.123},
-    #         {"axis": "also made up", "value": 0.90},
-    #     ]
-    # ]

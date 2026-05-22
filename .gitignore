@@ -19,9 +19,11 @@ data/courts/courts_cl.csv
 
 # API keys
 apikeys.txt
-
+s
 # local files
 *_local.csv
 # env
 .env
 .DS_Store
+data
+data/courts/*.csv

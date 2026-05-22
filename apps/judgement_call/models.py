@@ -1,11 +1,45 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.http import JsonResponse
 from datetime import date
 from localflavor.us.models import USStateField
 from django.db import connection
 import pandas as pd
-from jellyfish import jaro_winkler_similarity
 from string import punctuation
+from utils.matching import find_best_match
+
+ENDINGS = [
+    "C.J.",
+    "P.J.",
+    "J.",
+    "Sp. J.",
+    "JJ.",
+    "PJJ",
+    "C. J.",
+    "P.JJ.",
+    "V.C.J.",
+    "A.R.J.",
+    "D.J.",
+    "S.J.",
+    "P.J.A.D",
+    "J.P.T.",
+    "PJ",
+    "J",
+    "CJ",
+]
+
+KEY_WORDS = [
+    "justice",
+    "judge",
+    "chief justice",
+    "chief",
+    "presiding justice",
+    "associate justice",
+    "associate chief justice",
+    "retired",
+    "sitting",
+    "by designation",
+]
 
 
 # drop down types
@@ -15,6 +49,12 @@ class SelectionType(models.TextChoices):
     APPOINTMENT = "appointment"
     RETENTION = "retention election"
     LEGISLATURE = "elected by legislature"
+
+
+class ElectionType(models.TextChoices):
+    PARTISAN = "partisan election"
+    NONPARTISAN = "nonpartisan election"
+    RETENTION = "retention election"
 
 
 class SelectionJurisdictionType(models.TextChoices):
@@ -69,6 +109,7 @@ class PartyAffiliation(models.TextChoices):
     DEM = "democrat"
     IND = "independent"
     OTHER = "other"
+    UNKNOWN = "unknown"
 
 
 class PersonGender(models.TextChoices):
@@ -99,11 +140,43 @@ class Court(models.Model):
     selection_method = models.TextField(blank=True)
     selection_jurisdiction = models.CharField(choices=SelectionJurisdictionType, blank=True)
     term_length = models.PositiveSmallIntegerField(blank=True, null=True)
+    initial_term_length = models.TextField(blank=True)
+    retention_method = models.TextField(blank=True)
+    subsequent_term_length = models.TextField(blank=True)
+    interim_selection_method = models.TextField(blank=True)
+    interim_term_length = models.TextField(blank=True)
+    chief_justice_selection_method = models.TextField(blank=True)
+    chief_justice_term_length = models.TextField(blank=True)
+    qualifications = models.TextField(blank=True)
+    constitutional_reference = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     url = models.URLField(blank=True)
     # can add more fields from NCSC data and/or courtlistener data as needed
 
     def __str__(self):
         return self.name
+
+    def gantt_json(self):
+        data = list(
+            Tenure.objects.filter(
+                court=self, start_date__lte=date.today(), end_date__gte=date.today()
+            ).values(
+                "id",
+                "person__name_canonical",
+                "start_date",
+                "end_date",
+                "ticket_party",
+                "appointer_name",
+                "appointer_party",
+                "chief_justice",
+                "person__birth_date",
+                "person__gender",
+                "person__race",
+                "court__selection_method",
+                "court__selection_type",
+            )
+        )
+        return JsonResponse(data, safe=False)
 
 
 class CountyToCourt(models.Model):
@@ -124,7 +197,9 @@ class Person(models.Model):
     birth_date = models.DateField(blank=True, null=True)
     gender = models.CharField(choices=PersonGender, blank=True, null=True)
     race = models.CharField(choices=PersonRace, blank=True, null=True)
-    party_registration = models.CharField(choices=PartyAffiliation, blank=True, null=True)
+    party_registration = models.CharField(
+        choices=PartyAffiliation, blank=True, default=PartyAffiliation.UNKNOWN
+    )
     professional_experience = models.TextField(blank=True)
     law_school = models.TextField(blank=True)
 
@@ -152,12 +227,14 @@ class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     person = models.ForeignKey(Person, on_delete=models.CASCADE)
     start_date = models.DateField()
-    end_date = models.DateField(blank=True)
+    end_date = models.DateField(blank=True, null=True)
     selection_type = models.CharField(choices=SelectionType)
     ticket_party = models.CharField(choices=PartyAffiliation, blank=True)
     appointer_name = models.CharField(blank=True)
     appointer_party = models.CharField(choices=PartyAffiliation, blank=True)
     chief_justice = models.BooleanField(default=False)
+    source_url = models.URLField(blank=True, null=True)
+    scraped_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.person} - {self.court}"
@@ -178,6 +255,7 @@ class Tenure(models.Model):
 class Election(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     election_date = models.DateField()
+    election_type = models.CharField(choices=ElectionType, null=True)
     incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT, null=True, blank=True)
 
     def deduce_elections(self):
@@ -187,9 +265,17 @@ class Election(models.Model):
         for index, row in election_df.iterrows():
             tenure = Tenure.objects.get(pk=row["id"])
             court = Court.objects.get(pk=row["court_id"])
+
             term_end = row["end_date"]
             elect_date = term_end.replace(year=term_end.year - 1, month=11, day=5)
-            Election.objects.create(court=court, election_date=elect_date, incumbent=tenure)
+            if "election" in court.selection_type:
+                print(court, elect_date, court.selection_type, tenure)
+                Election.objects.create(
+                    court=court,
+                    election_date=elect_date,
+                    election_type=court.selection_type,
+                    incumbent=tenure,
+                )
 
     def __str__(self):
         return f"{self.election_date} election for {self.court}"
@@ -214,56 +300,42 @@ class Alias(models.Model):
     def matched(self):
         return self.tenure is not None
 
-    def find_matches(self, alias=None) -> list[Tenure]:
-        if not alias:
-            alias = self.alias
-        court_tenures = Tenure.objects.filter(court=self.court)
-        matches = {}
-        for tenure in court_tenures:
-            name = self.standardize_name(tenure.person.name_canonical)
-            matches[tenure] = jaro_winkler_similarity(alias, name)
-        return matches
-
     def match_tenure(self, update=False):
         print(f"before: alias {self.alias}, tenure {self.tenure}")
         if not update:
             if self.matched:
                 return self.tenure
-        matches = self.find_matches()
-        if matches == {}:
-            print(f"No names found: does {self.court} exist?")
-            return self.tenure
-        top_match = max(matches, key=lambda k: matches[k])
-        print(f"best match: {top_match}, {matches[top_match]}")
-        if matches[top_match] > 0.9:
-            # setting tenure to the top match
-            self.tenure = top_match
-            self.save()
-        else:
-            try_alias = self.alias.replace("justice", "").replace(" j ", " ")
-            try_alias = try_alias.replace("senior", "").replace("chief", "")
-            if try_alias != self.alias:
-                print(f"rerunning with {try_alias}")
-                matches = self.find_matches(try_alias)
-                top_match = max(matches, key=lambda k: matches[k])
-                print(f"best match: {top_match}, {matches[top_match]}")
-                if matches[top_match] > 0.9:
-                    # setting tenure to the top match
-                    self.tenure = top_match
+
+        court_tenures = Tenure.objects.filter(court=self.court)
+        tenure_names = [tenure.person.name_canonical for tenure in court_tenures]
+
+        best_name = find_best_match(self.alias, tenure_names)
+
+        if best_name is not None:
+            for tenure in court_tenures:
+                if tenure.person.name_canonical == best_name:
+                    self.tenure = tenure
                     self.save()
+                    break
 
-        print(f"after: alias {self.alias}, tenure {self.tenure}")
         return self.tenure
-
-    @staticmethod
-    def standardize_name(name: str):
-        return name.strip().lower().translate(str.maketrans("", "", punctuation))
 
     class Meta:
         verbose_name_plural = "Aliases"
 
     def __str__(self):
-        return f"{self.alias} ({self.court})"
+        return f"{self.tenure}: {self.alias} ({self.court})"
+
+
+class CaseProcessingRun(models.Model):
+    timestamp = models.DateField(default=date.today)
+    prompt_start = models.TextField(blank=True, null=True)
+    model_id = models.CharField(default="gemini-2.5-flash")
+    skips = models.TextField(null=True)
+    avg_case_query_time = models.FloatField(null=True)
+
+    def __str__(self):
+        return f"{self.id}: {self.model_id} run, timestamp: {self.timestamp}"
 
 
 class Case(models.Model):
@@ -293,6 +365,23 @@ class Case(models.Model):
     free_speech = models.CharField(choices=TopicAlignment, blank=True)
     privacy = models.CharField(choices=TopicAlignment, blank=True)
     worker_rights = models.CharField(choices=TopicAlignment, blank=True)
+    case_processing_run = models.ForeignKey(CaseProcessingRun, on_delete=models.SET_NULL, null=True)
+
+    def topic_flags(self):
+        return [
+            "environment",
+            "consumers",
+            "reproductive_rights",
+            "democratic_norms",
+            "free_press",
+            "public_health",
+            "separation_church_state",
+            "voting_access",
+            "public_education",
+            "free_speech",
+            "privacy",
+            "worker_rights",
+        ]
 
     def __str__(self):
         return f"{self.case_title} /{self.docket_no}, {self.court}"
