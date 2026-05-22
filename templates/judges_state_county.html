@@ -48,7 +48,9 @@ Judgement Call
         </span>
     </div>
     <div class="collapsible-details">
-        {% include "infographic.html" %}
+        <form action="{% url 'judgement_call:court' details.id %}" method="get" style="display: inline;">
+            <input type="submit" value="See Court-Level Details" class="reg-button">
+        </form>
         <div class="sub-court-header">
             <h3>Current Sitting Judges:</h3>
         </div>

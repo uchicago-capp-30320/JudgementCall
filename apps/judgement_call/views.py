@@ -95,7 +95,8 @@ def judges_state_county(request, state, county):
     courts structure --
     courts {
         court_name: {
-            upcoming_election: T/F
+            id: court_id,
+            upcoming_election: T/F,
             judges: [judge1_dict, judge2_dict, judge3_dict...]
         }
     }
@@ -116,9 +117,10 @@ def judges_state_county(request, state, county):
     # iterate through all the tenures and courts associated with them
     for tenure in tenures:
         # when we get to a new court add it to the dict of courts.
+        court = tenure.court
         court_name = tenure.court.name
         if court_name not in courts:
-            courts[court_name] = {"judges": []}
+            courts[court_name] = {"judges": [], "id": court.court_id}
             if court_name in elections_soon:
                 courts[court_name]["upcoming_election"] = True
             else:
