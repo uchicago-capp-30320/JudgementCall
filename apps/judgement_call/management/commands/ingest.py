@@ -163,7 +163,7 @@ def command(self, data: str):
             "law_school",
         ]
         date_fields = ["start_date", "end_date", "birth_date"]
-        with open("./data/judges/merged_judges.csv", encoding="utf-8") as file:
+        with open("./data/merged_judges.csv", encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
                 headers = row
@@ -221,12 +221,14 @@ def command(self, data: str):
                     continue
                 lookup_court = Court.objects.get(court_id=court_id)
                 print(lookup_court)
+                party = judge["party"]
+                print(party, party_mapping.get(party, "Not Found"))
                 person = {
                     "name_canonical": judge["name"],
                     # "birth_date": ,
                     "gender": slri_gender.get(judge["gender"], judge["gender"]),
                     "race": slri_race.get(judge["race"], judge["race"]),
-                    "party_registration": slri_party.get(judge["party"], None),  # NOT ACCURATE
+                    "party_registration": party_mapping.get(party, PartyAffiliation.UNKNOWN),
                     "professional_experience": judge["professional experience"],
                     "law_school": "",
                 }
@@ -327,14 +329,6 @@ slri_gender = {
     "female": PersonGender.FEMALE,
 }
 
-slri_party = {
-    "democrat": PartyAffiliation.DEM,
-    "republican": PartyAffiliation.REP,
-    "independent": PartyAffiliation.IND,
-    "unsure": "",  # PartyAffiliation.UNKNOWN?
-    "": "",  # PartyAffiliation.UNKNOWN?
-}
-
 slri_selection_type = {
     "elected, nonpartisan": SelectionType.NONPARTISAN,
     "elected, partisan": SelectionType.PARTISAN,
@@ -370,9 +364,9 @@ party_mapping = {
     # SLRI party codes
     "democrat": PartyAffiliation.DEM,
     "republican": PartyAffiliation.REP,
+    "independent": PartyAffiliation.IND,
     "unsure": PartyAffiliation.UNKNOWN,
 }
-
 
 indop_csv_cols = ["case_id", "name", "description", "ruling"]
 
