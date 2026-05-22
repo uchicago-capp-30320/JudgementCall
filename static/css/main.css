@@ -6,6 +6,17 @@ body {
     min-height: 85vh;
 }
 
+.splash-page {
+    padding-top: 10px;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+}
+
+.bold {
+    font-weight: bold;
+    font-size: 20px;
+}
+
 .playfair-display-sc-regular {
     font-family: "Playfair Display SC", serif;
     font-weight: 400;
@@ -63,6 +74,18 @@ body {
 .navbar-item:hover {
     color: #4a3a8c;
     background-color: #f9fbff;
+}
+
+.location-bar {
+    text-align: right;
+}
+
+.location-reset {
+    align-items: center;
+}
+
+.current-location {
+    text-align: center;
 }
 
 .service {
@@ -176,6 +199,10 @@ footer {
 
 .material-icons.md-60 {
     font-size: 60px;
+}
+
+.material-icons.center {
+    vertical-align: middle;
 }
 
 .material-symbols-outlined {

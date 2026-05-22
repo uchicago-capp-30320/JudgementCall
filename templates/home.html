@@ -6,17 +6,52 @@ Judgement Call
 
 {% block content %}
 
+<div>
+    <p class="splash-page bold">
+        Judgement Call helps you get to know the judges who make decisions that
+        affect your everyday life.
+        <ol>
+            <li>
+                Start by putting in your state and county.
+            </li>
+            <li>
+                Explore the judges in your own jurisdiction. Each judge profile
+                includes background details and case‑level information to help
+                you see how they rule.
+            </li>
+            <li>
+                Look at the upcoming judicial elections in your area, and the
+                judges who may be running. Judge profiles are also here.
+            </li>
+            <li>
+                For a broader view, our analytics page highlights trends across
+                the country.
+            </li>
+        </ol>
+    </p>
+</div>
+
+{% if session_state and session_county %}
+<div class="current-location">
+    <h3>
+        You are looking at {{ session_county }}, {{ session_state }}
+    </h3>
+    <a href="{% url 'judgement_call:clear_location' %}">
+        <span class="material-icons center">refresh</span>
+        Choose a different area
+    </a>
+</div>
 <div class="centerpiece">
     <nav class="services">
         <div class="elaboration">
-            <a class="big-button-item" href="/judges">
+            <a class="big-button-item" href="/judges/?state={{ session_state }}&county={{ session_county }}">
                 <span class="material-icons md-60">gavel</span>
                 <h2 class="service">Your Judges</h2>
             </a>
             <p class="eventual-hover-details">Select to learn more about your local elected and appointed judges.</p>
         </div>
         <div class="elaboration">
-            <a class="big-button-item" href="/elections">
+            <a class="big-button-item" href="/elections/?state={{ session_state }}&county={{ session_county }}">
                 <span class="material-icons md-60">ballot</span>
                 <h2 class="service">Elections</h2>
             </a>
@@ -24,7 +59,7 @@ Judgement Call
                 your municipality.</p>
         </div>
         <div class="elaboration">
-            <a class="big-button-item" href="/analysis">
+            <a class="big-button-item" href="/analysis/?state={{ session_state }}&county={{ session_county }}">
                 <span class="material-icons md-60">analytics</span>
                 <h2 class="service">Analysis</h2>
             </a>
@@ -33,4 +68,8 @@ Judgement Call
         </div>
     </nav>
 </div>
+{% else %}
+    {% include "dropdown.html" with states=states button_name="Start Exploring" %}
+{% endif %}
+
 {% endblock %}
