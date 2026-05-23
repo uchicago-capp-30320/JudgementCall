@@ -1,6 +1,46 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.http import JsonResponse
+from datetime import date
 from localflavor.us.models import USStateField
+from django.db import connection
+import pandas as pd
+from jellyfish import jaro_winkler_similarity
+from string import punctuation
+from utils.matching import find_best_match
+
+ENDINGS = [
+    "C.J.",
+    "P.J.",
+    "J.",
+    "Sp. J.",
+    "JJ.",
+    "PJJ",
+    "C. J.",
+    "P.JJ.",
+    "V.C.J.",
+    "A.R.J.",
+    "D.J.",
+    "S.J.",
+    "P.J.A.D",
+    "J.P.T.",
+    "PJ",
+    "J",
+    "CJ",
+]
+
+KEY_WORDS = [
+    "justice",
+    "judge",
+    "chief justice",
+    "chief",
+    "presiding justice",
+    "associate justice",
+    "associate chief justice",
+    "retired",
+    "sitting",
+    "by designation",
+]
 
 
 # drop down types
@@ -10,6 +50,12 @@ class SelectionType(models.TextChoices):
     APPOINTMENT = "appointment"
     RETENTION = "retention election"
     LEGISLATURE = "elected by legislature"
+
+
+class ElectionType(models.TextChoices):
+    PARTISAN = "partisan election"
+    NONPARTISAN = "nonpartisan election"
+    RETENTION = "retention election"
 
 
 class SelectionJurisdictionType(models.TextChoices):
@@ -64,6 +110,7 @@ class PartyAffiliation(models.TextChoices):
     DEM = "democrat"
     IND = "independent"
     OTHER = "other"
+    UNKNOWN = "unknown"
 
 
 class PersonGender(models.TextChoices):
@@ -83,7 +130,7 @@ class PersonRace(models.TextChoices):
 
 # Create your models here.
 class Court(models.Model):
-    court_id = models.CharField()
+    court_id = models.CharField(unique=True)
     name = models.CharField()
     court_level = models.CharField(choices=CourtLevel, null=True)
     court_type = models.CharField()
@@ -94,11 +141,43 @@ class Court(models.Model):
     selection_method = models.TextField(blank=True)
     selection_jurisdiction = models.CharField(choices=SelectionJurisdictionType, blank=True)
     term_length = models.PositiveSmallIntegerField(blank=True, null=True)
+    initial_term_length = models.TextField(blank=True)
+    retention_method = models.TextField(blank=True)
+    subsequent_term_length = models.TextField(blank=True)
+    interim_selection_method = models.TextField(blank=True)
+    interim_term_length = models.TextField(blank=True)
+    chief_justice_selection_method = models.TextField(blank=True)
+    chief_justice_term_length = models.TextField(blank=True)
+    qualifications = models.TextField(blank=True)
+    constitutional_reference = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
     url = models.URLField(blank=True)
     # can add more fields from NCSC data and/or courtlistener data as needed
 
     def __str__(self):
         return self.name
+
+    def gantt_json(self):
+        data = list(
+            Tenure.objects.filter(
+                court=self, start_date__lte=date.today(), end_date__gte=date.today()
+            ).values(
+                "id",
+                "person__name_canonical",
+                "start_date",
+                "end_date",
+                "ticket_party",
+                "appointer_name",
+                "appointer_party",
+                "chief_justice",
+                "person__birth_date",
+                "person__gender",
+                "person__race",
+                "court__selection_method",
+                "court__selection_type",
+            )
+        )
+        return JsonResponse(data, safe=False)
 
 
 class CountyToCourt(models.Model):
@@ -119,20 +198,90 @@ class Person(models.Model):
     birth_date = models.DateField(blank=True, null=True)
     gender = models.CharField(choices=PersonGender, blank=True, null=True)
     race = models.CharField(choices=PersonRace, blank=True, null=True)
-    party_registration = models.CharField(choices=PartyAffiliation, blank=True, null=True)
+    party_registration = models.CharField(
+        choices=PartyAffiliation, blank=True, default=PartyAffiliation.UNKNOWN
+    )
     professional_experience = models.TextField(blank=True)
     law_school = models.TextField(blank=True)
 
     def __str__(self):
         return self.name_canonical
 
+    @property
+    def age(self):
+        if self.birth_date.year == 3000:
+            return None
+        else:
+            return years_since(self.birth_date)
 
-class Election(models.Model):
+    @property
+    def current_tenure(self):
+        tenures = Tenure.objects.filter(
+            person=self, start_date__lte=date.today(), end_date__gte=date.today()
+        )
+        if len(tenures) > 1:
+            print("Warning! Current tenure lookup returned multiple tenures.")
+        return tenures
+
+
+class Tenure(models.Model):
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
-    date = models.DateField()
+    person = models.ForeignKey(Person, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    selection_type = models.CharField(choices=SelectionType)
+    ticket_party = models.CharField(choices=PartyAffiliation, blank=True)
+    appointer_name = models.CharField(blank=True)
+    appointer_party = models.CharField(choices=PartyAffiliation, blank=True)
+    chief_justice = models.BooleanField(default=False)
+    source_url = models.URLField(blank=True, null=True)
+    scraped_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.date} election for {self.court}"
+        return f"{self.person} - {self.court}"
+
+    @property
+    def tenure_length_to_date(self):
+        if self.start_date.year == 3000:
+            return None
+        return years_since(self.start_date)
+
+    @property
+    def tenure_length_remaining(self):
+        if self.end_date.year == 3000:
+            return None
+        return years_to(self.end_date)
+
+
+class Election(models.Model):
+    election_id = models.CharField(unique=True, blank=True)
+    court = models.ForeignKey(Court, on_delete=models.PROTECT)
+    election_date = models.DateField()
+    filing_deadline = models.DateField(null=True)
+    election_type = models.CharField(choices=ElectionType, null=True)
+    incumbent = models.ForeignKey(Tenure, on_delete=models.CASCADE, null=True, blank=True)
+
+    def deduce_elections(self):
+        court_elections = Tenure.objects.values("id", "court_id", "end_date")
+        election_df = pd.DataFrame(list(court_elections))
+
+        for index, row in election_df.iterrows():
+            tenure = Tenure.objects.get(pk=row["id"])
+            court = Court.objects.get(pk=row["court_id"])
+
+            term_end = row["end_date"]
+            elect_date = term_end.replace(year=term_end.year - 1, month=11, day=5)
+            if "election" in court.selection_type:
+                print(court, elect_date, court.selection_type, tenure)
+                Election.objects.create(
+                    court=court,
+                    election_date=elect_date,
+                    election_type=court.selection_type,
+                    incumbent=tenure,
+                )
+
+    def __str__(self):
+        return f"{self.election_date} election for {self.court}"
 
 
 class Candidacy(models.Model):
@@ -143,21 +292,6 @@ class Candidacy(models.Model):
         verbose_name_plural = "Candidacies"
 
 
-class Tenure(models.Model):
-    court = models.ForeignKey(Court, on_delete=models.PROTECT)
-    person = models.ForeignKey(Person, on_delete=models.CASCADE)
-    start_date = models.DateField()
-    end_date = models.DateField(blank=True)
-    selection_type = models.CharField(choices=SelectionType)
-    ticket_party = models.CharField(choices=PartyAffiliation, blank=True)
-    appointer_name = models.CharField(blank=True)
-    appointer_party = models.CharField(choices=PartyAffiliation, blank=True)
-    chief_justice = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.person} - {self.court}"
-
-
 class Alias(models.Model):
     alias = models.CharField()
     # manual linking of alias to tenure
@@ -165,11 +299,46 @@ class Alias(models.Model):
     # the court the case which generated the alias came from
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
 
+    @property
+    def matched(self):
+        return self.tenure is not None
+
+    def match_tenure(self, update=False):
+        print(f"before: alias {self.alias}, tenure {self.tenure}")
+        if not update:
+            if self.matched:
+                return self.tenure
+
+        court_tenures = Tenure.objects.filter(court=self.court)
+        tenure_names = [tenure.person.name_canonical for tenure in court_tenures]
+
+        best_name = find_best_match(self.alias, tenure_names)
+
+        if best_name is not None:
+            for tenure in court_tenures:
+                if tenure.person.name_canonical == best_name:
+                    self.tenure = tenure
+                    self.save()
+                    break
+
+        return self.tenure
+
     class Meta:
         verbose_name_plural = "Aliases"
 
     def __str__(self):
-        return f"{self.alias} ({self.court})"
+        return f"{self.tenure}: {self.alias} ({self.court})"
+
+
+class CaseProcessingRun(models.Model):
+    timestamp = models.DateField(default=date.today)
+    prompt_start = models.TextField(blank=True, null=True)
+    model_id = models.CharField(default="gemini-2.5-flash")
+    skips = models.TextField(null=True)
+    avg_case_query_time = models.FloatField(null=True)
+
+    def __str__(self):
+        return f"{self.id}: {self.model_id} run, timestamp: {self.timestamp}"
 
 
 class Case(models.Model):
@@ -199,6 +368,24 @@ class Case(models.Model):
     free_speech = models.CharField(choices=TopicAlignment, blank=True)
     privacy = models.CharField(choices=TopicAlignment, blank=True)
     worker_rights = models.CharField(choices=TopicAlignment, blank=True)
+    document_url = models.URLField(blank=True, null=True)
+    case_processing_run = models.ForeignKey(CaseProcessingRun, on_delete=models.SET_NULL, null=True)
+
+    def topic_flags(self):
+        return [
+            "environment",
+            "consumers",
+            "reproductive_rights",
+            "democratic_norms",
+            "free_press",
+            "public_health",
+            "separation_church_state",
+            "voting_access",
+            "public_education",
+            "free_speech",
+            "privacy",
+            "worker_rights",
+        ]
 
     def __str__(self):
         return f"{self.case_title} /{self.docket_no}, {self.court}"
@@ -213,3 +400,18 @@ class IndividualOpinion(models.Model):
 
     def __str__(self):
         return f"{self.judge_alias} - {self.case}"
+
+
+# Helper methods for calculating year diffs
+def years_since(date_field):
+    years_since = round((date.today() - date_field).days / 365.25)
+    if years_since < 0:
+        raise ValueError("date is not in the past!")
+    return years_since
+
+
+def years_to(date_field):
+    years_to = round((date_field - date.today()).days / 365.25)
+    if years_to < 0:
+        raise ValueError("date is not in the future!")
+    return years_to

@@ -7,6 +7,7 @@ from apps.judgement_call.models import (
     Alias,
     Election,
     Candidacy,
+    CaseProcessingRun,
     Case,
     IndividualOpinion,
 )
@@ -57,7 +58,7 @@ admin.site.register(Person, PersonAdmin)
 
 
 class AliasAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ["court"]
 
 
 admin.site.register(Alias, AliasAdmin)
@@ -84,6 +85,13 @@ class CandidacyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Candidacy, CandidacyAdmin)
+
+
+class CaseProcessingRunAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(CaseProcessingRun, CaseProcessingRunAdmin)
 
 
 class CaseAdmin(admin.ModelAdmin):

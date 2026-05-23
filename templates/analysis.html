@@ -7,6 +7,16 @@ Judgement Call
 
 {% block content %}
 
-<p>{{ msg }}</p>
+<h1 class="sub-header">{{ header }}</h1>
+
+<p>{{ preamble }}</p>
+
+{% if radar_data %}
+    {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
+{% endif %}
+
+{% if gantt_data %}
+    {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
+{% endif %}
 
 {% endblock %}
