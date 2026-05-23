@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
 from django.db.models import Avg, Count, When, Value, Q
 from django.db.models import Case as Case_
@@ -51,6 +51,8 @@ def judges(request):
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
         return judges_state_county(request, state, county)
 
     context = {
@@ -62,6 +64,8 @@ def judges(request):
         "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
         "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "judges.html", context)
@@ -179,9 +183,11 @@ def judges_state_county(request, state, county):
 
     context = {
         "courts": courts,
-        "state": state,
-        "county": county,
+        # "state": state,
+        # "county": county,
         "fallback_url": reverse("judgement_call:judges"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
     return render(request, "judges_state_county.html", context)
 
@@ -241,16 +247,33 @@ def show_person(request, person_id):
 
 def landing(request):
     """Landing page for Judgement Call users."""
+
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
+
+        return redirect(reverse("judgement_call:landing"))
+
     context = {
         "msg": "Welcome to Judgement Call!",
+        "button_name": """Start Exploring""",
+        "states": US_STATES,
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "home.html", context)
 
 
-def about(request):
-    """About page, also to test if base.html is working."""
-    context = {"msg": "<Insert heartfelt story about the creation of this project.>"}
+def methodology(request):
+    """Methodology page."""
+    context = {
+        "msg": "<Methodology for this project.>",
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
 
     return render(request, "about.html", context)
 
@@ -260,6 +283,8 @@ def elections(request):
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
         return elections_state_county(request, state, county)
 
     context = {
@@ -270,6 +295,8 @@ def elections(request):
         "states": US_STATES,
         "button_name": "Find Elections",
         "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "elections.html", context)
@@ -342,9 +369,11 @@ def elections_state_county(request, state, county):
 
     context = {
         "elections": elections,
-        "state": state,
-        "county": county,
+        # "state": state,
+        # "county": county,
         "fallback_url": reverse("judgement_call:elections"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "elections_state_county.html", context)
@@ -419,17 +448,25 @@ def analysis(request):
     context = {
         "msg": "Pending!",
         "header": "Analysis",
-        "preamble": "Apply filters to see judicial analytics.",
+        "preamble": "See judicial analytics on a national scale.",
         "states": US_STATES,
         "radar_data": radar_data,
         "button_name": """Generate Analytics""",
-        "state": court_id,
+        # "state": court_id,
         "court_name": court_name,
         "gantt_data": gantt_data,
         "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "analysis.html", context)
+
+
+def clear_location(request):
+    request.session.pop("state", None)
+    request.session.pop("county", None)
+    return redirect(reverse("judgement_call:landing"))
 
 
 def add_fake_data(request):

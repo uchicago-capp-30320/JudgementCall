@@ -6,6 +6,17 @@ body {
     min-height: 85vh;
 }
 
+.splash-page {
+    padding-top: 10px;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+}
+
+.bold {
+    font-weight: bold;
+    font-size: 20px;
+}
+
 .playfair-display-sc-regular {
     font-family: "Playfair Display SC", serif;
     font-weight: 400;
@@ -19,10 +30,16 @@ body {
 }
 
 .navbar {
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
     padding-top: 5px;
     background-color: #4a3a8c;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand {
+    width: 35%
 }
 
 .home-logo {
@@ -31,15 +48,95 @@ body {
     font-family: "Playfair Display SC", serif;
 }
 
+.navbar-item-logo {
+    color: #f9fbff;
+    text-decoration: none;
+    align-items: center;
+}
+
 .navbar-menu {
+    width: 65%;
     display: flex;
     align-items: center;
-    gap: 10px;
+}
+
+.navbar-end {
+    display: flex;
+    margin-left: auto;
 }
 
 .navbar-item {
     color: #f9fbff;
     text-decoration: none;
+    padding-left: 10px;
+    padding-right: 10px;
+    align-items: center;
+}
+
+.navbar-item:hover {
+    color: #4a3a8c;
+    background-color: #f9fbff;
+}
+
+.navbar-more {
+    position: relative;
+}
+
+.more-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1;
+}
+
+.more-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: black;
+    border-radius: 4px;
+    min-width: 120px;
+    z-index: 100;
+}
+
+.more-dropdown.show {
+    display: block;
+    text-align: right;
+}
+
+.more-item {
+    display: block;
+    padding: 4px 16px !important;
+    color: #f9fbff;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.more-item:hover {
+    /*background-color: rgba(255, 255, 255, 0.15);*/
+    color: #f9fbff;
+    background-color: gray;
+}
+
+.location-bar {
+    display: table;
+    margin-left: auto;
+    text-align: right;
+    padding: 6px 16px;
+    background-color: #f0ecff;
+    border: 2px solid #4a3a8c;
+    color: #4a3a8c;
+}
+
+.location-reset {
+    align-items: center;
+}
+
+.current-location {
+    text-align: center;
 }
 
 .service {
@@ -149,6 +246,14 @@ footer {
 
 .below-nav-header {
     padding-top: 20px;
+}
+
+.material-icons.md-60 {
+    font-size: 60px;
+}
+
+.material-icons.center {
+    vertical-align: middle;
 }
 
 .material-symbols-outlined {

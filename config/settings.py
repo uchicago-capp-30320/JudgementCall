@@ -96,6 +96,10 @@ MIDDLEWARE = [
     "django_structlog.middlewares.RequestMiddleware",
 ]
 
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 # Debug Toolbar needs to be configured after INSTALLED_APPS
 #  recommend leaving this here.
 if DEBUG and not IS_TESTING:
