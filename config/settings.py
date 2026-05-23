@@ -47,17 +47,7 @@ else:
         SECURE_SSL_REDIRECT = True
         SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
         SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", 3600)
-DATABASES = {
-    "default": _DEFAULT_DB,
-    "pg": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "judgementcall",
-        "USER": "judgementcall",
-        "PASSWORD": env.str("DB_PASSWORD"),
-        "HOST": "judgementcall.civic.garden",
-        "PORT": "5999",
-    },
-}
+DATABASES = {"default": _DEFAULT_DB}
 vars().update(EMAIL_CONFIG)
 
 ALLOWED_HOSTS = env.list(
