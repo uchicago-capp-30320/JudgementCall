@@ -26,7 +26,7 @@ def make_request(url):
 
     while True:
         try:
-            resp = curl_cffi.get(url, impersonate="chrome")
+            resp = curl_cffi.get(url, impersonate="chrome", allow_redirects=False)
             if resp.status_code == 429:
                 print("Ran into 429 error, sleeping for 2.5 seconds")
                 time.sleep(2.5)
