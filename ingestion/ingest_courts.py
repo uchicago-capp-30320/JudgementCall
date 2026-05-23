@@ -16,6 +16,22 @@ import lxml.html
 import pandas as pd
 import us
 from collections import defaultdict
+from ingestion.state_crosswalks import COURT_LOOKUP_LONG, COURT_LOOKUP_SHORT
+
+# Path for data
+# Directory of the current script (ingestion/)
+BASE_DIR = Path(__file__).resolve().parent
+
+# Path to the data/ folder and make sure it exists
+DATA_DIR = BASE_DIR.parent / "data" / "courts"
+DATA_DIR.mkdir(exist_ok=True)
+
+# Final CSV path
+OUTPUT_CSV = DATA_DIR / ""
+NCSC_FILE_PATH = DATA_DIR / "courts_ncsc.csv"
+CL_FILE_PATH = DATA_DIR / "courts_cl.csv"
+MERGED_COURTS_PATH = DATA_DIR / "courts_merged.csv"
+
 
 ARCHIVE_NCSC_URL = "http://web.archive.org/web/20211129172422/http://judicialselection.us/judicial_selection/methods/selection_of_judges.cfm?state="
 
@@ -24,112 +40,6 @@ CL_COURTS = "api/rest/v4/courts/"
 
 STATE_LEVEL_COURT_CODES = ["S", "SA", "ST", "SS", ""]
 STATE_SC_COURT_CODE = "S"
-
-COURT_LOOKUP_SHORT = {
-    "AL": "ala",
-    "AK": "alaska",
-    "AZ": "ariz",
-    "AR": "ark",
-    "CA": "cal",
-    "CO": "colo",
-    "CT": "conn",
-    "DE": "del",
-    "FL": "fla",
-    "GA": "ga",
-    "HI": "haw",
-    "ID": "idaho",
-    "IL": "ill",
-    "IN": "ind",
-    "IA": "iowa",
-    "KS": "kan",
-    "KY": "ky",
-    "LA": "la",
-    "ME": "me",
-    "MD": "md",
-    "MA": "mass",
-    "MI": "mich",
-    "MN": "minn",
-    "MS": "miss",
-    "MO": "mo",
-    "MT": "mont",
-    "NE": "neb",
-    "NV": "nev",
-    "NH": "nh",
-    "NJ": "nj",
-    "NM": "nm",
-    "NY": "ny",
-    "NC": "nc",
-    "ND": "nd",
-    "OH": "ohio",
-    "OK": "okla",
-    "OR": "or",
-    "PA": "pa",
-    "RI": "ri",
-    "SC": "sc",
-    "SD": "sd",
-    "TN": "tenn",
-    "TX": "tex",
-    "UT": "utah",
-    "VT": "vt",
-    "VA": "va",
-    "WA": "wash",
-    "WV": "wva",
-    "WI": "wis",
-    "WY": "wyo",
-}
-COURT_LOOKUP_LONG = {
-    "Alabama": "ala",
-    "Alaska": "alaska",
-    "Arizona": "ariz",
-    "Arkansas": "ark",
-    "California": "cal",
-    "Colorado": "colo",
-    "Connecticut": "conn",
-    "Delaware": "del",
-    "Florida": "fla",
-    "Georgia": "ga",
-    "Hawaii": "haw",
-    "Idaho": "idaho",
-    "Illinois": "ill",
-    "Indiana": "ind",
-    "Iowa": "iowa",
-    "Kansas": "kan",
-    "Kentucky": "ky",
-    "Louisiana": "la",
-    "Maine": "me",
-    "Maryland": "md",
-    "Massachusetts": "mass",
-    "Michigan": "mich",
-    "Minnesota": "minn",
-    "Mississippi": "miss",
-    "Missouri": "mo",
-    "Montana": "mont",
-    "Nebraska": "neb",
-    "Nevada": "nev",
-    "New Hampshire": "nh",
-    "New Jersey": "nj",
-    "New Mexico": "nm",
-    "New York": "ny",
-    "North Carolina": "nc",
-    "North Dakota": "nd",
-    "Ohio": "ohio",
-    "Oklahoma": "okla",
-    "Oregon": "or",
-    "Pennsylvania": "pa",
-    "Rhode Island": "ri",
-    "South Carolina": "sc",
-    "South Dakota": "sd",
-    "Tennessee": "tenn",
-    "Texas": "tex",
-    "Utah": "utah",
-    "Vermont": "vt",
-    "Virginia": "va",
-    "Washington": "wash",
-    "West Virginia": "wva",
-    "Wisconsin": "wis",
-    "Wyoming": "wyo",
-}
-
 
 """
 Scraper functions - return dataframes.
@@ -200,18 +110,15 @@ Functions to create merge columns.
 
 
 def create_merged_courts_df():
-    ncsc_file_path = Path("./data/courts/courts_ncsc.csv")
-    cl_file_path = Path("./data/courts/courts_cl.csv")
-
-    if ncsc_file_path.is_file():
-        courts_ncsc = pd.read_csv(ncsc_file_path)
+    if NCSC_FILE_PATH.is_file():
+        courts_ncsc = pd.read_csv(NCSC_FILE_PATH)
     else:
         print("NCSC file not found; scraping NCSC archive")
         courts_ncsc = scrape_ncsc_archive()
-        courts_ncsc.to_csv(ncsc_file_path)
+        courts_ncsc.to_csv(NCSC_FILE_PATH)
 
-    if cl_file_path.is_file():
-        courts_cl = pd.read_csv(cl_file_path)
+    if CL_FILE_PATH.is_file():
+        courts_cl = pd.read_csv(CL_FILE_PATH)
     else:
         try:
             api_token = os.environ["CL_API_KEY"]
@@ -223,7 +130,7 @@ def create_merged_courts_df():
             return
         print("CL file not found; scraping CL")
         courts_cl = scrape_courtlistener_courts(api_token)
-        courts_cl.to_csv(cl_file_path)
+        courts_cl.to_csv(CL_FILE_PATH)
 
     def prep_ncsc_df(ncsc_df):
         """
@@ -392,9 +299,6 @@ def create_merged_courts_df():
             "url",
         ]
     ]
-
-
-MERGED_COURTS_PATH = Path("./data/courts/courts_merged.csv")
 
 
 def get_courts_df():
