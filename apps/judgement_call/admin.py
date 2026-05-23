@@ -7,6 +7,7 @@ from apps.judgement_call.models import (
     Alias,
     Election,
     Candidacy,
+    CaseProcessingRun,
     Case,
     IndividualOpinion,
 )
@@ -84,6 +85,13 @@ class CandidacyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Candidacy, CandidacyAdmin)
+
+
+class CaseProcessingRunAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(CaseProcessingRun, CaseProcessingRunAdmin)
 
 
 class CaseAdmin(admin.ModelAdmin):

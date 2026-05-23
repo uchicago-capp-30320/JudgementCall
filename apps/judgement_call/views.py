@@ -795,7 +795,7 @@ def get_individual_opinions_for_radar(
 
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
-    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-12:]
+    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-13:-1]
     indops = (
         IndividualOpinion.objects.filter(
             judge_alias__tenure__person__name_canonical__in=persons
