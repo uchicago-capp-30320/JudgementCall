@@ -182,7 +182,24 @@ footer {
 
 .court-content {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.judge-list {
+    flex: 2;
+}
+
+.judge-list h3 {
+    font-size: 20px;
+}
+
+.judge-list .collapsible-container {
+    padding: 7px;
+}
+
+.court-charts {
+    flex: 1;
 }
 
 /* .sub-court-header {

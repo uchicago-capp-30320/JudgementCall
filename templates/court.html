@@ -44,21 +44,22 @@ Judgement Call
             <p>No judges found.</p>
             {% endfor %}
         </div>
+    </div>
 
 
-        <div class="court-charts">
-            <div class="gantt">
-                {% if gantt_data %}
-                {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
-                {% endif %}
-            </div>
-
-            <div class="radar">
-                {% if radar_data %}
-                {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
-                {% endif %}
-            </div>
+    <div class="court-charts">
+        <div class="gantt">
+            {% if gantt_data %}
+            {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
+            {% endif %}
         </div>
+
+        <div class="radar">
+            {% if radar_data %}
+            {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
+            {% endif %}
+        </div>
+
     </div>
 
     {% include "collapsible-script.html" %}
