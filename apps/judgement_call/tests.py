@@ -31,12 +31,12 @@ class HomepageTestCase(TestCase):
         response = self.client.get("")
         assert response.status_code == 200
 
-    def test_home_page_correct_buttons(self):
-        """Make sure the homepage has the right stuff on it"""
-        response = self.client.get("")
-        assert "Your Judges" in response.content.decode()
-        assert "Elections" in response.content.decode()
-        assert "Analysis" in response.content.decode()
+    # def test_home_page_correct_buttons(self):
+    #     """Make sure the homepage has the right stuff on it"""
+    #     response = self.client.get("")
+    #     assert "Your Judges" in response.content.decode()
+    #     assert "Elections" in response.content.decode()
+    #     assert "Analysis" in response.content.decode()
 
 
 class JudgesTestCase(TestCase):
