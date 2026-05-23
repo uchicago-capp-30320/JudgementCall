@@ -24,7 +24,7 @@
             <strong style="color: #1eaf64;">Party</strong>
             {% for item in details.party_data %}
             <div style="padding: 10px 0; font-size: 1em; font-weight: bold; color: #1eaf64;">
-                {{ item.person__party_registration|default:"Unaffiliated" }}: <strong>{{ item.count }}</strong>
+                {{ item.person__party_registration|default:"Unaffiliated"|title }}: <strong>{{ item.count }}</strong>
             </div>
             {% endfor %}
         </div>

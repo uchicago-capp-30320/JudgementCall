@@ -117,6 +117,7 @@ def build_court_dict(tenures, elections_soon):
             race_counts = list(
                 court_tenures.values("person__race").annotate(count=Count("person", distinct=True))
             )
+            print(race_counts)
             party_counts = list(
                 court_tenures.values("person__party_registration").annotate(
                     count=Count("person", distinct=True)
