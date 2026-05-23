@@ -46,24 +46,25 @@ Judgement Call
         </div>
     </div>
 
-
-    <div id="tab-content">
-        <div class="tabs">
-            <button class="tab active" data-tab="home">Tenure Timeline</button>
-            <button class="tab" data-tab="about">Issue Radar</button>
-        </div>
-        <div class="tab-content active" id="home">
-            <div class="gantt">
-                {% if gantt_data %}
-                {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
-                {% endif %}
+    <div class="court-charts">
+        <div id="tab-content">
+            <div class="tabs">
+                <button class="tab active" data-tab="home">Tenure Timeline</button>
+                <button class="tab" data-tab="about">Issue Radar</button>
             </div>
-        </div>
-        <div class="tab-content" id="about">
-            <div class="radar">
-                {% if radar_data %}
-                {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
-                {% endif %}
+            <div class="tab-content active" id="home">
+                <div class="gantt">
+                    {% if gantt_data %}
+                    {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="tab-content" id="about">
+                <div class="radar">
+                    {% if radar_data %}
+                    {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
@@ -71,7 +72,6 @@ Judgement Call
 
 <style>
     .tab-container {
-        max-width: 600px;
         margin: 2rem auto;
         font-family: sans-serif;
         background: #fff;

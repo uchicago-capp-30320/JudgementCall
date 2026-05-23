@@ -187,7 +187,7 @@ footer {
 }
 
 .judge-list {
-    flex: 2;
+    flex: 3;
 }
 
 .judge-list h3 {
@@ -198,8 +198,9 @@ footer {
     padding: 7px;
 }
 
-.tab-content {
+.court-content {
     flex: 1;
+    background-color: #f9fbff;
 }
 
 .judge-card {
@@ -212,6 +213,14 @@ footer {
 
 a {
     color: #3e6297;
+}
+
+.gantt {
+    background-color: #f9fbff;
+}
+
+.radar {
+    background-color: #f9fbff;
 }
 
 /* .sub-court-header {
