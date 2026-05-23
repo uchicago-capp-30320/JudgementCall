@@ -31,10 +31,10 @@ Judgement Call
     </p>
 </div>
 
-{% if session_state and session_county %}
+{% if state and county %}
 <div class="current-location">
     <h3>
-        You are looking at {{ session_county }}, {{ session_state }}
+        You are looking at {{ county }}, {{ state }}
     </h3>
     <a href="{% url 'judgement_call:clear_location' %}">
         <span class="material-icons center">refresh</span>
@@ -44,14 +44,14 @@ Judgement Call
 <div class="centerpiece">
     <nav class="services">
         <div class="elaboration">
-            <a class="big-button-item" href="/judges/?state={{ session_state }}&county={{ session_county }}">
+            <a class="big-button-item" href="/judges/?state={{ state }}&county={{ county }}">
                 <span class="material-icons md-60">gavel</span>
                 <h2 class="service">Your Judges</h2>
             </a>
             <p class="eventual-hover-details">Select to learn more about your local elected and appointed judges.</p>
         </div>
         <div class="elaboration">
-            <a class="big-button-item" href="/elections/?state={{ session_state }}&county={{ session_county }}">
+            <a class="big-button-item" href="/elections/?state={{ state }}&county={{ county }}">
                 <span class="material-icons md-60">ballot</span>
                 <h2 class="service">Elections</h2>
             </a>
@@ -59,7 +59,7 @@ Judgement Call
                 your municipality.</p>
         </div>
         <div class="elaboration">
-            <a class="big-button-item" href="/analysis/?state={{ session_state }}&county={{ session_county }}">
+            <a class="big-button-item" href="/analysis/?state={{ state }}&county={{ county }}">
                 <span class="material-icons md-60">analytics</span>
                 <h2 class="service">Analysis</h2>
             </a>

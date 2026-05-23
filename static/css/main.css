@@ -51,6 +51,7 @@ body {
 .navbar-item-logo {
     color: #f9fbff;
     text-decoration: none;
+    align-items: center;
 }
 
 .navbar-menu {
@@ -69,6 +70,7 @@ body {
     text-decoration: none;
     padding-left: 10px;
     padding-right: 10px;
+    align-items: center;
 }
 
 .navbar-item:hover {
@@ -76,8 +78,57 @@ body {
     background-color: #f9fbff;
 }
 
-.location-bar {
+.navbar-more {
+    position: relative;
+}
+
+.more-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1;
+}
+
+.more-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: black;
+    border-radius: 4px;
+    min-width: 120px;
+    z-index: 100;
+}
+
+.more-dropdown.show {
+    display: block;
     text-align: right;
+}
+
+.more-item {
+    display: block;
+    padding: 4px 16px !important;
+    color: #f9fbff;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.more-item:hover {
+    /*background-color: rgba(255, 255, 255, 0.15);*/
+    color: #f9fbff;
+    background-color: gray;
+}
+
+.location-bar {
+    display: table;
+    margin-left: auto;
+    text-align: right;
+    padding: 6px 16px;
+    background-color: #f0ecff;
+    border: 2px solid #4a3a8c;
+    color: #4a3a8c;
 }
 
 .location-reset {

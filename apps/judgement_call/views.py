@@ -51,6 +51,8 @@ def judges(request):
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
         return judges_state_county(request, state, county)
 
     context = {
@@ -181,11 +183,11 @@ def judges_state_county(request, state, county):
 
     context = {
         "courts": courts,
-        "state": state,
-        "county": county,
+        # "state": state,
+        # "county": county,
         "fallback_url": reverse("judgement_call:judges"),
-        "session_state": request.session.get("state"),
-        "session_county": request.session.get("county"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
     return render(request, "judges_state_county.html", context)
 
@@ -258,16 +260,20 @@ def landing(request):
         "msg": "Welcome to Judgement Call!",
         "button_name": """Start Exploring""",
         "states": US_STATES,
-        "session_state": request.session.get("state"),
-        "session_county": request.session.get("county"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "home.html", context)
 
 
-def about(request):
-    """About page, also to test if base.html is working."""
-    context = {"msg": "<Insert heartfelt story about the creation of this project.>"}
+def methodology(request):
+    """Methodology page."""
+    context = {
+        "msg": "<Methodology for this project.>",
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
 
     return render(request, "about.html", context)
 
@@ -277,6 +283,8 @@ def elections(request):
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
         return elections_state_county(request, state, county)
 
     context = {
@@ -361,11 +369,11 @@ def elections_state_county(request, state, county):
 
     context = {
         "elections": elections,
-        "state": state,
-        "county": county,
+        # "state": state,
+        # "county": county,
         "fallback_url": reverse("judgement_call:elections"),
-        "session_state": request.session.get("state"),
-        "session_county": request.session.get("county"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "elections_state_county.html", context)
@@ -440,16 +448,16 @@ def analysis(request):
     context = {
         "msg": "Pending!",
         "header": "Analysis",
-        "preamble": "Apply filters to see judicial analytics.",
+        "preamble": "See judicial analytics on a national scale.",
         "states": US_STATES,
         "radar_data": radar_data,
         "button_name": """Generate Analytics""",
-        "state": court_id,
+        # "state": court_id,
         "court_name": court_name,
         "gantt_data": gantt_data,
         "fallback_url": reverse("judgement_call:landing"),
-        "session_state": request.session.get("state"),
-        "session_county": request.session.get("county"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "analysis.html", context)

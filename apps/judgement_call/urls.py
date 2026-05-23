@@ -12,7 +12,7 @@ urlpatterns = [
         name="judges_state_county",
     ),
     path("people/<int:person_id>/", views.show_person, name="show_person"),
-    path("about/", views.about, name="about"),
+    path("methodology/", views.methodology, name="methodology"),
     path("elections/", views.elections, name="elections"),
     path(
         "elections/<str:state>/<str:county>/",
