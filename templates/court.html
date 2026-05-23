@@ -11,7 +11,7 @@ Judgement Call
 {# include "back-arrow.html" with fallback_url=fallback_url #}
 
 <div class="court-content">
-    <div class="court-content-sub">
+    <div class="court-content-sub" id="judge-list">
         <div class="judge-list">
             <div class="sub-court-header">
                 <h3>Current Sitting Judges:</h3>
@@ -49,7 +49,7 @@ Judgement Call
         </div>
     </div>
 
-    <div class="court-content-sub">
+    <div class="court-content-sub" id="court-charts">
         <div class="court-charts">
             <div id="tab-content">
                 <div class="tabs">
@@ -96,7 +96,7 @@ Judgement Call
         padding: 0.5rem 1rem;
         cursor: pointer;
         border: none;
-        background: #eee;
+        background: #d2d2d2;
         border-radius: 4px;
         transition: background 0.3s ease;
     }
