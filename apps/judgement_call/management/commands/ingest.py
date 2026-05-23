@@ -3,11 +3,14 @@ import pathlib
 import string
 import json
 import us
+from pathlib import Path
+from tqdm import tqdm
 from dateutil.parser import parse
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
-from ingestion.ingest_courts import (
-    MERGED_COURTS_PATH,
+from ingestion.ingest_courts import MERGED_COURTS_PATH
+from ingestion.merge_wiki_slri import OUTPUT_CSV as MERGED_JUDGES_PATH
+from ingestion.state_crosswalks import (
     COURT_LOOKUP_LONG,
     COURT_LOOKUP_SHORT,
 )
@@ -38,24 +41,48 @@ app = Typer()
 @app.command()
 def command(self, data: str):
     if data == "courts":
+        count_courts = 0
+        count_courts_created = 0
         if MERGED_COURTS_PATH.is_file():
             with open(MERGED_COURTS_PATH, encoding="utf-8") as file:
                 reader = csv.reader(file)
                 for row in reader:
                     headers = row
                     break
-                for row in reader:
+                for row in tqdm(reader):
                     court = dict(zip(headers, row))
                     numeric_fields = ["bench_size", "term_length"]
 
                     for field in numeric_fields:
                         court[field] = empty_string_to_none(court[field])
 
-                    print(court)
+                    # print(court) #todo: verbose flag
                     court, created = Court.objects.update_or_create(
                         court_id=court["court_id"], defaults={**court}
                     )
-                    print(court, created)
+                    count_courts += 1
+                    if created:
+                        count_courts_created += 1
+
+                    # print(court, created)
+        print(f"courts: {count_courts}, created: {count_courts_created}")
+
+    if data == "county-to-court":
+        count_countytocourts = 0
+        count_countytocourts_created = 0
+        county_df = make_county_to_court_df()
+        for _, row in tqdm(county_df.iterrows()):
+            county = dict(**row)
+            lookup_court = Court.objects.get(court_id=county["court_id"])
+            countytocourt, created = CountyToCourt.objects.get_or_create(
+                state=county["state"], county=county["county"], fips=county["fips"]
+            )
+            countytocourt.court.add(lookup_court)
+            count_countytocourts += 1
+            if created:
+                count_countytocourts_created += 1
+            # print(f"county:{countytocourt}, created: {created}, added court: {lookup_court}")
+        print(f"countytocourts: {count_countytocourts}, created: {count_countytocourts_created}")
 
     if data == "cases":
         with open("./data/run_metadata/llm_run_05-15-2026.json") as file:
@@ -131,71 +158,37 @@ def command(self, data: str):
                     opinions_created += created
             print(f"Opinions created: {opinions_created}")
 
-    if data == "county-to-court":
-        county_df = make_county_to_court_df()
-        for index, row in county_df.iterrows():
-            county = dict(**row)
-            court = county.pop("court", None)
-            lookup_court = Court.objects.get(court_id=court)
-            county, created = CountyToCourt.objects.update_or_create(**county)
-            county.court.add(lookup_court)
-            print(f"county:{county}, created: {created}")
-
-    if data == "tenures-wiki":
-        tenure_fields = [
-            "court",
-            "person",
-            "start_date",
-            "end_date",
-            "selection_type",
-            "ticket_party",
-            "appointer_name",
-            "appointer_party",
-            "chief_justice",
-        ]
-        person_fields = [
-            "name",
-            "birth_date",
-            "gender",
-            "race",
-            "party_registration",
-            "professional_experience",
-            "law_school",
-        ]
+    if data == "tenures":
         date_fields = ["start_date", "end_date", "birth_date"]
-        with open("./data/merged_judges.csv", encoding="utf-8") as file:
+        with open(MERGED_JUDGES_PATH, encoding="utf-8") as file:
             reader = csv.reader(file)
             for row in reader:
                 headers = row
                 break
-            for row in reader:
+            for row in tqdm(reader):
                 judge = dict(zip(headers, row))
+                # quick fix for missing underscore, need to change in scraper
+                judge["professional_experience"] = judge["professional experience"]
+                print(judge["next election date"])
                 print(judge)
                 # handle dates
                 for field in date_fields:
                     year = year_only(judge.get(field))
-                    print(field, year)
                     judge[field] = datetime(year, 1, 1) if year is not None else None
-                for field in ["ticket_party", "appointer_party"]:
-                    party = judge[field]
-                    print(party, party_mapping.get(party, "Not Found"))
-                    judge[field] = party_mapping.get(party, PartyAffiliation.UNKNOWN)
-                # look up court
-                court_id = COURT_LOOKUP_LONG.get(judge["state"], None)
-                if court_id is None:
-                    print("court not found")
-                    continue
+                for party_field in ["ticket_party", "appointer_party"]:
+                    party = judge[party_field]
+                    judge[party_field] = party_mapping.get(party, PartyAffiliation.UNKNOWN)
+
+                # build person object from judge dict
+                person_name, person = build_person(judge)
+                person_obj, created = Person.objects.update_or_create(
+                    name_canonical=person_name, defaults=person
+                )
+                print(f"person: {person_obj}, created: {created}")
+
+                # build tenure obj from judge dict
+                court_id, tenure = build_tenure(judge)
                 court_obj = Court.objects.get(court_id=court_id)
-                print(court_obj)
-                person = {k: v for k, v in judge.items() if k in person_fields}
-                person["name_canonical"] = person.pop("name")
-                print("person:", person)
-                person_obj, created = Person.objects.update_or_create(**person)
-                # create person and return person
-                tenure = {k: v for k, v in judge.items() if k in tenure_fields}
-                tenure["court"] = court_obj
-                tenure["person"] = person_obj
-                print("tenure:", tenure)
                 try:
                     tenure_obj, created = Tenure.objects.update_or_create(
                         court=court_obj, person=person_obj, defaults=tenure
@@ -203,62 +196,6 @@ def command(self, data: str):
                     print(f"tenure: {tenure_obj}, created: {created}")
                 except IntegrityError as e:  # debugging
                     print(f"integrity error: {e}")
-                    continue
-
-    if data == "tenures-slri":
-        with open("./data/judges_slri.csv", encoding="utf-8") as file:
-            reader = csv.reader(file)
-            for row in reader:
-                headers = row
-                break
-            for row in reader:
-                person = {}
-                tenure = {}
-                judge = dict(zip(headers, row))
-                court_id = COURT_LOOKUP_SHORT.get(judge["state"], None)
-                if court_id is None:
-                    print("court not found")
-                    continue
-                lookup_court = Court.objects.get(court_id=court_id)
-                print(lookup_court)
-                party = judge["party"]
-                print(party, party_mapping.get(party, "Not Found"))
-                person = {
-                    "name_canonical": judge["name"],
-                    # "birth_date": ,
-                    "gender": slri_gender.get(judge["gender"], judge["gender"]),
-                    "race": slri_race.get(judge["race"], judge["race"]),
-                    "party_registration": party_mapping.get(party, PartyAffiliation.UNKNOWN),
-                    "professional_experience": judge["professional experience"],
-                    "law_school": "",
-                }
-                print(judge)
-                person, created = Person.objects.update_or_create(**person)
-                # create person and return person
-                try:
-                    judge["term start"] = datetime.strptime(judge["term start"], "%B %d, %Y")
-                except (TypeError, ValueError):
-                    judge["term start"] = datetime(3000, 1, 1, 0, 0)
-                try:
-                    judge["term end"] = datetime.strptime(judge["term end"], "%B %d, %Y")
-                except (TypeError, ValueError):
-                    judge["term end"] = datetime(3000, 1, 1, 0, 0)
-                tenure = {
-                    "court": lookup_court,
-                    "person": person,  # returned person value
-                    "start_date": judge["term start"],
-                    "end_date": judge["term end"],
-                    "selection_type": slri_selection_type_parse(
-                        judge["election type"]
-                    ),  # choices selection type
-                    # "ticket_party": "", #????
-                    # "appointer_name": "",
-                    # "appointer_party": "", #
-                    # "chief_justice": "",
-                }
-                try:
-                    tenure, created = Tenure.objects.update_or_create(**tenure)
-                except IntegrityError:
                     continue
 
 
@@ -289,24 +226,9 @@ def build_case(row_dict: dict):
     return {k: v for k, v in row_dict.items() if k in case_fields}
 
 
-def build_tenure(row_dict: dict):
-    tenure_fields = [
-        "court",
-        "person",
-        "start_date",
-        "end_date",
-        "selection_type",
-        "ticket_party",
-        "appointer_name",
-        "appointer_party",
-        "chief_justice",
-    ]
-    return {k: v for k, v in row_dict.items() if k in tenure_fields}
-
-
 def build_person(row_dict: dict):
     person_fields = [
-        "name",
+        "name_canonical",
         "birth_date",
         "gender",
         "race",
@@ -314,7 +236,28 @@ def build_person(row_dict: dict):
         "professional_experience",
         "law_school",
     ]
-    return {k: v for k, v in row_dict.items() if k in person_fields}
+    person_name = row_dict.get("name")
+    defaults = {k: v for k, v in row_dict.items() if k in person_fields}
+    return person_name, defaults
+
+
+def build_tenure(row_dict: dict):
+    tenure_fields = [
+        # "court",
+        # "person",
+        "start_date",
+        "end_date",
+        "selection_type",
+        "ticket_party",
+        "appointer_name",
+        "appointer_party",
+        "chief_justice",
+        "source_url",
+        "scraped_at",
+    ]
+    court_id = COURT_LOOKUP_LONG.get(row_dict.get("state", ""), "")
+    defaults = {k: v for k, v in row_dict.items() if k in tenure_fields}
+    return court_id, defaults
 
 
 slri_race = {

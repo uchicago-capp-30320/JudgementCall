@@ -12,12 +12,12 @@ from utils.matching import find_best_match
 BASE_DIR = Path(__file__).resolve().parent
 
 # Path to the data/ folder and make sure it exists
-DATA_DIR = BASE_DIR.parent / "data"
+DATA_DIR = BASE_DIR.parent / "data" / "judges"
 DATA_DIR.mkdir(exist_ok=True)
 
 # Input csv paths
 WIKI = DATA_DIR / "wikipedia.csv"
-SLRI = DATA_DIR / "judges_slri.csv"
+SLRI = DATA_DIR / "slri.csv"
 
 # Final csv path
 OUTPUT_CSV = DATA_DIR / "merged_judges.csv"

@@ -39,6 +39,7 @@ dependencies = [
     "whitenoise>=6.9.0,<7",
     "curl-cffi>=0.15.0",
     "typer-slim>=0.21.2",
+    "tqdm>=4.67.3",
 ]
 
 [tool.ruff]
