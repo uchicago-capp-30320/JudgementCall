@@ -130,7 +130,7 @@ class PersonRace(models.TextChoices):
 
 # Create your models here.
 class Court(models.Model):
-    court_id = models.CharField()
+    court_id = models.CharField(unique=True)
     name = models.CharField()
     court_level = models.CharField(choices=CourtLevel, null=True)
     court_type = models.CharField()
@@ -254,8 +254,10 @@ class Tenure(models.Model):
 
 
 class Election(models.Model):
+    election_id = models.CharField(unique=True, blank=True)
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     election_date = models.DateField()
+    filing_deadline = models.DateField(null=True)
     election_type = models.CharField(choices=ElectionType, null=True)
     incumbent = models.ForeignKey(Tenure, on_delete=models.CASCADE, null=True, blank=True)
 
