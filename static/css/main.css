@@ -202,6 +202,18 @@ footer {
     flex: 1;
 }
 
+.judge-card {
+    border: 2px solid #3e6297;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    max-width: 800px;
+}
+
+a {
+    color: #3e6297;
+}
+
 /* .sub-court-header {
     display: flex;
     align-items: center;
