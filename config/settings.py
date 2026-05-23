@@ -50,7 +50,9 @@ else:
 DATABASES = {"default": _DEFAULT_DB}
 vars().update(EMAIL_CONFIG)
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "judgementcall.civic.garden"]
+)
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://localhost:8000"])
 INTERNAL_IPS = ["127.0.0.1"]
 
