@@ -243,8 +243,21 @@ def show_person(request, person_id):
 
 def landing(request):
     """Landing page for Judgement Call users."""
+
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
+
+        return redirect(reverse("judgement_call:landing"))
+
     context = {
         "msg": "Welcome to Judgement Call!",
+        "button_name": """Start Exploring""",
+        "states": US_STATES,
+        "session_state": request.session.get("state"),
+        "session_county": request.session.get("county"),
     }
 
     return render(request, "home.html", context)
