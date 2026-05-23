@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
 from django.db.models import Avg, Count, When, Value, Q
 from django.db.models import Case as Case_
@@ -90,30 +90,11 @@ def judge_sort(judge_lst):
     return [chief_j] + ordered_lst
 
 
-def judges_state_county(request, state, county):
+def build_court_dict(tenures, elections_soon):
     """
-    courts structure --
-    courts {
-        court_name: {
-            id: court_id,
-            upcoming_election: T/F,
-            judges: [judge1_dict, judge2_dict, judge3_dict...]
-        }
-    }
+    build courts_dict to get list of judges & infographic
     """
-    # grab all the tenures associated with a specific state / county
-    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
-    if not geo_c2c.exists():
-        raise Http404("State or county not found")
-    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
-    elections_soon = get_upcoming_elections(local_courts_list)
-
-    # only get current judges
-    tenures = Tenure.objects.filter(
-        court__in=local_courts_list, end_date__isnull=True
-    ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
     courts = {}
-
     # iterate through all the tenures and courts associated with them
     for tenure in tenures:
         # when we get to a new court add it to the dict of courts.
@@ -147,7 +128,9 @@ def judges_state_county(request, state, county):
                 if tenure.person.birth_date
             ]
             if birth_years:
-                avg_age = timezone.now().year - (sum(birth_years) / len(birth_years))
+                avg_age = (
+                    tenure.person.age
+                )  # timezone.now().year - (sum(birth_years) / len(birth_years))
             else:
                 avg_age = None
 
@@ -175,9 +158,33 @@ def judges_state_county(request, state, county):
                 "end_date": tenure.end_date,
             }
         )
+    return courts
 
-    # for c in courts.keys():
-    #     c["judges"] = judge_sort(c["judges"])
+
+def judges_state_county(request, state, county):
+    """
+    courts structure --
+    courts {
+        court_name: {
+            id: court_id,
+            upcoming_election: T/F,
+            judges: [judge1_dict, judge2_dict, judge3_dict...]
+        }
+    }
+    """
+    # grab all the tenures associated with a specific state / county
+    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    if not geo_c2c.exists():
+        raise Http404("State or county not found")
+    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+    elections_soon = get_upcoming_elections(local_courts_list)
+
+    # only get current judges
+    tenures = Tenure.objects.filter(
+        court__in=local_courts_list, end_date__isnull=True
+    ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
+
+    courts = build_court_dict(tenures, elections_soon)
 
     context = {
         "courts": courts,
@@ -191,10 +198,20 @@ def judges_state_county(request, state, county):
 def court_full_view(request, court_id):
     court = Court.objects.get(court_id=court_id)
     judges = get_current_judges_for_court(court_id)
+    # search by court_id to get tenures?
+    # splice out helper function from judges page to make function that can
+    # map over tenures
+    tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
+        court=court, end_date__gt=timezone.now()
+    )
+    upcoming_elections = get_upcoming_elections([court])
+    court_formatted = build_court_dict(tenures, upcoming_elections)
+    details = court_formatted[court.name]
 
     context = {
         "court": court,
-        "court_name": court.name,
+        "court_formatted": court_formatted,
+        "details": details,
         "gantt_data": court.gantt_json().text,
         "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
     }

@@ -80,18 +80,7 @@ Judgement Call
     {% empty %}
     <p>No courts found for {{ county }}, {{ state }}.</p>
     {% endfor %}
-    <script>
-        document.querySelectorAll('.collapsible-container').forEach(function (container) {
-            container.addEventListener('click', function () {
-                const content = this.nextElementSibling;
-                if (content.style.maxHeight && content.style.maxHeight !== "0px") {
-                    content.style.maxHeight = "0px";
-                } else {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
-        });
-    </script>
+    {% include "collapsible-script.html" %}
 </body>
 
 </html>
