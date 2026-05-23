@@ -6,12 +6,21 @@ from pathlib import Path
 from datetime import datetime
 import random
 
+EXISTING_CASES_PATH = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
+EXISTING_CASES = None
+if EXISTING_CASES_PATH.exists():
+    EXISTING_CASES = pd.read_csv(EXISTING_CASES_PATH)
 
-def generate_case_id(docket_no, state, date):
+
+def generate_case_id(docket_no, court, date):
+    """
+    This function generates a case ID that will be used as a primary key in
+    our database. These IDs combine a case's docket number, court, and date.
+    """
     docket_no = docket_no.replace(" ", "-")
-    state = "-".join(state.split(" "))
+    court = "-".join(court.split(" ")) + "-SC"
     date = str(datetime.strptime(date, "%B %d, %Y"))[:10].replace("-", "/")
-    case_id = "_".join([docket_no, state, date])
+    case_id = "_".join([docket_no, court, date])
 
     return case_id
 
@@ -26,17 +35,25 @@ def make_request(url):
 
     while True:
         try:
-            resp = curl_cffi.get(url, impersonate="chrome", allow_redirects=False)
-            if resp.status_code == 429:
-                print("Ran into 429 error, sleeping for 2.5 seconds")
-                time.sleep(2.5)
-                continue
-            elif resp.status_code == 200:
+            resp = curl_cffi.get(url, impersonate="chrome", allow_redirects="safe")
+
+            if resp.status_code == 200:
                 return resp
+
+            elif resp.status_code == 429:
+                if wait_time > 60:
+                    print("Wait time larger than one minute, aborting")
+                    raise RuntimeError
+
+                print(f"Ran into 429 error, waiting for {wait_time} seconds")
+                time.sleep(wait_time)
+                wait_time += 1
+
         except curl_cffi.exceptions.ConnectionError as ce:
             if wait_time > 60:
                 print("Wait time larger than one minute, aborting")
                 raise ce
+
             print(f"Ran into connection error, waiting for {wait_time} seconds")
             time.sleep(wait_time)
             wait_time += 1
@@ -136,7 +153,64 @@ def scrape_case(case_url):
     return rd
 
 
-def scrape_page(url, rd):
+def page_meta_data(url):
+    root = lxml.html.fromstring(make_request(url).text)
+
+    xp1 = "//h2[@class = 'card__heading']"
+    xp2 = "//a[@class = 'card__heading__link']/@href"
+    case_links = root.xpath(xp1 + xp2)
+
+    xp1 = "//div[@class = 'card card--case grid__item']"
+
+    titles = root.xpath(xp1 + "//a[@class = 'card__heading__link']//span/text()")
+
+    states = root.xpath(xp1 + "//div[@class = 'state-icon__icon-tooltip']/text()")
+    states = [st_name.replace("\n", "").strip() for st_name in states]
+
+    dates = root.xpath(xp1 + "//time/text()")
+
+    case_types = []
+    grid_cards = root.xpath(xp1)
+    for card in grid_cards:
+        query_result = card.xpath(".//a[@class = 'link'][1]/text()")
+        if query_result == []:
+            case_types.append(None)
+        else:
+            case_types.append(query_result[0].replace("\n", "").strip())
+
+    rd = {
+        "case_link": case_links,
+        "case_title": titles,
+        "case_state": states,
+        "case_date": dates,
+        "case_type": case_types,
+    }
+
+    next_url = root.xpath("//a[@class = 'pager__link pager__link--next']/@href")
+
+    if next_url == []:
+        next_page_url = None
+    else:
+        next_page_url = next_url[0]
+
+    return pd.DataFrame(rd), next_page_url
+
+
+def check_if_exists(title: str, state: str, date: str, case_type: str):
+    r_bool = False
+
+    if EXISTING_CASES is not None:
+        return (
+            (EXISTING_CASES["title"] == title)
+            & (EXISTING_CASES["state"] == state)
+            & (EXISTING_CASES["date"] == date)
+            & (EXISTING_CASES["type"] == case_type)
+        ).any()
+
+    return r_bool
+
+
+def scrape_page(url, rd, incremental=False):
     """
     Function takes the url for a page, and a return dictionary with the
     structure:
@@ -156,37 +230,27 @@ def scrape_page(url, rd):
     information. Iterating through each displayed case, the function returns
     a dictionary of lists containing the information for the cases.
     """
-    root = lxml.html.fromstring(make_request(url).text)
+    meta_data, next_page_url = page_meta_data(url)
 
-    xp1 = "//h2[@class = 'card__heading']"
-    xp2 = "//a[@class = 'card__heading__link']/@href"
-    case_links = root.xpath(xp1 + xp2)
-
-    for link in case_links:
-        case_info = scrape_case(link)
+    for index, row in meta_data.iterrows():
+        already_exists = check_if_exists(
+            row["case_title"], row["case_state"], row["case_date"], row["case_type"]
+        )
+        if incremental and already_exists:
+            print(f"The case {row['case_title']} is already in the database.")
+            continue
+        wait_time = random.uniform(5, 20)
+        print(f"Waiting for {round(wait_time, 1)} before scraping {row['case_title']}")
+        time.sleep(wait_time)
+        case_info = scrape_case(row["case_link"])
 
         for field in rd.keys():
             rd[field].append(case_info[field])
 
-    return rd
+    return rd, next_page_url
 
 
-def next_page_url(url):
-    """
-    Given a url for a page displaying cases, it extracts the link to the next
-    page. If there is no next page, it returns an empty string.
-    """
-    root = lxml.html.fromstring(make_request(url).text)
-
-    rl = root.xpath("//a[@class = 'pager__link pager__link--next']/@href")
-
-    if rl == []:
-        return ""
-    else:
-        return rl[0]
-
-
-def multi_page(start_url):
+def multi_page(start_url, incremental=False):
     """
     Given an initial page displaying cases, the function extracts the
     information for each case using the scrape_page function, it then uses
@@ -211,13 +275,18 @@ def multi_page(start_url):
     print("Beginning webscraping of State Case Database...")
     page_num = 1
     while True:
-        time.sleep(random.uniform(10, 20))
-        page_info = scrape_page(url, rd)
-
-        url = url_base + next_page_url(url)
+        if page_num != 1:
+            wait_time = random.uniform(30, 50)
+            print(f"Waiting for {round(wait_time, 1)} seconds before next page scrape")
+            time.sleep(wait_time)
+        page_info, next_page_url = scrape_page(url, rd, incremental)
+        if incremental:
+            url = start_url + f"&page={page_num}"
+        else:
+            url = url_base + next_page_url
         rd = page_info
 
-        if url == url_base:
+        if next_page_url is None:
             print("State Case Database webscrape complete!")
             break
 
@@ -228,6 +297,12 @@ def multi_page(start_url):
 
 
 def handle_duplicate_id(input_df: pd.DataFrame, series_name: str):
+    """
+    Combinations of docket number, court, and date, are sometimes not enough
+    to uniquely differentiate cases. To ensure IDs are unique before they go
+    into the database, this function differentiates unique duplicate IDs by
+    adding a number (e.g., 1, 2, 3).
+    """
     id_series = input_df[series_name].copy()
 
     dupes = id_series[id_series.duplicated()]
@@ -245,8 +320,13 @@ def handle_duplicate_id(input_df: pd.DataFrame, series_name: str):
     input_df[series_name] = id_series
 
 
-def scrape_scdb(write_on=True):
-    case_df = multi_page("https://statecourtreport.org/state-case-database")
+def scrape_scdb(write_on=True, incremental=False):
+    if incremental:
+        url = f"https://statecourtreport.org/state-case-database?state=All&issue=All&year={datetime.now().year}"
+    else:
+        url = "https://statecourtreport.org/state-case-database"
+
+    case_df = multi_page(url, incremental)
 
     # Dropping non-decided cases, and cases with no opinion documents
     case_df = case_df[~case_df["pending"]]
@@ -259,7 +339,13 @@ def scrape_scdb(write_on=True):
     # Writing csv file
     if write_on:
         path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
-        case_df.to_csv(path, index=False)
+        if incremental:
+            existing_cases = pd.read_csv(path)
+            full_cases = pd.concat([case_df, existing_cases])
+            handle_duplicate_id(full_cases, "case_id")
+            full_cases.to_csv(path, index=False)
+        else:
+            case_df.to_csv(path, index=False)
 
     return case_df
 
