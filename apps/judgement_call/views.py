@@ -215,6 +215,7 @@ def court_full_view(request, court_id):
         "details": details,
         "gantt_data": court.gantt_json().text,
         "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+        # "fallback_url": reverse("judgement_call:judges_state_county"),
     }
 
     return render(request, "court.html", context)

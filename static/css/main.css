@@ -223,6 +223,10 @@ a {
     background-color: #f9fbff;
 }
 
+.court-content-sub {
+    flex: 1;
+}
+
 /* .sub-court-header {
     display: flex;
     align-items: center;

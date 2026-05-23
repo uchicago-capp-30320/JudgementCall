@@ -8,62 +8,67 @@ Judgement Call
 {% block content %}
 
 {% include "infographic.html" with details=details %}
+{# include "back-arrow.html" with fallback_url=fallback_url #}
 
 <div class="court-content">
-    <div class="judge-list">
-        <div class="sub-court-header">
-            <h3>Current Sitting Judges:</h3>
-        </div>
-        <div>
-            {% for judge in details.judges %}
-            <div class="collapsible-container">
-                {% if judge.chief_justice == True %}
-                <h3>{{ judge.name }} - Chief Justice</h3>
-                {% else %}
-                <h3>{{ judge.name }}</h3>
-                {% endif %}
-                <span class="material-symbols-outlined">
-                    arrow_forward_ios
-                </span>
+    <div class="court-content-sub">
+        <div class="judge-list">
+            <div class="sub-court-header">
+                <h3>Current Sitting Judges:</h3>
             </div>
-            <div class="collapsible-details">
-                <div class="judge-card">
-                    <p>Joined Court: {{ judge.start_date.year }}</p>
-                    <p>Term End: {{ judge.end_date.year }}</p>
-                    {% if judge.party_registration == "Republican" %}
-                    <p style="color: #c92a2a;"> {{ judge.party_registration}}</p>
-                    {% elif judge.party_registration == "Democrat" %}
-                    <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
+            <div>
+                {% for judge in details.judges %}
+                <div class="collapsible-container">
+                    {% if judge.chief_justice == True %}
+                    <h3>{{ judge.name }} - Chief Justice</h3>
                     {% else %}
-                    <p> {{ judge.party_registration }}</p>
+                    <h3>{{ judge.name }}</h3>
                     {% endif %}
-                    <p> <a href="{{ judge.more_info }}">more details</a> </p>
+                    <span class="material-symbols-outlined">
+                        arrow_forward_ios
+                    </span>
                 </div>
+                <div class="collapsible-details">
+                    <div class="judge-card">
+                        <p>Joined Court: {{ judge.start_date.year }}</p>
+                        <p>Term End: {{ judge.end_date.year }}</p>
+                        {% if judge.party_registration == "Republican" %}
+                        <p style="color: #c92a2a;"> {{ judge.party_registration}}</p>
+                        {% elif judge.party_registration == "Democrat" %}
+                        <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
+                        {% else %}
+                        <p> {{ judge.party_registration }}</p>
+                        {% endif %}
+                        <p> <a href="{{ judge.more_info }}">more details</a> </p>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No judges found.</p>
+                {% endfor %}
             </div>
-            {% empty %}
-            <p>No judges found.</p>
-            {% endfor %}
         </div>
     </div>
 
-    <div class="court-charts">
-        <div id="tab-content">
-            <div class="tabs">
-                <button class="tab active" data-tab="home">Tenure Timeline</button>
-                <button class="tab" data-tab="about">Issue Radar</button>
-            </div>
-            <div class="tab-content active" id="home">
-                <div class="gantt">
-                    {% if gantt_data %}
-                    {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
-                    {% endif %}
+    <div class="court-content-sub">
+        <div class="court-charts">
+            <div id="tab-content">
+                <div class="tabs">
+                    <button class="tab active" data-tab="home">Tenure Timeline</button>
+                    <button class="tab" data-tab="about">Issue Radar</button>
                 </div>
-            </div>
-            <div class="tab-content" id="about">
-                <div class="radar">
-                    {% if radar_data %}
-                    {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
-                    {% endif %}
+                <div class="tab-content active" id="home">
+                    <div class="gantt">
+                        {% if gantt_data %}
+                        {% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="tab-content" id="about">
+                    <div class="radar">
+                        {% if radar_data %}
+                        {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
