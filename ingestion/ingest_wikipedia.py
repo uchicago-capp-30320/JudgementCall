@@ -9,6 +9,8 @@ import time
 import csv
 import pandas as pd
 import re
+import us
+from tqdm import tqdm
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -17,7 +19,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # Path to the data/ folder and make sure it exists
-DATA_DIR = BASE_DIR.parent / "data"
+DATA_DIR = BASE_DIR.parent / "data" / "judges"
 DATA_DIR.mkdir(exist_ok=True)
 
 # Final CSV path
@@ -135,6 +137,7 @@ states = [
     "Wisconsin",
     "Wyoming",
 ]
+states = [state.name for state in us.STATES]
 
 
 ########## BASE SCRAPER ##########
@@ -527,7 +530,7 @@ def main():
 
     all_dfs = []
 
-    for state, paths in states_to_scrape.items():
+    for state, paths in tqdm(states_to_scrape.items()):
         for path in paths:
             header, rows = run_scraper(state, path)
 

@@ -29,15 +29,18 @@ class Command(BaseCommand):
 
         all_aliases = Alias.objects.all()
         count_all_aliases = len(all_aliases)
-        for alias in all_aliases:
-            if options["add"]:
-                tenure = alias.match_tenure(options["update"])
-                if tenure is not None:
-                    matched_tenures += 1
-            else:
-                matches = alias.find_matches()
-                print(matches)
-        print(
-            f"{matched_tenures} out of {count_all_aliases}",
-            f"({matched_tenures / count_all_aliases * 100}%) of aliases matched",
-        )
+        if count_all_aliases == 0:
+            print("No aliases found.")
+        else:
+            for alias in all_aliases:
+                if options["add"]:
+                    tenure = alias.match_tenure(options["update"])
+                    if tenure is not None:
+                        matched_tenures += 1
+                else:
+                    matches = alias.find_matches()
+                    print(matches)
+            print(
+                f"{matched_tenures} out of {count_all_aliases}",
+                f"({matched_tenures / count_all_aliases * 100}%) of aliases matched",
+            )

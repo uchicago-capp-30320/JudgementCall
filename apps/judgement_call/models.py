@@ -130,7 +130,7 @@ class PersonRace(models.TextChoices):
 
 # Create your models here.
 class Court(models.Model):
-    court_id = models.CharField()
+    court_id = models.CharField(unique=True)
     name = models.CharField()
     court_level = models.CharField(choices=CourtLevel, null=True)
     court_type = models.CharField()
@@ -254,10 +254,12 @@ class Tenure(models.Model):
 
 
 class Election(models.Model):
+    election_id = models.CharField(unique=True, blank=True)
     court = models.ForeignKey(Court, on_delete=models.PROTECT)
     election_date = models.DateField()
+    filing_deadline = models.DateField(null=True)
     election_type = models.CharField(choices=ElectionType, null=True)
-    incumbent = models.ForeignKey(Tenure, on_delete=models.PROTECT, null=True, blank=True)
+    incumbent = models.ForeignKey(Tenure, on_delete=models.CASCADE, null=True, blank=True)
 
     def deduce_elections(self):
         court_elections = Tenure.objects.values("id", "court_id", "end_date")
@@ -366,6 +368,7 @@ class Case(models.Model):
     free_speech = models.CharField(choices=TopicAlignment, blank=True)
     privacy = models.CharField(choices=TopicAlignment, blank=True)
     worker_rights = models.CharField(choices=TopicAlignment, blank=True)
+    document_url = models.URLField(blank=True, null=True)
     case_processing_run = models.ForeignKey(CaseProcessingRun, on_delete=models.SET_NULL, null=True)
 
     def topic_flags(self):
