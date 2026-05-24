@@ -26,23 +26,39 @@ function makeMDSChart(data, selector) {
         .range(["#d62728", "#1f77b4", "#ff7f0e"])
         .unknown("#7f7f7f");
 
-    const arr = Object.keys(data.x).map(i => ({
-        x: data.x[i],
-        y: data.y[i],
-        judge_name: data.judge_name[i],
-        ticket_party: data.ticket_party[i],
-        appointer_party: data.appointer_party[i],
-        selection_type: data.selection_type[i],
-        party: data.selection_type[i] == "partisan election" ? data.ticket_party[i] : data.appointer_party[i],
-        judge: data.judge[i],
-        case: data.case[i],
-    }));
+    const coordCount = {};
+    const arr = Object.keys(data.x).map(i => {
+        const key = `${data.x[i]},${data.y[i]}`;
+        coordCount[key] = (coordCount[key] || 0) + 1;
+        return {
+            x: data.x[i],
+            y: data.y[i],
+            judge_name: data.judge_name[i],
+            ticket_party: data.ticket_party[i],
+            appointer_party: data.appointer_party[i],
+            selection_type: data.selection_type[i],
+            party: data.selection_type[i] == "partisan election" ? data.ticket_party[i] : data.appointer_party[i],
+            judge: data.judge[i],
+            case: data.case[i],
+            _coordKey: key,
+            _dupIndex: coordCount[key],
+        };
+    });
+
+    const jitter = 0.05;
+    arr.forEach(d => {
+        if (coordCount[d._coordKey] > 1) {
+            const angle = (2 * Math.PI / coordCount[d._coordKey]) * (d._dupIndex - 1) + Math.PI / 2;  // ← add 90° offset
+            d.x += jitter * 0.8 * Math.cos(angle);
+            d.y += jitter * Math.sin(angle);
+        }
+    });
 
 
     const colorAccessor = d => partyColor(d.appointer_party)
 
     const dotRadius = 6
-    const dotOpacity = 1
+    const dotOpacity = 0.75
     const xLabel = "X"
     const yLabel = "Y"
     const tooltipFormat = d => `
@@ -101,6 +117,17 @@ function makeMDSChart(data, selector) {
     .on("mouseout", () => {
         tooltip.style("display", "none");
       });
+
+    svg.append('g')
+        .selectAll("text")
+        .data(arr)
+        .enter()
+        .append("text")
+        .attr("x", d => xScale(d.x) + dotRadius + 2)  // slightly right of the dot
+        .attr("y", d => yScale(d.y) + 4)               // vertically centered on dot
+        .text(d => d.judge_name)
+        .attr("font-size", "11px")
+        .attr("fill", "#333");
 
      // Grid lines
     svg.append("g")
