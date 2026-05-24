@@ -305,7 +305,7 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
 
 def produce_tables(
     case_df: pd.DataFrame,
-    prompt_path: Path = Path().parent / "prompt.txt",
+    prompt_path: Path = Path(__file__).parent / "prompt.txt",
     model_id: str = "gemini-2.5-flash",
     use_existing: bool = True,
     write_on: bool = True,
