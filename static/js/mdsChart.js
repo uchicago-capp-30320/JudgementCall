@@ -12,8 +12,9 @@ const tooltip = d3.select(".mdsContainer")
 
 
 function makeMDSChart(data, selector) {
-    const width  = 600
-    const height = 400
+    const containerWidth = d3.select(selector).node().getBoundingClientRect().width;
+    const width  = Math.min(500, containerWidth);
+    const height = width * (2/3);
     const margin = { top: 20, right: 30, bottom: 40, left: 30 }
 
     const innerWidth  = width  - margin.left - margin.right;
@@ -116,10 +117,10 @@ function makeMDSChart(data, selector) {
     // Axes
     svg.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
-        .call(d3.axisBottom(xScale).ticks(6));
+        .call(d3.axisBottom(xScale).ticks(6).tickFormat(""));
 
     svg.append("g")
-        .call(d3.axisLeft(yScale).ticks(6));
+        .call(d3.axisLeft(yScale).ticks(6).tickFormat(""));
 
     // // Axis labels
     // svg.append("text")
