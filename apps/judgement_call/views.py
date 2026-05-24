@@ -121,7 +121,6 @@ def build_court_dict(tenures, elections_soon):
             race_counts = list(
                 court_tenures.values("person__race").annotate(count=Count("person", distinct=True))
             )
-            print(race_counts)
             party_counts = list(
                 court_tenures.values("person__party_registration").annotate(
                     count=Count("person", distinct=True)
@@ -151,8 +150,8 @@ def build_court_dict(tenures, elections_soon):
             ]
             courts[court_name]["avg_age"] = avg_age
 
-        # For each tenure associated with a court, add it to a list that's
-        # a value in the {court: [tenure_info, tenure_info]} type dict
+            # For each tenure associated with a court, add it to a list that's
+            # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name]["judges"].append(
             {
                 "name": tenure.person.name_canonical,
@@ -163,6 +162,8 @@ def build_court_dict(tenures, elections_soon):
                 "end_date": tenure.end_date,
             }
         )
+    # courts[court_name]["judges"].sort(key=lambda x: x["name"])
+
     return courts
 
 
