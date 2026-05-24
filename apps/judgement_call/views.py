@@ -42,6 +42,8 @@ from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 
+from analysis.spacejam import make_plot as make_mds_plot
+
 # comment to push
 
 
@@ -399,6 +401,19 @@ def gantt(request):
     context = {"gantt_data": json.text, "court_id": state, "court_name": court.name}
 
     return render(request, "gantt.html", context)
+
+
+def spacejam(request):
+    """MDS chart prototype."""
+
+    state = request.GET.get("state", "AZSUP")
+    print(state)
+    court = Court.objects.get(court_id=state)
+    mds_data = make_mds_plot(state)
+
+    context = {"mds_data": mds_data.to_json(), "court_id": state, "court_name": court.name}
+
+    return render(request, "mds.html", context)
 
 
 def get_current_judges_for_court(court_id):

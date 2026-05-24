@@ -23,6 +23,7 @@ urlpatterns = [
     path("analysis/", views.analysis, name="analysis"),
     path("api/counties/<str:state>/", views.get_counties, name="get_counties"),
     path("gantt/", views.gantt, name="gantt"),
+    path("spacejam/", views.spacejam, name="spacejam"),
     path("judges/<str:court_id>", views.court_full_view, name="court"),
     path("clear-location/", views.clear_location, name="clear_location"),
 ]

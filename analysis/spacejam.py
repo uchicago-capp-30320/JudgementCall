@@ -7,10 +7,12 @@ from sklearn.manifold import MDS
 from sklearn.cluster import KMeans
 from ingestion.ingest_courts import COURT_LOOKUP_LONG
 from apps.judgement_call.models import Court, IndividualOpinion
+from functools import cache
 
 MDS_CONFIG = {"n_components": 2, "metric_mds": True, "n_init": 1, "init": "random"}
 
 
+@cache
 def query_similarity_df(court_id):
     court = Court.objects.get(court_id=court_id)
     similarity_df = pd.DataFrame(
@@ -24,6 +26,7 @@ def query_similarity_df(court_id):
                 "judge_alias__tenure__person__name_canonical",
                 "judge_alias__tenure__ticket_party",
                 "judge_alias__tenure__appointer_party",
+                "judge_alias__tenure__court__selection_type",
                 "ruling",
                 "case__case_type",
             )
@@ -37,6 +40,7 @@ def query_similarity_df(court_id):
         "case__case_type": "case_type",
         "judge_alias__tenure__ticket_party": "ticket_party",
         "judge_alias__tenure__appointer_party": "appointer_party",
+        "judge_alias__tenure__court__selection_type": "selection_type",
     }
     similarity_df = similarity_df[colname_map.keys()].rename(colname_map, axis=1)
 
@@ -44,14 +48,20 @@ def query_similarity_df(court_id):
         lambda x: 1 if x == "concur" else -1 if x == "dissent" else 0
     )
 
-    return similarity_df
+    context_df = (
+        similarity_df.groupby(
+            ["judge", "judge_name", "ticket_party", "appointer_party", "selection_type"]
+        )
+        .agg({"case": "count"})
+        .reset_index()
+    )
+
+    return similarity_df, context_df
 
 
 def pivot_similarity_df(df):
-    df = df.pivot(index="case", columns="judge", values="ruling")
-    print(len(df), df.head())
+    df = df.pivot(index="case", columns="judge_name", values="ruling")
     nona_df = df.fillna(1)
-    print(len(nona_df), nona_df.head())
     feat_mat = nona_df.transpose()
     return feat_mat
 
@@ -60,23 +70,25 @@ def mds_embedding(feat_mat):
     embedding = MDS(**MDS_CONFIG)
     x_transformed = embedding.fit_transform(feat_mat)
     x, y = x_transformed.transpose()
-    return x, y
+    coords = pd.DataFrame({"judge_name": feat_mat.index, "x": x, "y": y})
+
+    return coords
 
 
-def make_df_to_plot(x, y, df):
-    context = df[["case", "judge_name", "appointer_party"]]
-    judges_mds = context.copy().assign(x=x, y=y)
-    print(judges_mds)
+def make_df_to_plot(coords, context):
+    judges_mds = coords.merge(context, on="judge_name")
     return judges_mds
 
 
+@cache
 def make_plot(court_id):
     # court_id = COURT_LOOKUP_LONG[state]
 
-    df = query_similarity_df(court_id)
-    feat_mat = pivot_similarity_df
-    x, y = mds_embedding(feat_mat)
-    plot_df = make_df_to_plot(x, y, df)
+    df, context = query_similarity_df(court_id)
+    feat_mat = pivot_similarity_df(df)
+    coords = mds_embedding(feat_mat)
+    plot_df = make_df_to_plot(coords, context)
+    print(plot_df)
     return plot_df
 
     # alt.Chart(plot_df, title=f"{court_id} Judge Similarity").mark_circle(size=60).encode(

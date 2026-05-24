@@ -1,0 +1,31 @@
+{% load static %}
+
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<h3>MDS Chart: {{ court_name }}</h3>
+
+<p>
+    This charts shows how similar or different the current {{ court_name }} justices are
+    based on their voting record. Judges who are close together tend to vote together on cases.
+</p>
+
+{{ mds_data|json_script:"mds_data" }}
+<p id="mds-data" style="display: none;">{{ mds_data }}</p>
+
+<div class="mdsContainer">
+    <div class="mdsChart"></div>
+</div>
+
+<p>
+    Note: This only takes into account cases which all included judges ruled on.
+    Judges may be excluded from this visualization if they haven't ruled on enough
+    cases to calculate their similarity score.
+</p>
+
+
+<script src="{% static 'js/mdsChart.js' %}"></script>
+<script>
+    const mdsData = JSON.parse(document.getElementById("mds-data").textContent);
+    makeMDSChart(mdsData, ".mdsChart");
+</script>
