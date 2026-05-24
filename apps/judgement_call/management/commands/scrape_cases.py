@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand
 from django_typer.management import Typer
 from ingestion.ingest_cases_opinions import produce_tables
 from ingestion.ingest_sc_cases import scrape_scdb
-from ingestion.ingest_courts import (
+from ingestion.state_crosswalks import (
     MERGED_COURTS_PATH,
     COURT_LOOKUP_LONG,
     COURT_LOOKUP_SHORT,

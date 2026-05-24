@@ -411,8 +411,8 @@ if __name__ == "__main__":
     prompt_path = Path(__file__).parent.parent / "ingestion" / "prompt.txt"
 
     start = datetime.now()
-    print("Getting cases and opinions...")
-    produce_tables(case_df, prompt_path, use_existing=True)
+    print("Getting cases and opinions for main analysis...")
+    produce_tables(case_df, use_existing=False)
     end = datetime.now()
     time_diff = (end - start).total_seconds() / 60
     print(f"Ingestion complete after {round(time_diff, 2)} minutes.")
