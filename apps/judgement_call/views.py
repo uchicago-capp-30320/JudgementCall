@@ -41,6 +41,7 @@ from faker import Faker
 from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+from .icons import get_icon_dict
 
 # comment to push
 
@@ -161,6 +162,7 @@ def build_court_dict(tenures, elections_soon):
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
+                "icons": get_icon_dict(),
             }
         )
     # courts[court_name]["judges"].sort(key=lambda x: x["name"])
