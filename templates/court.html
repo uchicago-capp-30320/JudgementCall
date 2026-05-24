@@ -9,6 +9,9 @@ Judgement Call
 
 {% include "infographic.html" with details=details %}
 
+<p style="display: none;">{{court_id}}</p>
+{{ court_id|json_script:"court_id"}}
+
 <div class="court-content">
     <div class="court-content-sub" id="judge-list">
         <div class="judge-list">
@@ -117,7 +120,7 @@ Judgement Call
         display: block;
     }
 </style>
-{% include "collapsible-script.html" %}
+{% include "collapsible-script.html" with court_id=court_id%}
 
 <script>
     const tabs = document.querySelectorAll('.tab');
@@ -131,9 +134,22 @@ Judgement Call
             contents.forEach((c) => c.classList.remove('active'));
 
             tab.classList.add('active');
-            document.getElementById(target).classList.add('active');
+            // document.getElementById(target).classList.add('active');
+            // court_id = JSON.parse(document.getElementById('court_id').textContent);
+            console.log(court_id);
+            console.log(activeJudgeNames);
+            refreshRadarData();
         });
     });
-</script>
 
+    function refreshRadarData() {
+        court_id = JSON.parse(document.getElementById('court_id').textContent);
+        console.log(court_id);
+        const encodedPersons = activeJudgeNames.map(encodeURIComponent).join('__');
+        const url = `/radar/${court_id}/${encodedPersons}/`;
+        fetch(url)
+            .then(response => console.log(response))
+            .then(response => response.json())
+    }
+</script>
 {% endblock %}

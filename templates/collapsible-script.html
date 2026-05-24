@@ -1,4 +1,5 @@
 <script>
+    window.activeJudgeNames = []; // Make accessible in court.html
     document.querySelectorAll('.collapsible-container').forEach(function (container) {
         container.addEventListener('click', function () {
             const content = this.nextElementSibling;
@@ -6,7 +7,16 @@
                 content.style.maxHeight = "0px";
             } else {
                 content.style.maxHeight = content.scrollHeight + "px";
+                const activeJudgeName = this.querySelector('h3')?.textContent.replace(" - Chief Justice", "");
+                activeJudgeNames.push(activeJudgeName);
+                console.log(activeJudgeNames.join("__"));
+                // TODO: Handle popping oldest after reaching >2 judges
             }
         });
     });
+    if (typeof window.updateRadar === 'function') {
+        window.updateRadar(window.activeJudgeNames);
+    } else {
+        console.log("Skipping radar update");
+    }
 </script>
