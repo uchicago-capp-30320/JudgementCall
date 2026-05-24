@@ -36,7 +36,7 @@ Judgement Call
                         {% elif judge.party_registration == "Democrat" %}
                         <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
                         {% else %}
-                        <p> {{ judge.party_registration }}</p>
+                        <p>Party: {{ judge.party_registration }}</p>
                         {% endif %}
                         <p> <a href="{{ judge.more_info }}">more details</a> </p>
                     </div>

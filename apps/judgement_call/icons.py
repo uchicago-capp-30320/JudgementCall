@@ -22,29 +22,67 @@ from .models import (
 
 ### PEOPLE WITH TENURE ###
 
+
 # up for election soon
+def up_for_election():
+    "returns bool"
+    up_for_election = True
+
+    return up_for_election
+
 
 # long tenure (>=10yr)
+def long_tenure():
+    "returns bool indicating >=10yr of current tenure"
+    long_tenure = True
+
+    return long_tenure
+
 
 # has ruled to protect <topic>
+def protect_topics():
+    "returns something indicating issue protection areas, tbd"
+    # TODO
+
 
 # has ruled to infringe upon <topic>
+def infringe_topics():
+    "returns something indicating issue infringement areas, tbd"
+    # TODO
 
 
 ### NOT TENURE-SPECIFIC ATTRIBUTES ###
 
-# worked as a public defender
 
+# worked as a public defender
 # worked as a prosecutor
+# worked in legal aid
+def relevant_experience():
+    "returns indicators of having certain types of public-oriented professional experience"
+    # TODO
+
 
 # idk fancy law school?
+def prestigious_school():
+    "returns indicator for an expensive education, maybe top 15?"
+    # TODO
+
 
 # personal party affiliation
+def personal_party():
+    "returns indicator for personal party, maybe should be candidates only? idk"
+
 
 # do a filler for relevant endorsements
-# list of municipal endorsers and then randomly select in favor or against
+# list of municipal & party endorsers and then randomly select in favor or against
+def endorsements():
+    "returns fake endorsements"
+
 
 # could do same for scandal, should set toggle to turn these off if we don't want them
+def has_scandals():
+    "returns fake scandal flag"
+
 
 # maybe change color to indicate fake data
 
@@ -57,4 +95,5 @@ def get_icon_dict():
         person stuff {person_stuff}
     }
     """
+    # call all the helpers to create person-level dictionary
     # TODO
