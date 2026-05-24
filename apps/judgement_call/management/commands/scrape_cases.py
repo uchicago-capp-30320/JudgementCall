@@ -114,3 +114,5 @@ class Command(BaseCommand):
                 IndividualOpinion.objects.update_or_create(
                     case=case, judge_alias=alias, defaults=new_opinion
                 )
+        else:
+            print("No new cases that are not in the database.")

@@ -336,7 +336,7 @@ def produce_tables(
     opinion_files = [file.name.replace(".csv", "") for file in opinions_path.iterdir()]
 
     for state in states:
-        print(f"Ingesting cases and opinions for {state}")
+        print(f"Analyzing cases and opinions for {state}")
         if (state in case_files) and (state in opinion_files) and use_existing:
             case_table = cases_path / (state + ".csv")
             cases = pd.read_csv(case_table)
@@ -360,7 +360,7 @@ def produce_tables(
         cases_list.append(cases)
         opinion_list.append(opinions)
 
-        print(f"Ingested {len(cases)} cases for {state}")
+        print(f"Analyzed {len(cases)} cases for {state}")
 
     # Creating total tables
     total_cases = pd.concat(cases_list)

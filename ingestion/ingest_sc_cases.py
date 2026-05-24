@@ -280,12 +280,12 @@ def multi_page(start_url, incremental=False, existing_cases=None):
             time.sleep(wait_time)
 
         page_info, next_page_url = scrape_page(url, rd, incremental, existing_cases)
+        print(f"Scraped page {page_num}")
 
         if next_page_url is None:
             print("State Case Database webscrape complete!")
             break
 
-        print(f"Scraped page {page_num}")
         if incremental:
             url = start_url + f"&page={page_num}"
         else:
@@ -331,7 +331,14 @@ def scrape_scdb(write_on=True, incremental=False):
     case_df = multi_page(url, incremental, existing_cases)
 
     # Dropping non-decided cases, and cases with no opinion documents
+    pending_cases = case_df[case_df["pending"]]
+    print(f"Dropped {len(pending_cases)} non-decided cases:")
+    print(pending_cases)
     case_df = case_df[~case_df["pending"]]
+
+    no_doc_cases = case_df[~case_df["opinion_link"].str.contains("https", na=False)]
+    print(f"Dropped {len(no_doc_cases)} cases with missing opinion documents:")
+    print(no_doc_cases)
     case_df = case_df[case_df["opinion_link"].str.contains("https", na=False)]
 
     # Handling duplicates and duplicate IDs
