@@ -209,7 +209,7 @@ def check_if_exists(
     return r_bool
 
 
-def scrape_page(url, rd, incremental=False, existing_cases=None):
+def scrape_page(url, rd, incremental=False, existing_cases=None, seen_cases=None):
     """
     Function takes the url for a page, and a return dictionary with the
     structure:
@@ -232,21 +232,27 @@ def scrape_page(url, rd, incremental=False, existing_cases=None):
     meta_data, next_page_url = page_meta_data(url)
 
     for index, row in meta_data.iterrows():
+        case_tuple = (row["case_title"], row["case_state"], row["case_date"], row["case_type"])
         already_exists = check_if_exists(
             row["case_title"], row["case_state"], row["case_date"], row["case_type"], existing_cases
         )
         if incremental and already_exists:
             print(f"The case {row['case_title']} is already in the database.")
             continue
+        elif incremental and (case_tuple in seen_cases):
+            print(f"The case {row['case_title']} as already been scraped.")
+            continue
         wait_time = random.uniform(5, 20)
         print(f"Waiting for {round(wait_time, 1)} before scraping {row['case_title']}")
         time.sleep(wait_time)
         case_info = scrape_case(row["case_link"])
+        if incremental and (seen_cases is not None):
+            seen_cases.add(case_tuple)
 
         for field in rd.keys():
             rd[field].append(case_info[field])
 
-    return rd, next_page_url
+    return rd, next_page_url, seen_cases
 
 
 def multi_page(start_url, incremental=False, existing_cases=None):
@@ -272,6 +278,10 @@ def multi_page(start_url, incremental=False, existing_cases=None):
     }
 
     print("Beginning webscraping of State Case Database...")
+    if incremental:
+        seen_cases = set()
+    else:
+        seen_cases = None
     page_num = 1
     while True:
         if page_num != 1:
@@ -279,7 +289,9 @@ def multi_page(start_url, incremental=False, existing_cases=None):
             print(f"Waiting for {round(wait_time, 1)} seconds before next page scrape")
             time.sleep(wait_time)
 
-        page_info, next_page_url = scrape_page(url, rd, incremental, existing_cases)
+        page_info, next_page_url, seen_cases = scrape_page(
+            url, rd, incremental, existing_cases, seen_cases
+        )
         print(f"Scraped page {page_num}")
 
         if next_page_url is None:

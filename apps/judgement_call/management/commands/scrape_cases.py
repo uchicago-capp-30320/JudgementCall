@@ -52,12 +52,7 @@ class Command(BaseCommand):
 
         # run LLM processing on new_cases if there are any
         if not new_cases.empty:
-            prompt_path = (
-                Path(__file__).parent.parent.parent.parent.parent / "ingestion" / "prompt.txt"
-            )
-            table_dic, run_metadata = produce_tables(
-                new_cases, prompt_path, use_existing=False, write_on=False
-            )
+            table_dic, run_metadata = produce_tables(new_cases, use_existing=False, write_on=False)
 
             # Insert run metadata into database
             run_metadata.pop("cases_processed")
