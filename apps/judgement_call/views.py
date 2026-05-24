@@ -214,6 +214,10 @@ def court_full_view(request, court_id):
     upcoming_elections = get_upcoming_elections([court])
     court_formatted = build_court_dict(tenures, upcoming_elections)
     details = court_formatted[court.name]
+    state = request.session.get("state")
+    print(state)
+    county = request.session.get("county")
+    print(county)
 
     context = {
         "court": court,
@@ -221,7 +225,9 @@ def court_full_view(request, court_id):
         "details": details,
         "gantt_data": court.gantt_json().text,
         "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
-        # "fallback_url": reverse("judgement_call:judges_state_county"),
+        "fallback_url": reverse(
+            "judgement_call:judges_state_county", kwargs={"state": state, "county": county}
+        ),
     }
 
     return render(request, "court.html", context)
@@ -281,8 +287,8 @@ def landing(request):
         "msg": "Welcome to Judgement Call!",
         "button_name": """Start Exploring""",
         "states": US_STATES,
-        "session_state": request.session.get("state"),
-        "session_county": request.session.get("county"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "home.html", context)
