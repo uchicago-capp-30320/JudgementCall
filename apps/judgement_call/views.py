@@ -234,10 +234,39 @@ def court_full_view(request, court_id):
 def show_person(request, person_id):
     person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
+    indops = IndividualOpinion.objects.filter(
+        judge_alias__tenure__person__name_canonical=person
+    ).values(
+        "description",
+        "ruling",
+        "case__case_title",
+        "case__description",
+        "case__docket_no",
+        "case__case_type",
+        "case__decision_date",
+        "case__decision_outcome",
+        "case__decision_winner",
+        "case__plaintiff_argument",
+        "case__defendant_argument",
+        "case__document_url",
+        "case__environment",
+        "case__consumers",
+        "case__reproductive_rights",
+        "case__democratic_norms",
+        "case__free_press",
+        "case__public_health",
+        "case__separation_church_state",
+        "case__voting_access",
+        "case__public_education",
+        "case__free_speech",
+        "case__privacy",
+        "case__worker_rights",
+    )
 
     person_info = {
         "name": person.name_canonical,
         "birth_date": person.birth_date,
+        "age": person.age,
         "gender": person.gender.title(),
         "race": person.race.title(),
         "party_registration": person.party_registration.title(),
@@ -260,12 +289,41 @@ def show_person(request, person_id):
             }
         )
 
+    def get_topics(op):
+        topic_string = ", ".join(
+            field.replace("_", " ").title()
+            for field in Case().topic_flags()
+            if op[f"case__{field}"] not in ("NA", None, "")
+        )
+        return topic_string
+
+    person_opinions = []
+    for op in indops:
+        person_opinions.append(
+            {
+                "case_description": op["case__description"],
+                "opinion_description": op["description"],
+                "ruling": op["ruling"],
+                "case_title": op["case__case_title"],
+                "docket_no": op["case__docket_no"],
+                "case_type": op["case__case_type"],
+                "decision_date": op["case__decision_date"],
+                "decision_outcome": op["case__decision_outcome"],
+                "decision_winner": op["case__decision_winner"],
+                "document_url": op["case__document_url"],
+                "topics": get_topics(op),
+            }
+        )
+
     return render(
         request,
-        "person.html",
+        "person_judge.html",
         {
             "person": person_info,
             "tenures": person_tenures,
+            "opinions": person_opinions,
+            "state": request.session.get("state"),
+            "county": request.session.get("county"),
         },
     )
 
