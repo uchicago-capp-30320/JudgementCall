@@ -9,7 +9,7 @@ import us
 import json
 import hashlib
 
-from ingest_sc_cases import scrape_scdb
+from ingestion.ingest_sc_cases import scrape_scdb
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv

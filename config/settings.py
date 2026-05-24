@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     # "apps.accounts",
     "debug_toolbar",
     "apps.judgement_call",
+    "ingestion",
 ]
 
 MIDDLEWARE = [

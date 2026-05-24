@@ -7,9 +7,6 @@ from datetime import datetime
 import random
 
 EXISTING_CASES_PATH = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
-EXISTING_CASES = None
-if EXISTING_CASES_PATH.exists():
-    EXISTING_CASES = pd.read_csv(EXISTING_CASES_PATH)
 
 
 def generate_case_id(docket_no, court, date):
@@ -18,7 +15,7 @@ def generate_case_id(docket_no, court, date):
     our database. These IDs combine a case's docket number, court, and date.
     """
     docket_no = docket_no.replace(" ", "-")
-    court = "-".join(court.split(" ")) + "-SC"
+    court = "-".join(court.split(" "))
     date = str(datetime.strptime(date, "%B %d, %Y"))[:10].replace("-", "/")
     case_id = "_".join([docket_no, court, date])
 
@@ -196,21 +193,23 @@ def page_meta_data(url):
     return pd.DataFrame(rd), next_page_url
 
 
-def check_if_exists(title: str, state: str, date: str, case_type: str):
+def check_if_exists(
+    title: str, state: str, date: str, case_type: str, existing_cases: pd.DataFrame
+):
     r_bool = False
 
-    if EXISTING_CASES is not None:
+    if existing_cases is not None:
         return (
-            (EXISTING_CASES["title"] == title)
-            & (EXISTING_CASES["state"] == state)
-            & (EXISTING_CASES["date"] == date)
-            & (EXISTING_CASES["type"] == case_type)
+            (existing_cases["title"] == title)
+            & (existing_cases["state"] == state)
+            & (existing_cases["date"] == date)
+            & (existing_cases["type"] == case_type)
         ).any()
 
     return r_bool
 
 
-def scrape_page(url, rd, incremental=False):
+def scrape_page(url, rd, incremental=False, existing_cases=None):
     """
     Function takes the url for a page, and a return dictionary with the
     structure:
@@ -234,7 +233,7 @@ def scrape_page(url, rd, incremental=False):
 
     for index, row in meta_data.iterrows():
         already_exists = check_if_exists(
-            row["case_title"], row["case_state"], row["case_date"], row["case_type"]
+            row["case_title"], row["case_state"], row["case_date"], row["case_type"], existing_cases
         )
         if incremental and already_exists:
             print(f"The case {row['case_title']} is already in the database.")
@@ -250,7 +249,7 @@ def scrape_page(url, rd, incremental=False):
     return rd, next_page_url
 
 
-def multi_page(start_url, incremental=False):
+def multi_page(start_url, incremental=False, existing_cases=None):
     """
     Given an initial page displaying cases, the function extracts the
     information for each case using the scrape_page function, it then uses
@@ -279,18 +278,20 @@ def multi_page(start_url, incremental=False):
             wait_time = random.uniform(30, 50)
             print(f"Waiting for {round(wait_time, 1)} seconds before next page scrape")
             time.sleep(wait_time)
-        page_info, next_page_url = scrape_page(url, rd, incremental)
-        if incremental:
-            url = start_url + f"&page={page_num}"
-        else:
-            url = url_base + next_page_url
-        rd = page_info
+
+        page_info, next_page_url = scrape_page(url, rd, incremental, existing_cases)
 
         if next_page_url is None:
             print("State Case Database webscrape complete!")
             break
 
         print(f"Scraped page {page_num}")
+        if incremental:
+            url = start_url + f"&page={page_num}"
+        else:
+            url = url_base + next_page_url
+
+        rd = page_info
         page_num += 1
 
     return pd.DataFrame(rd)
@@ -303,51 +304,54 @@ def handle_duplicate_id(input_df: pd.DataFrame, series_name: str):
     into the database, this function differentiates unique duplicate IDs by
     adding a number (e.g., 1, 2, 3).
     """
+    input_df = input_df.reset_index(drop=True)
     id_series = input_df[series_name].copy()
-
     dupes = id_series[id_series.duplicated()]
 
     if not dupes.empty:
-        for dupe_id in dupes:
-            dupe_series = id_series[id_series == dupe_id]
+        for dupe_id in dupes.unique():
+            dupe_locations = id_series[id_series == dupe_id].index.to_list()
 
-            attachment = 0
-            for index, val in dupe_series.items():
+            for attachment, index in enumerate(dupe_locations):
                 if attachment != 0:
-                    id_series.iloc[index] = val + f"_{attachment}"
-                attachment += 1
+                    id_series.at[index] = dupe_id + f"_{attachment}"
 
     input_df[series_name] = id_series
+    return input_df
 
 
 def scrape_scdb(write_on=True, incremental=False):
     if incremental:
         url = f"https://statecourtreport.org/state-case-database?state=All&issue=All&year={datetime.now().year}"
+        existing_cases = pd.read_csv(EXISTING_CASES_PATH)
     else:
         url = "https://statecourtreport.org/state-case-database"
+        existing_cases = None
 
-    case_df = multi_page(url, incremental)
+    case_df = multi_page(url, incremental, existing_cases)
 
     # Dropping non-decided cases, and cases with no opinion documents
     case_df = case_df[~case_df["pending"]]
     case_df = case_df[case_df["opinion_link"].str.contains("https", na=False)]
 
     # Handling duplicates and duplicate IDs
-    case_df = case_df.drop_duplicates(keep=False).reset_index(drop=True)
-    handle_duplicate_id(case_df, "case_id")
+    case_df = case_df.drop_duplicates(keep="first").reset_index(drop=True)
 
     # Writing csv file
-    if write_on:
-        path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
-        if incremental:
-            existing_cases = pd.read_csv(path)
-            full_cases = pd.concat([case_df, existing_cases])
-            handle_duplicate_id(full_cases, "case_id")
+    path = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
+    if incremental:
+        existing_cases = pd.read_csv(path)
+        full_cases = pd.concat([case_df, existing_cases])
+        full_cases = full_cases.drop_duplicates(keep="first").reset_index(drop=True)
+        full_cases = handle_duplicate_id(full_cases, "case_id")
+        if write_on:
             full_cases.to_csv(path, index=False)
-        else:
+        return full_cases
+    else:
+        case_df = handle_duplicate_id(case_df, "case_id")
+        if write_on:
             case_df.to_csv(path, index=False)
-
-    return case_df
+        return case_df
 
 
 if __name__ == "__main__":

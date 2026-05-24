@@ -39,15 +39,15 @@ app = Typer()
 
 
 class Command(BaseCommand):
-    def ingest_new_cases():
-        # TODO: scrape State Case Database
-        all_current_cases = scrape_scdb(write_on=False)
+    def handle(self, **options):
+        # Scrape State Case Database
+        all_current_cases = scrape_scdb(write_on=True, incremental=True)
 
         # check if any are new
         # eg new_cases = df[df["docket_id"].notin(all_cases)]
         db_cases_ids = [case["case_id"] for case in Case.objects.values("case_id")]
         new_cases = all_current_cases[~all_current_cases["case_id"].isin(db_cases_ids)]
-        print("New cases not in database:")
+        print(f"There are {len(new_cases)} new cases not in database:")
         print(new_cases)
 
         # run LLM processing on new_cases if there are any
@@ -55,12 +55,46 @@ class Command(BaseCommand):
             prompt_path = (
                 Path(__file__).parent.parent.parent.parent.parent / "ingestion" / "prompt.txt"
             )
-            table_dic, run_metadata = produce_tables(new_cases, prompt_path, use_existing=False)
+            table_dic, run_metadata = produce_tables(
+                new_cases, prompt_path, use_existing=False, write_on=False
+            )
+
+            # Insert run metadata into database
+            run_metadata.pop("cases_processed")
+            run_metadata["timestamp"] = datetime.strptime(run_metadata["timestamp"], "%m-%d-%Y")
+            cpr, cpr_created = CaseProcessingRun.objects.get_or_create(**run_metadata)
 
             # Insert cases into database
             cases = table_dic["case_table"].reset_index(drop=True).to_dict(orient="records")
             for case in cases:
-                Case.objects.update_or_create(**case)
+                court = Court.objects.get(court_id=COURT_LOOKUP_LONG[case["state"]])
+                new_case = {
+                    "case_id": case["case_id"],
+                    "case_processing_run": cpr,
+                    "case_title": case["title"],
+                    "case_type": case["type"],
+                    "consumers": case["consumers"],
+                    "court": court,
+                    "decision_date": datetime.strptime(case["date"], "%Y-%m-%d"),
+                    "decision_outcome": case["decision_outcome"],
+                    "decision_winner": case["decision_winner"],
+                    "defendant_argument": case["defendant_argument"],
+                    "democratic_norms": case["democratic_norms"],
+                    "description": case["description"],
+                    "docket_no": case["docket_no"],
+                    "environment": case["environment"],
+                    "free_press": case["free_press"],
+                    "free_speech": case["free_speech"],
+                    "plaintiff_argument": case["plaintiff_argument"],
+                    "privacy": case["privacy"],
+                    "public_education": case["public_education"],
+                    "public_health": case["public_health"],
+                    "reproductive_rights": case["reproductive_rights"],
+                    "separation_church_state": case["separation_church_state"],
+                    "voting_access": case["voting_access"],
+                    "worker_rights": case["worker_rights"],
+                }
+                Case.objects.update_or_create(case_id=case["case_id"], defaults=new_case)
 
             # Insert individual opinions into database
             ind_opinions = (
@@ -69,8 +103,14 @@ class Command(BaseCommand):
                 .to_dict(orient="records")
             )
             for ind_op in ind_opinions:
-                IndividualOpinion.objects.update_or_create(**ind_op)
-
-            # Insert run metadata into database
-            run_metadata.pop("cases_processed")
-            CaseProcessingRun.objects.update_or_create(**run_metadata)
+                case = Case.objects.get(case_id=ind_op["case_id"])
+                alias, found = Alias.objects.get_or_create(alias=ind_op["name"], court=case.court)
+                new_opinion = {
+                    "case": case,
+                    "judge_alias": alias,
+                    "description": ind_op["description"],
+                    "ruling": ind_op["ruling"],
+                }
+                IndividualOpinion.objects.update_or_create(
+                    case=case, judge_alias=alias, defaults=new_opinion
+                )
