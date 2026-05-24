@@ -192,7 +192,6 @@ def judges_state_county(request, state, county):
     ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
 
     courts = build_court_dict(tenures, elections_soon)
-    print(courts)
 
     context = {
         "courts": courts,
@@ -439,7 +438,6 @@ def gantt(request):
     """Gantt chart prototype."""
 
     state = request.GET.get("state", "AZSUP")
-    print(state)
     court = Court.objects.get(court_id=state)
     json = court.gantt_json()
 
