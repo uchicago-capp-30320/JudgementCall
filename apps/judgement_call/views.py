@@ -106,6 +106,7 @@ def build_court_dict(tenures, elections_soon):
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = {"judges": [], "id": court.court_id}
+            print(elections_soon)
             if court_name in elections_soon:
                 courts[court_name]["upcoming_election"] = True
             else:
@@ -183,7 +184,7 @@ def judges_state_county(request, state, county):
     if not geo_c2c.exists():
         raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
-    elections_soon = get_upcoming_elections(local_courts_list)
+    elections_soon, court_w_elections = get_upcoming_elections(local_courts_list)
 
     # only get current judges
     tenures = Tenure.objects.filter(
@@ -194,8 +195,6 @@ def judges_state_county(request, state, county):
 
     context = {
         "courts": courts,
-        # "state": state,
-        # "county": county,
         "fallback_url": reverse("judgement_call:judges"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),
@@ -351,25 +350,32 @@ def get_upcoming_elections(relevant_courts):
     )
 
     if next_event:
-        return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
+        next_elections = Election.objects.filter(
+            court__in=relevant_courts, election_date=next_event
+        )
+        next_courts = [e.court for e in next_elections]
+        return (next_elections, next_courts)
 
-    return Election.objects.none()
+    next_elections = Election.objects.none()
+    next_courts = []
+
+    return (next_elections, next_courts)
 
 
-def test_elections(relevant_courts):
+def alternate_get_elections(relevant_courts):
     """
     Takes in QSet of courts and returns those with election in next 6mo
     """
-    # start_date = timezone.now()
-    # end_date = start_date + relativedelta(months=6)
+    start_date = timezone.now()
+    six_mo_from_now = start_date.month + 6
+    end_date = start_date + relativedelta(months=six_mo_from_now)
 
-    # upcoming_elections = Election.objects.filter(
-    #     election_date__range=(start_date, end_date), court__in=relevant_courts
-    # )
-    # courts_w_upcoming_elections = [e.court for e in upcoming_elections]
+    upcoming_elections = Election.objects.filter(
+        election_date__range=(start_date, end_date), court__in=relevant_courts
+    )
+    courts_w_upcoming_elections = [e.court for e in upcoming_elections]
 
-    # return (upcoming_elections, courts_w_upcoming_elections)
-    # TODO
+    return (upcoming_elections, courts_w_upcoming_elections)
 
 
 def check_incumbent(candidate, court):
@@ -395,7 +401,7 @@ def elections_state_county(request, state, county):
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
 
     # want to retrieve soonest elections
-    local_elections_list = get_upcoming_elections(local_courts_list)
+    local_elections_list, _ = get_upcoming_elections(local_courts_list)
     elections = {
         e.court.name: {
             "date": e.election_date.strftime("%m-%d-%Y"),
@@ -411,8 +417,6 @@ def elections_state_county(request, state, county):
 
     context = {
         "elections": elections,
-        # "state": state,
-        # "county": county,
         "fallback_url": reverse("judgement_call:elections"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),
