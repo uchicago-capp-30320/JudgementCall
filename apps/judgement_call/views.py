@@ -31,7 +31,7 @@ from django.utils import timezone
 # from django.db.models import Count, Avg
 from django.db.models.functions import ExtractYear
 
-# from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta
 import random
 from faker import Faker
 
@@ -216,9 +216,7 @@ def court_full_view(request, court_id):
     court_formatted = build_court_dict(tenures, upcoming_elections)
     details = court_formatted[court.name]
     state = request.session.get("state")
-    print(state)
     county = request.session.get("county")
-    print(county)
 
     context = {
         "court": court,
@@ -356,6 +354,22 @@ def get_upcoming_elections(relevant_courts):
         return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
 
     return Election.objects.none()
+
+
+def test_elections(relevant_courts):
+    """
+    Takes in QSet of courts and returns those with election in next 6mo
+    """
+    # start_date = timezone.now()
+    # end_date = start_date + relativedelta(months=6)
+
+    # upcoming_elections = Election.objects.filter(
+    #     election_date__range=(start_date, end_date), court__in=relevant_courts
+    # )
+    # courts_w_upcoming_elections = [e.court for e in upcoming_elections]
+
+    # return (upcoming_elections, courts_w_upcoming_elections)
+    # TODO
 
 
 def check_incumbent(candidate, court):
