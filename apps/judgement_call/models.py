@@ -291,6 +291,9 @@ class Candidacy(models.Model):
     class Meta:
         verbose_name_plural = "Candidacies"
 
+    def __str__(self):
+        return f"{self.person} candidate for {self.election}"
+
 
 class Alias(models.Model):
     alias = models.CharField()

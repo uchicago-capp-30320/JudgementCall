@@ -1,0 +1,11 @@
+state,election_type,election_date,filing_deadline,incumbent,election_id
+Alabama,partisan,2026-11-03,2026-01-23,Greg Shaw,Alabama_2026-11-03_0
+Alabama,partisan,2026-11-03,2026-01-23,Brad Mendheim,Alabama_2026-11-03_1
+Florida,retention,2026-11-03,2026-04-24,Carlos Muñiz,Florida_2026-11-03_0
+Kentucky,nonpartisan,2026-11-03,,Debra Hembree Lambert,Kentucky_2026-11-03_0
+Michigan,nonpartisan,2026-11-03,,Megan Cavanagh's and Noah Hoods,Michigan_2026-11-03_0
+Nevada,nonpartisan,2026-11-03,2026-01-16,Kris Pickering,Nevada_2026-11-03_0
+Nevada,nonpartisan,2026-11-03,2026-01-16,Douglas Herndon,Nevada_2026-11-03_1
+North Carolina,partisan,2026-11-03,2025-12-19,Anita Earls,North Carolina_2026-11-03_0
+Ohio,partisan,2026-11-03,2026-02-04,Jennifer Brunner,Ohio_2026-11-03_0
+Oregon,nonpartisan,2026-11-03,,Chris Garrett,Oregon_2026-11-03_0
