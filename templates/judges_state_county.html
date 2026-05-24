@@ -24,14 +24,23 @@ Judgement Call
     </div>
 
     {% for court_name, details in courts.items %}
-    <div class="collapsible-container">
+    <div class="collapsible-container" style="display: flex; align-items: center;">
         <div class="judge-collapsible-title">
             <h2>{{ court_name }}</h2>
             <!-- <span class="material-symbols-outlined">release_alert</span> -->
         </div>
-        <span class="material-symbols-outlined">
-            arrow_forward_ios
-        </span>
+        <div class="election-bang-and-arrow" style="display: flex; gap: 20px;">
+            {% if details.upcoming_election %}
+            <a href="{% url 'judgement_call:elections_state_county' state county %}" id="election-bang"
+                style="color:#c92a2a; text-decoration: none;"><span class="material-symbols-outlined"
+                    style="font-size: 24px; vertical-align: middle;">
+                    release_alert
+                </span> Upcoming Election</a>
+            {% endif %}
+            <span class="material-symbols-outlined" style="vertical-align: middle;">
+                arrow_forward_ios
+            </span>
+        </div>
     </div>
     <div class="collapsible-details">
         <form action="{% url 'judgement_call:court' details.id %}" method="get" style="display: inline;">

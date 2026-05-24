@@ -28,8 +28,13 @@ from apps.judgement_call.models import (
     PersonGender,
     PersonRace,
     PartyAffiliation,
+    Election,
+    Candidacy,
 )
 from django.db import IntegrityError
+
+ELECTIONS_CSV = "./data/elections/bp_elections.csv"
+CANDIDACIES_CSV = "./data/elections/bp_candidacies.csv"
 
 """
 
@@ -197,6 +202,66 @@ def command(self, data: str):
                 except IntegrityError as e:  # debugging
                     print(f"integrity error: {e}")
                     continue
+
+    if data == "elections":
+        print("ingesting elections")
+        count_elections = 0
+        count_elections_created = 0
+        with open(ELECTIONS_CSV, encoding="utf-8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                headers = row
+                break
+            for row in tqdm(reader):
+                election = dict(zip(headers, row))
+                court_id = COURT_LOOKUP_LONG[election["state"]]
+                court_obj = Court.objects.get(court_id=court_id)
+                # tenure_obj = Tenure.objects.get(person__name_canonical=election["incumbent"])
+                election_date = datetime.strptime(election["election_date"], "%Y-%m-%d")
+                if election["filing_deadline"] != "":
+                    filing_deadline = datetime.strptime(election["filing_deadline"], "%Y-%m-%d")
+                else:
+                    filing_deadline = None
+                election, created = Election.objects.update_or_create(
+                    election_id=election["election_id"],
+                    court=court_obj,
+                    defaults={
+                        "election_date": election_date,
+                        "filing_deadline": filing_deadline,
+                        "election_type": election["election_type"],
+                        "incumbent": None,
+                    },
+                )
+                print(election, created)
+                count_elections += 1
+                if created:
+                    count_elections_created += 1
+
+    if data == "candidacies":
+        count_candidacies = 0
+        count_candidacies_created = 0
+        with open(CANDIDACIES_CSV, encoding="utf-8") as file:
+            reader = csv.reader(file)
+            for row in reader:
+                headers = row
+                break
+            for row in tqdm(reader):
+                candidacy = dict(zip(headers, row))
+                election_id = candidacy["election_id"]
+                person_name = candidacy["name"]
+                election_obj = Election.objects.get(election_id=election_id)
+                person_obj, created = Person.objects.get_or_create(name_canonical=person_name)
+                print(election_obj, person_obj)
+                candidate, created = Candidacy.objects.update_or_create(
+                    election=election_obj, person=person_obj
+                )
+                print(candidate, created)
+                count_candidacies += 1
+                if created:
+                    count_candidacies_created += 1
+        print(f"candidacies: {count_candidacies}, created: {count_candidacies_created}")
+    else:
+        print(f"{data} did not match any ingestion command.")
 
 
 # HELPER FUNCTIONS
