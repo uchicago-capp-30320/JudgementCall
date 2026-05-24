@@ -216,6 +216,10 @@ footer {
     text-align: center;
 }
 
+#back-btn {
+    margin-left: 25px;
+}
+
 .collapsible-container {
     background-color: #eee;
     color: #444;
@@ -313,10 +317,6 @@ footer {
     margin: 10px 0;
     border-radius: 8px;
     max-width: 800px;
-}
-
-a {
-    color: #3e6297;
 }
 
 .gantt {

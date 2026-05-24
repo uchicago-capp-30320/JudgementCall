@@ -28,13 +28,16 @@
             </div>
             <div class="navbar-menu">
                 <div class="navbar-end">
-                    <a class="navbar-item" href="/judges/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
+                    <a class="navbar-item"
+                        href="/judges/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
                         Judges
                     </a>
-                    <a class="navbar-item" href="/elections/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
+                    <a class="navbar-item"
+                        href="/elections/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
                         Elections
                     </a>
-                    <a class="navbar-item" href="/analysis/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
+                    <a class="navbar-item"
+                        href="/analysis/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
                         Analysis
                     </a>
                     <div class="navbar-more">
@@ -49,15 +52,19 @@
             </div>
         </nav>
 
-        <div class="location-bar">
-            {% if state and county %}
-                <span class="location-display splash-page bold">{{ county }}, {{ state }}</span>
-            {% else %}
-                <span class="location-display splash-page bold">Choose your area</span>
+        <div class="below-nav-and-back">
+            {% if fallback_url %}
+            {% include "back-arrow.html" with fallback_url=fallback_url %}
             {% endif %}
-            <a href="{% url 'judgement_call:clear_location' %}"><span
-                class="material-icons center">refresh</span>
-            </a>
+            <div class="location-bar">
+                {% if state and county %}
+                <span class="location-display splash-page bold">{{ county }}, {{ state }}</span>
+                {% else %}
+                <span class="location-display splash-page bold">Choose your area</span>
+                {% endif %}
+                <a href="{% url 'judgement_call:clear_location' %}"><span class="material-icons center">refresh</span>
+                </a>
+            </div>
         </div>
 
         <div class="content-body">
@@ -86,7 +93,7 @@
         }
 
         // close dropdown if user clicks outside of it
-        document.addEventListener("click", function(e) {
+        document.addEventListener("click", function (e) {
             if (!e.target.closest(".navbar-more")) {
                 document.getElementById("more-dropdown").classList.remove("show");
             }

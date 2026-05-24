@@ -21,7 +21,6 @@ Judgement Call
 <body>
     <div class="below-nav-and-back">
         <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
-        {% include "back-arrow.html" with fallback_url=fallback_url %}
     </div>
 
     {% for court_name, details in courts.items %}
@@ -58,7 +57,7 @@ Judgement Call
             {% else %}
             <p> {{ judge.party_registration }}</p>
             {% endif %}
-            <p> <a href="{{ judge.more_info }}">more details</a> </p>
+            <p> <a href="{{ judge.more_info }}" style="color: #3e6297;">more details</a> </p>
         </div>
         {% empty %}
         <p>No judges found.</p>
