@@ -30,11 +30,13 @@ Judgement Call
             <!-- <span class="material-symbols-outlined">release_alert</span> -->
         </div>
         <div class="election-bang-and-arrow" style="display: flex; gap: 20px;">
+            {% if details.upcoming_election %}
             <a href="{% url 'judgement_call:elections_state_county' state county %}" id="election-bang"
                 style="color:#c92a2a; text-decoration: none;"><span class="material-symbols-outlined"
                     style="font-size: 24px; vertical-align: middle;">
                     release_alert
                 </span> Upcoming Election</a>
+            {% endif %}
             <span class="material-symbols-outlined" style="vertical-align: middle;">
                 arrow_forward_ios
             </span>
