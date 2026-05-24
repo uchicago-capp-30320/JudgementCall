@@ -87,7 +87,15 @@ def has_scandals():
 # maybe change color to indicate fake data
 
 
-def get_icon_dict():
+def get_judge_icons(tenure):
+    "get icons related to judges"
+
+
+def get_candidate_icons(person):
+    "get icons related to candidates"
+
+
+def get_icon_dict(id, is_election):
     """
     end product should look like:
     person_attributes = {
@@ -95,5 +103,12 @@ def get_icon_dict():
         person stuff {person_stuff}
     }
     """
+    # get relevant id and then flag if it's for an election or not I guess
     # call all the helpers to create person-level dictionary
-    # TODO
+    # if not is_election:
+    #     # working with court_id
+    #     court = Court.objects.get(court_id=id)
+    #     justices = [ten for ten in Tenure.objects.filter(court=court)]
+
+    #     for ten in justices:
+    #         icon_dict = get_judge_icons(ten)
