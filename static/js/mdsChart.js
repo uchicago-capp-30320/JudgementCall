@@ -33,6 +33,8 @@ function makeMDSChart(data, selector) {
         return {
             x: data.x[i],
             y: data.y[i],
+            x_orig: data.x[i],
+            y_orig: data.y[i],
             judge_name: data.judge_name[i],
             ticket_party: data.ticket_party[i],
             appointer_party: data.appointer_party[i],
@@ -149,49 +151,64 @@ function makeMDSChart(data, selector) {
     svg.append("g")
         .call(d3.axisLeft(yScale).ticks(6).tickFormat(""));
 
-    // // Axis labels
-    // svg.append("text")
-    //     .attr("x", margin.left + innerWidth / 2).attr("y", height - 8)
-    //     .attr("text-anchor", "middle").attr("font-size", 13)
-    //     .text(xLabel);
-
-    // svg.append("text")
-    //     .attr("transform", "rotate(-90)")
-    //     .attr("x", -(margin.top + innerHeight / 2)).attr("y", 14)
-    //     .attr("text-anchor", "middle").attr("font-size", 13)
-    //     .text(yLabel);
-
-    // // Tooltip
-    // const tooltip = document.getElementById("tooltip");
-
-    // // Dots
-    // svg.selectAll("circle")
-    //     .data(arr)
-    //     .join("circle")
-    //     .attr("cx", d => xScale(d.x))
-    //     .attr("cy", d => yScale(d.y))
-    //     .attr("r", dotRadius)
-    //     .attr("fill",d => partyColor(d.ticket_party ? d.ticket_party : d.appointer_party))
-    //     .attr("opacity", dotOpacity)
-    //     .style("cursor", "pointer")
-    //     .on("mouseenter", function(event, d) {
-    //     d3.select(this).transition().duration(100)
-    //         .attr("r", dotRadius * 1.5).attr("opacity", 1);
-    //     tooltip.innerHTML = tooltipFormat(d);
-    //     tooltip.style.opacity = "1";
-    //     })
-    //     .on("mousemove", function(event) {
-    //     const rect = container.parentElement.getBoundingClientRect();
-    //     const x = event.clientX - rect.left + 12;
-    //     const y = event.clientY - rect.top - 10;
-    //     tooltip.style.left = Math.min(x, rect.width - tooltip.offsetWidth - 4) + "px";
-    //     tooltip.style.top = (y - tooltip.offsetHeight) + "px";
-    //     })
-    //     .on("mouseleave", function() {
-    //     d3.select(this).transition().duration(100)
-    //         .attr("r", dotRadius).attr("opacity", dotOpacity);
-    //     tooltip.style.opacity = "0";
+    // const brush = d3.brush()
+    //     .extent([[0, 0], [innerWidth, innerHeight]])
+    //     .on("end", ({ selection }) => {
+    //         if (!selection) {
+    //             clearLines();
+    //             return;
+    //         }
+    //         const [[x0, y0], [x1, y1]] = selection;
+    //         const selected = arr.filter(d =>
+    //             xScale(d.x) >= x0 && xScale(d.x) <= x1 &&
+    //             yScale(d.y) >= y0 && yScale(d.y) <= y1
+    //         );
+    //         drawDistanceLines(selected);
     //     });
+
+    // svg.append("g").attr("class", "brush").call(brush);
+
+    // const lineGroup = svg.append("g").attr("class", "distance-lines");
+
+    // // Build a color scale based on the range of pairwise distances in the selection
+    // function drawDistanceLines(selected) {
+    //     clearLines();
+    //     if (selected.length < 2) return;
+
+    //     const pairs = [];
+    //     for (let i = 0; i < selected.length; i++)
+    //         for (let j = i + 1; j < selected.length; j++) {
+    //             const a = selected[i], b = selected[j];
+    //             const dist = Math.sqrt((a.x_orig - b.x_orig) ** 2 + (a.y_orig - b.y_orig) ** 2);
+    //             pairs.push({ a, b, dist });
+    //         }
+
+    //     const distExtent = d3.extent(pairs, p => p.dist);
+    //     const lineColor = d3.scaleSequential(d3.interpolatePurples)
+    //         .domain([distExtent[1], distExtent[0]]);  // ← reversed: short=green, long=red
+
+    //     pairs.forEach(({ a, b, dist }) => {
+    //         const x1 = xScale(a.x), y1 = yScale(a.y);
+    //         const x2 = xScale(b.x), y2 = yScale(b.y);
+    //         const lineLen = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+    //         const line = lineGroup.append("line")
+    //             .attr("x1", x1).attr("y1", y1)
+    //             .attr("x2", x1).attr("y2", y1)
+    //             .attr("stroke", lineColor(dist))  // ← color by distance
+    //             .attr("stroke-width", 1.5)
+    //             .attr("stroke-dasharray", lineLen)
+    //             .attr("stroke-dashoffset", lineLen);
+
+    //         line.transition().duration(600).ease(d3.easeCubicOut)
+    //             .attr("x2", x2).attr("y2", y2)
+    //             .attr("stroke-dashoffset", 0);
+    //     });
+    // }
+
+    // function clearLines() {
+    //     lineGroup.selectAll("*").remove();
+    //}
 
 }
 
