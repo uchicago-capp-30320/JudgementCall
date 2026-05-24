@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title> {{ person.name }}</title>
+    <style>
+        .card {
+            border: 2px solid #493a8c;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #3e6297;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>{{ person.name }}</h1>
+        <p>Born: {{ person.birth_date }} ({{ person.age }} years old)</p>
+        <p>Gender: {{ person.gender }}</p>
+        <p>Race: {{ person.race }}</p>
+        {% if person.party_registration == "Republican" %}
+        <p>Party: <span style="color: red;">{{ person.party_registration }}</span></p>
+        {% elif person.party_registration == "Democrat" %}
+        <p>Party: <span style="color: blue;">{{ person.party_registration }}</span></p>
+        {% else %}
+        <p>Party: {{ person.party_registration }}</p>
+        {% endif %}
+        <p>Experience: {{ person.professional_experience }}</p>
+        <p>Law school: {{ person.law_school }}</p>
+
+    </div>
+
+    <h2>Tenures</h2>
+    {% for tenure in tenures %}
+    <div class="card">
+        <h3>{{ tenure.court }} ({{ tenure.start_date.year }} - {{ tenure.end_date.year }})</h3>
+        {% if tenure.selection_type %}
+        <p>Selection: {{ tenure.selection_type }}</p>
+        {% endif %}
+        {% if tenure.chief_justice %}
+        <p>Chief Justice</p>
+        {% endif %}
+        {% if tenure.appointer_name %}
+        <p>Appointer: {{ tenure.appointer_name }} ({{ tenure.appointer_party }})</p>
+        {% endif %}
+        {% if tenure.ticket_party %}
+        <p>Ticket Party: {{ tenure.ticket_party }}</p>
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <h2>Cases</h2>
+    {% for opinion in opinions %}
+    <div class="card">
+        <h3>{{ opinion.case_title }} ({{ opinion.decision_date }})</h3>
+
+        {% if opinion.case_type %}
+        <p>Case Type: {{ opinion.case_type }}</p>
+        {% endif %}
+
+        {% if opinion.topics %}
+        <p>Topics: {{ opinion.topics }}</p>
+        {% endif %}
+
+        {% if opinion.case_description %}
+        <p>Case Description: {{ opinion.case_description }}</p>
+        {% endif %}
+
+        {% if opinion.decision_outcome %}
+        <p>Decision: {{ opinion.decision_outcome }}</p>
+        {% endif %}
+
+        {% if opinion.ruling %}
+        <p>Ruling: {{ opinion.ruling }}</p>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+</body>
+
+</html>
+
+{% endblock %}

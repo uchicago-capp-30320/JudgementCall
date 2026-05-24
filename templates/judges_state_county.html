@@ -51,11 +51,11 @@ Judgement Call
             <p>Joined Court: {{ judge.start_date.year }}</p>
             <p>Term End: {{ judge.end_date.year }}</p>
             {% if judge.party_registration == "Republican" %}
-            <p style="color: #c92a2a;"> {{ judge.party_registration}}</p>
+            <p style="color: #c92a2a;">Party: {{ judge.party_registration}}</p>
             {% elif judge.party_registration == "Democrat" %}
-            <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
+            <p style="color: #3572cf;">Party: {{ judge.party_registration }}</p>
             {% else %}
-            <p> {{ judge.party_registration }}</p>
+            <p>Party: {{ judge.party_registration }}</p>
             {% endif %}
             <p> <a href="{{ judge.more_info }}" style="color: #3e6297;">more details</a> </p>
         </div>
