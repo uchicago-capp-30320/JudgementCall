@@ -216,12 +216,16 @@ footer {
     text-align: center;
 }
 
+#back-btn {
+    margin-left: 25px;
+}
+
 .collapsible-container {
     background-color: #eee;
     color: #444;
     cursor: pointer;
     padding: 18px;
-    width: 100%;
+    /* width: 100%; */
     border: none;
     text-align: left;
     outline: none;
@@ -279,6 +283,52 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+#back-arrow-icon {
+    vertical-align: -5px;
+}
+
+.court-content {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.judge-list {
+    flex: 3;
+}
+
+.judge-list h3 {
+    font-size: 20px;
+}
+
+.judge-list .collapsible-container {
+    padding: 7px;
+}
+
+.court-content {
+    background-color: #f9fbff;
+}
+
+.judge-card {
+    border: 2px solid #3e6297;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    max-width: 800px;
+}
+
+.gantt {
+    background-color: #f9fbff;
+}
+
+.radar {
+    background-color: #f9fbff;
+}
+
+.court-content-sub {
+    flex: 1;
 }
 
 /* .sub-court-header {

@@ -16,25 +16,11 @@ Judgement Call
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <!-- :opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200 -->
     <title>Judges near {{ county }}, {{ state }}</title>
-    <style>
-        .judge-card {
-            border: 2px solid #3e6297;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            max-width: 800px;
-        }
-
-        a {
-            color: #3e6297;
-        }
-    </style>
 </head>
 
 <body>
     <div class="below-nav-and-back">
         <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
-        {% include "back-arrow.html" with fallback_url=fallback_url %}
     </div>
 
     {% for court_name, details in courts.items %}
@@ -48,7 +34,9 @@ Judgement Call
         </span>
     </div>
     <div class="collapsible-details">
-        {% include "infographic.html" %}
+        <form action="{% url 'judgement_call:court' details.id %}" method="get" style="display: inline;">
+            <input type="submit" value="See Court-Level Details" class="reg-button">
+        </form>
         <div class="sub-court-header">
             <h3>Current Sitting Judges:</h3>
         </div>
@@ -69,7 +57,7 @@ Judgement Call
             {% else %}
             <p> {{ judge.party_registration }}</p>
             {% endif %}
-            <p> <a href="{{ judge.more_info }}">more details</a> </p>
+            <p> <a href="{{ judge.more_info }}" style="color: #3e6297;">more details</a> </p>
         </div>
         {% empty %}
         <p>No judges found.</p>
@@ -78,18 +66,7 @@ Judgement Call
     {% empty %}
     <p>No courts found for {{ county }}, {{ state }}.</p>
     {% endfor %}
-    <script>
-        document.querySelectorAll('.collapsible-container').forEach(function (container) {
-            container.addEventListener('click', function () {
-                const content = this.nextElementSibling;
-                if (content.style.maxHeight && content.style.maxHeight !== "0px") {
-                    content.style.maxHeight = "0px";
-                } else {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
-        });
-    </script>
+    {% include "collapsible-script.html" %}
 </body>
 
 </html>

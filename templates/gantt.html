@@ -3,11 +3,11 @@
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
-<h3>Gantt Chart: {{ court_name }}</h3>
+<h3>{{ court.name }} Judge Tenure Timelines</h3>
 
 <p>
-    This gantt chart displays a timeline of current judges serving on
-    {{ court_name }} including their projected term end date.
+    This gantt chart displays a timeline of current judges serving on the
+    {{ court.name }} including their projected term end date.
 </p>
 
 {{ gantt_data|json_script:"gantt_data" }}
