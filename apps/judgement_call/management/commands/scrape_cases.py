@@ -88,6 +88,11 @@ class Command(BaseCommand):
                     "voting_access": case["voting_access"],
                     "worker_rights": case["worker_rights"],
                 }
+                if len(case["opinion_link"]) > 200:
+                    new_case["document_url"] = None
+                else:
+                    new_case["document_url"] = case["opinion_link"]
+
                 Case.objects.update_or_create(case_id=case["case_id"], defaults=new_case)
 
             # Insert individual opinions into database

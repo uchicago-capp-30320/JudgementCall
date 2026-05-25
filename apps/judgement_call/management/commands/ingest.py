@@ -93,7 +93,6 @@ def command(self, data: str):
         with open("./data/run_metadata/llm_run_05-15-2026.json") as file:
             d = json.load(file)
             d.pop("cases_processed")
-            print(d)
             d["timestamp"] = datetime.strptime(d["timestamp"], "%m-%d-%Y")
             cpr, cpr_created = CaseProcessingRun.objects.get_or_create(**d)
             print(cpr, cpr_created)
@@ -116,16 +115,17 @@ def command(self, data: str):
                     row_dict = dict(zip(headers, row))
                     case_dict = build_case(row_dict)
                     case_dict["court"] = lookup_court
-                    # case["decision_date"] = case["decision_date"].replace("/", "-")
                     case_dict["case_processing_run"] = cpr
-                    print(cpr)
-                    print(case_dict)
+                    #
+                    if len(case_dict["document_url"]) > 200:
+                        print(f"URL too long: {case_dict['document_url']} ({case_dict['case_id']})")
+                        case_dict["document_url"] = None
                     case, created = Case.objects.update_or_create(
                         case_id=case_dict["case_id"], defaults=case_dict
                     )
                     print(case, created)
                     cases_created += created
-            print(f"Cases created: {cases_created}")
+        print(f"Cases created: {cases_created}")
 
     if data == "individual-opinions":
         opinions_created = 0
@@ -155,7 +155,6 @@ def command(self, data: str):
                     indop = build_indop(row_dict)
                     indop["judge_alias"] = alias
                     indop["case"] = lookup_case
-                    print(indop)
                     indop, created = IndividualOpinion.objects.update_or_create(
                         case=lookup_case, judge_alias=alias, defaults=indop
                     )
@@ -260,8 +259,6 @@ def command(self, data: str):
                 if created:
                     count_candidacies_created += 1
         print(f"candidacies: {count_candidacies}, created: {count_candidacies_created}")
-    else:
-        print(f"{data} did not match any ingestion command.")
 
 
 # HELPER FUNCTIONS
@@ -288,6 +285,7 @@ def build_case(row_dict: dict):
     row_dict["case_type"] = row_dict["type"]
     row_dict["decision_date"] = row_dict["date"]
     row_dict["case_title"] = row_dict["title"]
+    row_dict["document_url"] = row_dict["opinion_link"]
     return {k: v for k, v in row_dict.items() if k in case_fields}
 
 
@@ -430,4 +428,6 @@ case_model_cols = [
     "free_speech",
     "privacy",
     "worker_rights",
+    "document_url",
+    "case_processing_run",
 ]
