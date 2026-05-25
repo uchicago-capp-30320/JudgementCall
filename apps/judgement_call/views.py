@@ -207,7 +207,7 @@ def judges_state_county(request, state, county):
 
 def court_full_view(request, court_id):
     court = Court.objects.get(court_id=court_id)
-    judges = get_current_judges_for_court(court_id)
+    # judges = get_current_judges_for_court(court_id)
     # search by court_id to get tenures?
     # splice out helper function from judges page to make function that can
     # map over tenures
@@ -222,10 +222,12 @@ def court_full_view(request, court_id):
 
     context = {
         "court": court,
+        "court_id": court_id,
         "court_formatted": court_formatted,
         "details": details,
         "gantt_data": court.gantt_json().text,
-        "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+        "radar_data": [],
+        # get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
         "fallback_url": reverse(
             "judgement_call:judges_state_county", kwargs={"state": state, "county": county}
         ),
@@ -932,7 +934,7 @@ def get_individual_opinions_for_radar(
 
     # TO REMOVE (only allow 2 judges as input at a time so
     # there is enough data overlap to build radar)
-    persons = persons[:2]
+    persons = persons[-2:]
 
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
@@ -1018,7 +1020,8 @@ def get_individual_opinions_for_radar(
     ]
 
     # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
-    return data_for_radar_dropmissing
+    # print(data_for_radar_dropmissing)
+    return JsonResponse(data_for_radar_dropmissing, safe=False)
 
 
 def get_radar_example_data(request):

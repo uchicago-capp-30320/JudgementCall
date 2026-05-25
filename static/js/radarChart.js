@@ -13,7 +13,7 @@ function RadarChart(id, data, options) {
         w: 600,				    //Width of the circle
         h: 600,				    //Height of the circle
         margin: {top: 20, right: 20, bottom: 20, left: 20}, //The margins of the SVG
-        legendRadarBuffer: 15,  //Extra space between legend and radar
+        legendRadarBuffer: 2,  //Extra space between legend and radar
         levels: 3,				//How many levels or inner circles should there be drawn
         maxValue: 0, 			//What is the value that the biggest circle will represent
         labelFactor: 1.33, 	    //How much farther than the radius of the outer circle should the axis labels be placed
@@ -176,7 +176,7 @@ function RadarChart(id, data, options) {
             return "radarArea" + " " + `group-${i}`
         }) // Group name: Reference for legend and dynamic highlighting
         .attr("d", function(d,i) { return radarLine(d); })
-        .style("fill", function(d,i) { return cfg.color(i); })
+        .style("fill", function(d,i) { return cfg.color(d[0].name); })
         .style("fill-opacity", cfg.opacityArea)
         .on("mouseover", function (d,i){
             handle_mouseover_fades(d,i);
@@ -190,7 +190,7 @@ function RadarChart(id, data, options) {
         .attr("class", "radarStroke")
         .attr("d", function(d,i) { return radarLine(d); })
         .style("stroke-width", cfg.strokeWidth + "px")
-        .style("stroke", function(d,i) { return cfg.color(i); })
+        .style("stroke", function(d,i) { return cfg.color(d[0].name); })
         .style("fill", "none")
         .style("filter" , "url(#glow)");
 
@@ -204,7 +204,11 @@ function RadarChart(id, data, options) {
             return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2);
         })
         .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
-        .style("fill", function(d, i){ return cfg.color(d.name) }) // HOW TO MAKE THESE MATCH BLOB COLORS
+        .style("fill", function(d, i, nodes){
+            const parentData = d3.select(nodes[i].parentNode).datum();
+            console.log("PARENT:", parentData[0].name);
+            return cfg.color(parentData[0].name);
+        }) // HOW TO MAKE THESE MATCH BLOB COLORS
         .style("fill-opacity", 0.5)
         .style("stroke", "#000000");
 
