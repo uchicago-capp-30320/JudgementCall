@@ -3,6 +3,19 @@ import requests
 import time
 import uuid
 import pandas as pd
+from tqdm import tqdm
+from pathlib import Path
+
+# Path for data
+# Directory of the current script (ingestion/)
+BASE_DIR = Path(__file__).resolve().parent
+
+# Path to the data/ folder and make sure it exists
+DATA_DIR = BASE_DIR.parent / "data" / "judges"
+DATA_DIR.mkdir(exist_ok=True)
+
+# Final CSV path
+OUTPUT_CSV = DATA_DIR / "slri.csv"
 
 
 def make_request(url):
@@ -81,7 +94,7 @@ def scrape_main(url):
     for field in judge_fields:
         judge_pd[field] = []
 
-    for i, name in enumerate(judge_names):
+    for i, name in tqdm(enumerate(judge_names)):
         judge_pd["name"].append(name)
         judge_pd["JID"].append(uuid.uuid4())
         judge_pd["state"].append(judge_states[i])
@@ -106,4 +119,4 @@ url = "https://state-law-research.org/state-justices/"
 
 judge_pd = scrape_main(url)
 
-judge_pd.to_csv("../data/judges_slri.csv")
+judge_pd.to_csv(OUTPUT_CSV)

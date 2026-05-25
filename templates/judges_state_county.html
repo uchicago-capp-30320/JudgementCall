@@ -16,39 +16,36 @@ Judgement Call
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
     <!-- :opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200 -->
     <title>Judges near {{ county }}, {{ state }}</title>
-    <style>
-        .judge-card {
-            border: 2px solid #3e6297;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            max-width: 800px;
-        }
-
-        a {
-            color: #3e6297;
-        }
-    </style>
 </head>
 
 <body>
     <div class="below-nav-and-back">
-        <h1 class="below-nav-header">Judges for {{ county }}, {{ state }} </h1>
-        {% include "back-arrow.html" with fallback_url=fallback_url %}
+        <h1 class="below-nav-header">Judges for {{ county }}</h1>
     </div>
 
     {% for court_name, details in courts.items %}
-    <div class="collapsible-container">
+    <div class="collapsible-container" style="display: flex; align-items: center;">
         <div class="judge-collapsible-title">
             <h2>{{ court_name }}</h2>
             <!-- <span class="material-symbols-outlined">release_alert</span> -->
         </div>
-        <span class="material-symbols-outlined">
-            arrow_forward_ios
-        </span>
+        <div class="election-bang-and-arrow" style="display: flex; gap: 20px;">
+            {% if details.upcoming_election %}
+            <a href="{% url 'judgement_call:elections_state_county' state county %}" id="election-bang"
+                style="color:#c92a2a; text-decoration: none;"><span class="material-symbols-outlined"
+                    style="font-size: 24px; vertical-align: middle;">
+                    release_alert
+                </span> Upcoming Election</a>
+            {% endif %}
+            <span class="material-symbols-outlined" style="vertical-align: middle;">
+                arrow_forward_ios
+            </span>
+        </div>
     </div>
     <div class="collapsible-details">
-        {% include "infographic.html" %}
+        <form action="{% url 'judgement_call:court' details.id %}" method="get" style="display: inline;">
+            <input type="submit" value="See Court-Level Details" class="reg-button">
+        </form>
         <div class="sub-court-header">
             <h3>Current Sitting Judges:</h3>
         </div>
@@ -63,13 +60,13 @@ Judgement Call
             <p>Joined Court: {{ judge.start_date.year }}</p>
             <p>Term End: {{ judge.end_date.year }}</p>
             {% if judge.party_registration == "Republican" %}
-            <p style="color: #c92a2a;"> {{ judge.party_registration}}</p>
+            <p style="color: #c92a2a;">Party: {{ judge.party_registration}}</p>
             {% elif judge.party_registration == "Democrat" %}
-            <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
+            <p style="color: #3572cf;">Party: {{ judge.party_registration }}</p>
             {% else %}
-            <p> {{ judge.party_registration }}</p>
+            <p>Party: {{ judge.party_registration }}</p>
             {% endif %}
-            <p> <a href="{{ judge.more_info }}">more details</a> </p>
+            <p> <a href="{{ judge.more_info }}" style="color: #3e6297;">more details</a> </p>
         </div>
         {% empty %}
         <p>No judges found.</p>
@@ -78,18 +75,7 @@ Judgement Call
     {% empty %}
     <p>No courts found for {{ county }}, {{ state }}.</p>
     {% endfor %}
-    <script>
-        document.querySelectorAll('.collapsible-container').forEach(function (container) {
-            container.addEventListener('click', function () {
-                const content = this.nextElementSibling;
-                if (content.style.maxHeight && content.style.maxHeight !== "0px") {
-                    content.style.maxHeight = "0px";
-                } else {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
-        });
-    </script>
+    {% include "collapsible-script.html" %}
 </body>
 
 </html>

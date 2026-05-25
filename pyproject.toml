@@ -39,6 +39,9 @@ dependencies = [
     "whitenoise>=6.9.0,<7",
     "curl-cffi>=0.15.0",
     "typer-slim>=0.21.2",
+    "tqdm>=4.67.3",
+    "psycopg>=3.3.4",
+    "psycopg2-binary>=2.9.12",
 ]
 
 [tool.ruff]

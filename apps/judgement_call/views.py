@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
 from django.db.models import Avg, Count, When, Value, Q
 from django.db.models import Case as Case_
@@ -31,7 +31,7 @@ from django.utils import timezone
 # from django.db.models import Count, Avg
 from django.db.models.functions import ExtractYear
 
-# from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta
 import random
 from faker import Faker
 
@@ -41,6 +41,7 @@ from faker import Faker
 from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+from .icons import get_judge_icons
 
 # comment to push
 
@@ -51,6 +52,8 @@ def judges(request):
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
         return judges_state_county(request, state, county)
 
     context = {
@@ -62,6 +65,8 @@ def judges(request):
         "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
         "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "judges.html", context)
@@ -90,35 +95,18 @@ def judge_sort(judge_lst):
     return [chief_j] + ordered_lst
 
 
-def judges_state_county(request, state, county):
+def build_court_dict(tenures, elections_soon):
     """
-    courts structure --
-    courts {
-        court_name: {
-            upcoming_election: T/F
-            judges: [judge1_dict, judge2_dict, judge3_dict...]
-        }
-    }
+    build courts_dict to get list of judges & infographic
     """
-    # grab all the tenures associated with a specific state / county
-    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
-    if not geo_c2c.exists():
-        raise Http404("State or county not found")
-    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
-    elections_soon = get_upcoming_elections(local_courts_list)
-
-    # only get current judges
-    tenures = Tenure.objects.filter(
-        court__in=local_courts_list, end_date__isnull=True
-    ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
     courts = {}
-
     # iterate through all the tenures and courts associated with them
     for tenure in tenures:
         # when we get to a new court add it to the dict of courts.
+        court = tenure.court
         court_name = tenure.court.name
         if court_name not in courts:
-            courts[court_name] = {"judges": []}
+            courts[court_name] = {"judges": [], "id": court.court_id}
             if court_name in elections_soon:
                 courts[court_name]["upcoming_election"] = True
             else:
@@ -145,7 +133,9 @@ def judges_state_county(request, state, county):
                 if tenure.person.birth_date
             ]
             if birth_years:
-                avg_age = timezone.now().year - (sum(birth_years) / len(birth_years))
+                avg_age = (
+                    tenure.person.age
+                )  # timezone.now().year - (sum(birth_years) / len(birth_years))
             else:
                 avg_age = None
 
@@ -161,8 +151,8 @@ def judges_state_county(request, state, county):
             ]
             courts[court_name]["avg_age"] = avg_age
 
-        # For each tenure associated with a court, add it to a list that's
-        # a value in the {court: [tenure_info, tenure_info]} type dict
+            # For each tenure associated with a court, add it to a list that's
+            # a value in the {court: [tenure_info, tenure_info]} type dict
         courts[court_name]["judges"].append(
             {
                 "name": tenure.person.name_canonical,
@@ -171,17 +161,44 @@ def judges_state_county(request, state, county):
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
+                "icons": get_judge_icons(tenure, {}),
             }
         )
+    # courts[court_name]["judges"].sort(key=lambda x: x["name"])
 
-    # for c in courts.keys():
-    #     c["judges"] = judge_sort(c["judges"])
+    return courts
+
+
+def judges_state_county(request, state, county):
+    """
+    courts structure --
+    courts {
+        court_name: {
+            id: court_id,
+            upcoming_election: T/F,
+            judges: [judge1_dict, judge2_dict, judge3_dict...]
+        }
+    }
+    """
+    # grab all the tenures associated with a specific state / county
+    geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
+    if not geo_c2c.exists():
+        raise Http404("State or county not found")
+    local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
+    elections_soon, court_w_elections = get_upcoming_elections(local_courts_list)
+
+    # only get current judges
+    tenures = Tenure.objects.filter(
+        court__in=local_courts_list, end_date__isnull=True
+    ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
+
+    courts = build_court_dict(tenures, elections_soon)
 
     context = {
         "courts": courts,
-        "state": state,
-        "county": county,
         "fallback_url": reverse("judgement_call:judges"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
     return render(request, "judges_state_county.html", context)
 
@@ -189,12 +206,27 @@ def judges_state_county(request, state, county):
 def court_full_view(request, court_id):
     court = Court.objects.get(court_id=court_id)
     judges = get_current_judges_for_court(court_id)
+    # search by court_id to get tenures?
+    # splice out helper function from judges page to make function that can
+    # map over tenures
+    tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
+        court=court, end_date__gt=timezone.now()
+    )
+    upcoming_elections = get_upcoming_elections([court])
+    court_formatted = build_court_dict(tenures, upcoming_elections)
+    details = court_formatted[court.name]
+    state = request.session.get("state")
+    county = request.session.get("county")
 
     context = {
         "court": court,
-        "court_name": court.name,
+        "court_formatted": court_formatted,
+        "details": details,
         "gantt_data": court.gantt_json().text,
         "radar_data": get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+        "fallback_url": reverse(
+            "judgement_call:judges_state_county", kwargs={"state": state, "county": county}
+        ),
     }
 
     return render(request, "court.html", context)
@@ -203,10 +235,39 @@ def court_full_view(request, court_id):
 def show_person(request, person_id):
     person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
+    indops = IndividualOpinion.objects.filter(
+        judge_alias__tenure__person__name_canonical=person
+    ).values(
+        "description",
+        "ruling",
+        "case__case_title",
+        "case__description",
+        "case__docket_no",
+        "case__case_type",
+        "case__decision_date",
+        "case__decision_outcome",
+        "case__decision_winner",
+        "case__plaintiff_argument",
+        "case__defendant_argument",
+        "case__document_url",
+        "case__environment",
+        "case__consumers",
+        "case__reproductive_rights",
+        "case__democratic_norms",
+        "case__free_press",
+        "case__public_health",
+        "case__separation_church_state",
+        "case__voting_access",
+        "case__public_education",
+        "case__free_speech",
+        "case__privacy",
+        "case__worker_rights",
+    )
 
     person_info = {
         "name": person.name_canonical,
         "birth_date": person.birth_date,
+        "age": person.age,
         "gender": person.gender.title(),
         "race": person.race.title(),
         "party_registration": person.party_registration.title(),
@@ -229,28 +290,74 @@ def show_person(request, person_id):
             }
         )
 
+    def get_topics(op):
+        topic_string = ", ".join(
+            field.replace("_", " ").title()
+            for field in Case().topic_flags()
+            if op[f"case__{field}"] not in ("NA", None, "")
+        )
+        return topic_string
+
+    person_opinions = []
+    for op in indops:
+        person_opinions.append(
+            {
+                "case_description": op["case__description"],
+                "opinion_description": op["description"],
+                "ruling": op["ruling"],
+                "case_title": op["case__case_title"],
+                "docket_no": op["case__docket_no"],
+                "case_type": op["case__case_type"],
+                "decision_date": op["case__decision_date"],
+                "decision_outcome": op["case__decision_outcome"],
+                "decision_winner": op["case__decision_winner"],
+                "document_url": op["case__document_url"],
+                "topics": get_topics(op),
+            }
+        )
+
     return render(
         request,
-        "person.html",
+        "person_judge.html",
         {
             "person": person_info,
             "tenures": person_tenures,
+            "opinions": person_opinions,
+            "state": request.session.get("state"),
+            "county": request.session.get("county"),
         },
     )
 
 
 def landing(request):
     """Landing page for Judgement Call users."""
+
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
+
+        return redirect(reverse("judgement_call:landing"))
+
     context = {
         "msg": "Welcome to Judgement Call!",
+        "button_name": """Start Exploring""",
+        "states": US_STATES,
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "home.html", context)
 
 
-def about(request):
-    """About page, also to test if base.html is working."""
-    context = {"msg": "<Insert heartfelt story about the creation of this project.>"}
+def methodology(request):
+    """Methodology page."""
+    context = {
+        "msg": "<Methodology for this project.>",
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
 
     return render(request, "about.html", context)
 
@@ -260,6 +367,8 @@ def elections(request):
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
         return elections_state_county(request, state, county)
 
     context = {
@@ -270,6 +379,8 @@ def elections(request):
         "states": US_STATES,
         "button_name": "Find Elections",
         "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "elections.html", context)
@@ -298,9 +409,32 @@ def get_upcoming_elections(relevant_courts):
     )
 
     if next_event:
-        return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
+        next_elections = Election.objects.filter(
+            court__in=relevant_courts, election_date=next_event
+        )
+        next_courts = [e.court for e in next_elections]
+        return (next_elections, next_courts)
 
-    return Election.objects.none()
+    next_elections = Election.objects.none()
+    next_courts = []
+
+    return (next_elections, next_courts)
+
+
+def alternate_get_elections(relevant_courts):
+    """
+    Takes in QSet of courts and returns those with election in next 6mo
+    """
+    start_date = timezone.now()
+    six_mo_from_now = start_date.month + 6
+    end_date = start_date + relativedelta(months=six_mo_from_now)
+
+    upcoming_elections = Election.objects.filter(
+        election_date__range=(start_date, end_date), court__in=relevant_courts
+    )
+    courts_w_upcoming_elections = [e.court for e in upcoming_elections]
+
+    return (upcoming_elections, courts_w_upcoming_elections)
 
 
 def check_incumbent(candidate, court):
@@ -326,7 +460,7 @@ def elections_state_county(request, state, county):
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
 
     # want to retrieve soonest elections
-    local_elections_list = get_upcoming_elections(local_courts_list)
+    local_elections_list, _ = get_upcoming_elections(local_courts_list)
     elections = {
         e.court.name: {
             "date": e.election_date.strftime("%m-%d-%Y"),
@@ -342,9 +476,9 @@ def elections_state_county(request, state, county):
 
     context = {
         "elections": elections,
-        "state": state,
-        "county": county,
         "fallback_url": reverse("judgement_call:elections"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
     return render(request, "elections_state_county.html", context)
@@ -363,7 +497,6 @@ def gantt(request):
     """Gantt chart prototype."""
 
     state = request.GET.get("state", "AZSUP")
-    print(state)
     court = Court.objects.get(court_id=state)
     json = court.gantt_json()
 
@@ -385,10 +518,32 @@ def get_current_judges_for_court(court_id):
 
 
 def analysis(request):
-    """Elections landing page."""
+    """Analysis landing page."""
 
-    state = request.GET.get("state")
-    county = request.GET.get("county")
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
+        return analysis_state_county(request, state, county)
+
+    context = {
+        "msg": "Pending",
+        "header": "Analysis",
+        "preamble": """Apply filters to see judicial analytics.""",
+        "states": US_STATES,
+        "button_name": "Generate Analytics",
+        "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
+
+    return render(request, "analysis.html", context)
+
+
+def analysis_state_county(request, state, county):
+    """Analysis landing page."""
+
     court_id = None
     court_name = None
     gantt_data = None
@@ -419,17 +574,25 @@ def analysis(request):
     context = {
         "msg": "Pending!",
         "header": "Analysis",
-        "preamble": "Apply filters to see judicial analytics.",
+        "preamble": "See judicial analytics on a national scale.",
         "states": US_STATES,
         "radar_data": radar_data,
         "button_name": """Generate Analytics""",
-        "state": court_id,
+        # "state": court_id,
         "court_name": court_name,
         "gantt_data": gantt_data,
         "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
     }
 
-    return render(request, "analysis.html", context)
+    return render(request, "analysis_state_county.html", context)
+
+
+def clear_location(request):
+    request.session.pop("state", None)
+    request.session.pop("county", None)
+    return redirect(reverse("judgement_call:landing"))
 
 
 def add_fake_data(request):

@@ -22,21 +22,50 @@
     <div class="main-content">
         <nav class="navbar" role="navigation">
             <div class="navbar-brand">
-                <a class="navbar-item" href="/">
+                <a class="navbar-item-logo" href="/">
                     <h2 class="home-logo">Judgement Call <span class="material-icons">gavel</span></h2>
                 </a>
             </div>
             <div class="navbar-menu">
                 <div class="navbar-end">
-                    <a class="navbar-item" a href="/search/">
-                        Search
+                    <a class="navbar-item"
+                        href="/judges/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
+                        Judges
                     </a>
-                    <a class="navbar-item" a href="/about/">
-                        About
+                    <a class="navbar-item"
+                        href="/elections/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
+                        Elections
                     </a>
+                    <a class="navbar-item"
+                        href="/analysis/{% if state and county %}?state={{ state }}&county={{ county }}{% endif %}">
+                        Analysis
+                    </a>
+                    <div class="navbar-more">
+                        <button class="navbar-item more-button" onclick="toggleMore()">
+                            <span class="material-icons">menu</span>
+                        </button>
+                        <div class="more-dropdown" id="more-dropdown">
+                            <a class="more-item" href="/methodology/">Methodology</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </nav>
+
+        <div class="below-nav-and-back">
+            {% if fallback_url %}
+            {% include "back-arrow.html" with fallback_url=fallback_url %}
+            {% endif %}
+            <div class="location-bar">
+                {% if state and county %}
+                <span class="location-display splash-page bold">{{ county }}</span>
+                {% else %}
+                <span class="location-display splash-page bold">Choose your area</span>
+                {% endif %}
+                <a href="{% url 'judgement_call:clear_location' %}"><span class="material-icons center">refresh</span>
+                </a>
+            </div>
+        </div>
 
         <div class="content-body">
             <div class="container">
@@ -56,6 +85,21 @@
             </div>
         </footer>
     </div>
+
+    <script>
+        function toggleMore() {
+            const dropdown = document.getElementById("more-dropdown");
+            dropdown.classList.toggle("show");
+        }
+
+        // close dropdown if user clicks outside of it
+        document.addEventListener("click", function (e) {
+            if (!e.target.closest(".navbar-more")) {
+                document.getElementById("more-dropdown").classList.remove("show");
+            }
+        });
+    </script>
+
 </body>
 
 

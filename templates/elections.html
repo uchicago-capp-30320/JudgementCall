@@ -7,12 +7,13 @@ Judgement Call
 
 {% block content %}
 
-<h2 class="sub-header">{{ header }}</h2>
+<div class="below-nav-and-back">
+    <h2 class="sub-header">{{ header }}</h2>
+    {% include "back-arrow.html" with fallback_url=fallback_url %}
+</div>
 
 <p>{{ preamble }}</p>
 
 {% include "dropdown.html" with states=states %}
-
-{% include "back-arrow.html" with fallback_url=fallback_url %}
 
 {% endblock %}

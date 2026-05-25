@@ -6,6 +6,17 @@ body {
     min-height: 85vh;
 }
 
+.splash-page {
+    padding-top: 10px;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+}
+
+.bold {
+    font-weight: bold;
+    font-size: 20px;
+}
+
 .playfair-display-sc-regular {
     font-family: "Playfair Display SC", serif;
     font-weight: 400;
@@ -19,10 +30,16 @@ body {
 }
 
 .navbar {
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
     padding-top: 5px;
     background-color: #4a3a8c;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand {
+    width: 35%
 }
 
 .home-logo {
@@ -31,15 +48,95 @@ body {
     font-family: "Playfair Display SC", serif;
 }
 
+.navbar-item-logo {
+    color: #f9fbff;
+    text-decoration: none;
+    align-items: center;
+}
+
 .navbar-menu {
+    width: 65%;
     display: flex;
     align-items: center;
-    gap: 10px;
+}
+
+.navbar-end {
+    display: flex;
+    margin-left: auto;
 }
 
 .navbar-item {
     color: #f9fbff;
     text-decoration: none;
+    padding-left: 10px;
+    padding-right: 10px;
+    align-items: center;
+}
+
+.navbar-item:hover {
+    color: #4a3a8c;
+    background-color: #f9fbff;
+}
+
+.navbar-more {
+    position: relative;
+}
+
+.more-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1;
+}
+
+.more-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: black;
+    border-radius: 4px;
+    min-width: 120px;
+    z-index: 100;
+}
+
+.more-dropdown.show {
+    display: block;
+    text-align: right;
+}
+
+.more-item {
+    display: block;
+    padding: 4px 16px !important;
+    color: #f9fbff;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.more-item:hover {
+    /*background-color: rgba(255, 255, 255, 0.15);*/
+    color: #f9fbff;
+    background-color: gray;
+}
+
+.location-bar {
+    display: table;
+    margin-left: auto;
+    text-align: right;
+    padding: 6px 16px;
+    background-color: #f0ecff;
+    border: 2px solid #4a3a8c;
+    color: #4a3a8c;
+}
+
+.location-reset {
+    align-items: center;
+}
+
+.current-location {
+    text-align: center;
 }
 
 .service {
@@ -119,12 +216,45 @@ footer {
     text-align: center;
 }
 
+#back-btn {
+    margin-left: 25px;
+}
+
+.icon-tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    /* white-space: nowrap; */
+    transition: opacity 0.2s;
+    font-size: 0.75rem;
+    /* width: max-content;
+    max-width: 200px; */
+}
+
+.icon-tooltip-wrapper:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
 .collapsible-container {
     background-color: #eee;
     color: #444;
     cursor: pointer;
     padding: 18px;
-    width: 100%;
+    /* width: 100%; */
     border: none;
     text-align: left;
     outline: none;
@@ -151,6 +281,14 @@ footer {
     padding-top: 20px;
 }
 
+.material-icons.md-60 {
+    font-size: 60px;
+}
+
+.material-icons.center {
+    vertical-align: middle;
+}
+
 .material-symbols-outlined {
     font-variation-settings:
         'FILL' 0,
@@ -174,6 +312,52 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+#back-arrow-icon {
+    vertical-align: -5px;
+}
+
+.court-content {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.judge-list {
+    flex: 3;
+}
+
+.judge-list h3 {
+    font-size: 20px;
+}
+
+.judge-list .collapsible-container {
+    padding: 7px;
+}
+
+.court-content {
+    background-color: #f9fbff;
+}
+
+.judge-card {
+    border: 2px solid #3e6297;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    max-width: 800px;
+}
+
+.gantt {
+    background-color: #f9fbff;
+}
+
+.radar {
+    background-color: #f9fbff;
+}
+
+.court-content-sub {
+    flex: 1;
 }
 
 /* .sub-court-header {
