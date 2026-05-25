@@ -579,6 +579,7 @@ class AnalysisTestCase(TestCase):
         assert "states" in response.context
         assert len(response.context["states"]) > 0
 
+
 class MatchingTestCase(TestCase):
     """Tests for the matching.py util"""
 
@@ -587,9 +588,9 @@ class MatchingTestCase(TestCase):
         self.aliases = [
             "Chief Justice John Barbenheimer C.J.",
             "Roberta Presiding Justice P.J.",
-            "Sandra Connor BY DESIGNATION A.R.J."
+            "Sandra Connor BY DESIGNATION A.R.J.",
         ]
-    
+
     def test_standardize_alias_ending_key_words(self):
         """Make sure the standardize_alias function removes the ending from alias"""
         fixed_aliases = []
@@ -599,7 +600,7 @@ class MatchingTestCase(TestCase):
             print(f"OUTPUT: '{fixed}'")
             print("---")
             fixed_aliases.append(fixed)
-        
+
         combined = " ".join(fixed_aliases)
 
         assert "C.J." not in combined
