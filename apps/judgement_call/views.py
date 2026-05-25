@@ -214,10 +214,14 @@ def court_full_view(request, court_id):
     _, upcoming_courts = get_upcoming_elections([court])
     court_formatted = build_court_dict(tenures, upcoming_courts)
     details = court_formatted[court.name]
-    state = request.session.get("state").strip("()',")
-    print(state)
-    county = request.session.get("county").strip("()',")
-    print(county)
+
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.session.get("state").strip(
+            "()',",
+        )
+        county = request.session.get("county").strip("()',")
+    else:
+        redirect("landing")
 
     context = {
         "court": court,
