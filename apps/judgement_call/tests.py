@@ -20,6 +20,7 @@ from apps.judgement_call.models import (
     PersonGender,
     PersonRace,
 )
+from .icons import get_judge_icons
 from datetime import date, timedelta
 
 
@@ -31,12 +32,15 @@ class HomepageTestCase(TestCase):
         response = self.client.get("")
         assert response.status_code == 200
 
-    # def test_home_page_correct_buttons(self):
-    #     """Make sure the homepage has the right stuff on it"""
-    #     response = self.client.get("")
-    #     assert "Your Judges" in response.content.decode()
-    #     assert "Elections" in response.content.decode()
-    #     assert "Analysis" in response.content.decode()
+    def test_home_page_correct_buttons(self):
+        """Make sure the homepage has the right stuff on it"""
+        response = self.client.get("")
+        assert "Start Exploring" in response.content.decode()
+
+    def test_home_page_loads_buttons_with_state_info(self):
+        """Ensure the 3 buttons appear if you have the state info"""
+        response = self.client.get("/?state=IL&county=Cook", follow=True)
+        assert "Your Judges" in response.content.decode()
 
 
 class JudgesTestCase(TestCase):
@@ -90,7 +94,7 @@ class JudgesStateCountyTestCase(TestCase):
         # create a second Person
         self.person2 = Person.objects.create(
             name_canonical="Jackie Potatohead",
-            birth_date=date(1985, 5, 15),  # May 15, 1980
+            birth_date=date(1965, 5, 15),  # May 15, 1980
             gender=PersonGender.FEMALE,
             race=PersonRace.WHITE,
             party_registration=PartyAffiliation.REP,
@@ -98,7 +102,7 @@ class JudgesStateCountyTestCase(TestCase):
             law_school="Penn",
         )
 
-        # create three tenures, two for Joey one for Jackie
+        # create four tenures, two for Joey two for Jackie
         Tenure.objects.create(
             court=court,
             person=self.person1,
@@ -171,7 +175,7 @@ class JudgesStateCountyTestCase(TestCase):
 
     def test_person_page_ok(self):
         """Test whether the person page generates ok"""
-        response = self.client.get("/people/1/")
+        response = self.client.get(f"/people/{self.person1.id}/")
         assert response.status_code == 200
 
     def test_more_details_person(self):
@@ -181,7 +185,7 @@ class JudgesStateCountyTestCase(TestCase):
 
     def test_more_details_nonexistent_judge(self):
         """Try a url for a nonexistent judge id sends a 404"""
-        response = self.client.get("/people/8/")
+        response = self.client.get("/people/1000000000000/")
         assert response.status_code == 404
 
     def test_demographics_in_quick_stats(self):
@@ -191,8 +195,8 @@ class JudgesStateCountyTestCase(TestCase):
         courts = response.context["courts"]
         court_data = courts["Illinois Lower Court First District"]
 
-        # Check average age (will start breaking in a few years but works for now)
-        assert 40 < court_data["avg_age"] < 50
+        # Check average age
+        assert court_data["avg_age"] == 51
 
         # Check gender counts (1 male, 1 female)
         gender_data = {item["person__gender"]: item["count"] for item in court_data["gender_data"]}
@@ -210,6 +214,184 @@ class JudgesStateCountyTestCase(TestCase):
         }
         assert party_data["democrat"] == 1
         assert party_data["republican"] == 1
+
+
+class CourtFullViewTestCase(TestCase):
+    """Tests the court demography, sitting judge, timeline and issue radar page"""
+
+    def setUp(self):
+        # create a court
+        court = Court.objects.create(
+            court_id="ILAPP1",
+            name="Illinois Lower Court First District",
+            court_level=CourtLevel.LOWER,
+            court_type="District Court of Appeal",
+            bench_size=24,
+            selection_type=SelectionType.PARTISAN,
+            selection_jurisdiction=SelectionJurisdictionType.DISTRICT,
+            selection_method="Partisan Election With Retention Votes",
+            term_length=10,
+            url="https://www.illinoiscourts.gov",
+        )
+
+        # create a CountyToCourt + add it to the join table
+        c2c = CountyToCourt.objects.create(state="IL", county="Cook", fips="17031")
+        c2c.court.add(court)
+
+        # create a Person
+        self.person1 = Person.objects.create(
+            name_canonical="Joey Baga-Donuts",
+            birth_date=date(1980, 5, 15),  # May 15, 1980
+            gender=PersonGender.MALE,
+            race=PersonRace.BLACK,
+            party_registration=PartyAffiliation.DEM,
+            professional_experience="Big law baby. Before that worked in gov.",
+            law_school="UCLA",
+        )
+
+        # create a second Person
+        self.person2 = Person.objects.create(
+            name_canonical="Jackie Potatohead",
+            birth_date=date(1965, 5, 15),  # May 15, 1980
+            gender=PersonGender.FEMALE,
+            race=PersonRace.WHITE,
+            party_registration=PartyAffiliation.REP,
+            professional_experience="Social worker",
+            law_school="Penn",
+        )
+
+        # create four tenures, two for Joey two for Jackie
+        self.tenure1 = Tenure.objects.create(
+            court=court,
+            person=self.person1,
+            start_date=date.today() - timedelta(days=365 * 15),
+            end_date=date.today() + timedelta(days=100),
+            selection_type=SelectionType.PARTISAN,
+            ticket_party=PartyAffiliation.DEM,
+            appointer_name="",
+            appointer_party="",
+            chief_justice=False,
+        )
+
+        Tenure.objects.create(
+            court=court,
+            person=self.person1,
+            start_date=date.today() - timedelta(days=365 * 15),
+            end_date=date.today() + timedelta(days=100),
+            selection_type=SelectionType.PARTISAN,
+            ticket_party=PartyAffiliation.DEM,
+            appointer_name="",
+            appointer_party="",
+            chief_justice=False,
+        )
+
+        Tenure.objects.create(
+            court=court,
+            person=self.person2,
+            start_date=date.today() - timedelta(days=365 * 15),
+            end_date=date.today() + timedelta(days=100),
+            selection_type=SelectionType.NONPARTISAN,
+            ticket_party=PartyAffiliation.DEM,
+            chief_justice=True,
+        )
+
+        # this tenure is in the past
+        Tenure.objects.create(
+            court=court,
+            person=self.person2,
+            start_date=date.today() - timedelta(days=365 * 15),
+            end_date=date.today() - timedelta(days=100),
+            selection_type=SelectionType.NONPARTISAN,
+            ticket_party=PartyAffiliation.DEM,
+            chief_justice=True,
+        )
+
+        # add a case with topics
+        case = Case.objects.create(
+            court=court,
+            docket_no="2024-001",
+            case_type=CaseType.CIVIL_RIGHTS,
+            case_title="Test Case",
+            description="A test case",
+            decision_status=True,
+            decision_outcome="plaintiff",
+            decision_date=date.today(),
+            environment="NA",
+            consumers="protected",  # Joey ruled to protect consumers
+            reproductive_rights="NA",
+            democratic_norms="NA",
+            free_press="NA",
+            public_health="NA",
+            separation_church_state="NA",
+            voting_access="NA",
+            public_education="NA",
+            free_speech="NA",
+            privacy="protected",  # Joey ruled to protect privacy
+            worker_rights="NA",
+        )
+
+        # add an alias
+        alias = Alias.objects.create(alias="Joey Baga-Donuts", tenure=self.tenure1, court=court)
+
+        # add individual opinions
+        IndividualOpinion.objects.create(
+            case=case,
+            judge_alias=alias,
+            description="Concurred with majority",
+            ruling=RulingType.CONCUR,
+        )
+
+    def test_court_demographics(self):
+        """Make sure the court demographics are correct"""
+        # set the session for state/county
+        session = self.client.session
+        session["state"] = "IL"
+        session["county"] = "Cook"
+        session.save()
+
+        # hit the court full view page
+        response = self.client.get("/judges/ILAPP1", follow=True)
+        details = response.context["details"]
+        print("details: ", details)
+
+        # Check average age
+        assert details["avg_age"] == 51
+
+        # Check gender counts (1 male, 1 female)
+        gender_data = {item["person__gender"]: item["count"] for item in details["gender_data"]}
+        assert gender_data["m"] == 1
+        assert gender_data["f"] == 1
+
+        # Check race counts (1 black, 1 white)
+        race_data = {item["person__race"]: item["count"] for item in details["race_data"]}
+        assert race_data["black or african american"] == 1
+        assert race_data["white"] == 1
+
+        # Check party counts (1 dem, 1 rep)
+        party_data = {
+            item["person__party_registration"]: item["count"] for item in details["party_data"]
+        }
+        assert party_data["democrat"] == 1
+        assert party_data["republican"] == 1
+
+    def test_judge_icons(self):
+        """ "Test that judge icons match the case rulings"""
+        response = self.client.get("/judges/ILAPP1", follow=True)
+        details = response.context["details"]
+
+        # Get first judge's icons
+        first_judge = details["judges"][0]
+        icons = first_judge["icons"]
+
+        # make sure the icons are right
+        assert "wallet" in icons
+        assert "eye_tracking" in icons
+
+        # make sure the icons are the right color, green for protected
+        print("look here!")
+        print(icons)
+        assert icons["wallet"][1] == "gray"  # bc not enough cases to decide
+        assert icons["eye_tracking"][1] == "gray"
 
 
 class ElectionsTestCase(TestCase):
