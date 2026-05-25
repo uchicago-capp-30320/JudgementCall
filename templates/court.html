@@ -67,9 +67,7 @@ Judgement Call
                 </div>
                 <div class="tab-content" id="about">
                     <div class="radar">
-                        {% if radar_data %}
-                        {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
-                        {% endif %}
+                        {% include "radar_test.html" %}
                     </div>
                 </div>
             </div>
@@ -134,22 +132,13 @@ Judgement Call
             contents.forEach((c) => c.classList.remove('active'));
 
             tab.classList.add('active');
-            // document.getElementById(target).classList.add('active');
+            document.getElementById(target).classList.add('active');
             // court_id = JSON.parse(document.getElementById('court_id').textContent);
-            console.log(court_id);
-            console.log(activeJudgeNames);
-            refreshRadarData();
+            // console.log(court_id);
+            // console.log(activeJudgeNames);
         });
     });
 
-    function refreshRadarData() {
-        court_id = JSON.parse(document.getElementById('court_id').textContent);
-        console.log(court_id);
-        const encodedPersons = activeJudgeNames.map(encodeURIComponent).join('__');
-        const url = `/radar/${court_id}/${encodedPersons}/`;
-        fetch(url)
-            .then(response => console.log(response))
-            .then(response => response.json())
-    }
+
 </script>
 {% endblock %}

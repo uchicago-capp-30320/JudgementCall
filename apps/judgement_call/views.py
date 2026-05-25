@@ -821,7 +821,7 @@ def get_individual_opinions_for_radar(
 
     # TO REMOVE (only allow 2 judges as input at a time so
     # there is enough data overlap to build radar)
-    persons = persons[:2]
+    persons = persons[-2:]
 
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
@@ -907,7 +907,8 @@ def get_individual_opinions_for_radar(
     ]
 
     # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
-    return data_for_radar_dropmissing
+    # print(data_for_radar_dropmissing)
+    return JsonResponse(data_for_radar_dropmissing, safe=False)
 
 
 def get_radar_example_data(request):
