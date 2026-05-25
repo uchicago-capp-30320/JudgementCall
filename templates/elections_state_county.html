@@ -49,11 +49,11 @@ Judgement Call
             <div class="judge-card">
                 <h3>{{ candidate.name }}</h3>
                 {% if candidate.party_registration == "Republican" %}
-                <p style="color: red;"> {{ candidate.party_registration }}</p>
+                <p style="color: red;"> {{ candidate.party_registration|title }}</p>
                 {% elif candidate.party_registration == "Democrat" %}
-                <p style="color: blue;"> {{ candidate.party_registration }}</p>
+                <p style="color: blue;"> {{ candidate.party_registration|title }}</p>
                 {% else %}
-                <p> {{ candidate.party_registration }}</p>
+                <p>Party: {{ candidate.party_registration|title }}</p>
                 {% endif %}
                 <p> <a href="{{ candidate.more_info }}">more details</a> </p>
             </div>
