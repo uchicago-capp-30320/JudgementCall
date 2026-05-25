@@ -41,7 +41,7 @@ from faker import Faker
 from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
-from .icons import get_judge_icons
+from .icons import get_judge_icons, get_topic_icons
 
 from analysis.spacejam import make_plot as make_mds_plot
 import re
@@ -295,15 +295,17 @@ def show_person(request, person_id):
         )
 
     def get_topics(op):
-        topic_string = ", ".join(
-            field.replace("_", " ").title()
+        topics_dict = {
+            field.replace("_", " ").title(): op[f"case__{field}"]
             for field in Case().topic_flags()
             if op[f"case__{field}"] not in ("NA", None, "")
-        )
-        return topic_string
+        }
+        topics_string = ", ".join(topics_dict.keys())
+        return topics_string, topics_dict
 
     person_opinions = []
     for op in indops:
+        topics_string, topics_dict = get_topics(op)
         person_opinions.append(
             {
                 "case_description": op["case__description"],
@@ -316,7 +318,8 @@ def show_person(request, person_id):
                 "decision_outcome": op["case__decision_outcome"],
                 "decision_winner": op["case__decision_winner"],
                 "document_url": op["case__document_url"],
-                "topics": get_topics(op),
+                "topics_string": topics_string,
+                "topics_dict": topics_dict,
             }
         )
 
@@ -326,6 +329,7 @@ def show_person(request, person_id):
         {
             "person": person_info,
             "tenures": person_tenures,
+            "topic_icons": get_topic_icons(person),
             "opinions": person_opinions,
             "state": request.session.get("state"),
             "county": request.session.get("county"),
@@ -414,12 +418,26 @@ def get_candidate_info(can):
         name, party = quick_name_tidy(name)
     else:
         party = can.person.party_registration
-    return {
+    # return {
+    #     "name": name,
+    #     "party_registration": party,
+    #     "more_info": f"/people/{can.person.id}/",
+    #     # "incumbent": on_bench,
+    # }
+
+    # check if this person has ever been a judge
+    has_tenures = Tenure.objects.filter(person=can.person).exists()
+
+    info = {
         "name": name,
         "party_registration": party,
-        "more_info": f"/people/{can.person.id}/",
-        # "incumbent": on_bench,
     }
+
+    # only include the link if they are a judge
+    if has_tenures:
+        info["more_info"] = f"/people/{can.person.id}/"
+
+    return info
 
 
 def get_upcoming_elections(relevant_courts):
@@ -487,7 +505,8 @@ def elections_state_county(request, state, county):
     # want to retrieve soonest elections
     local_elections_list, _ = get_upcoming_elections(local_courts_list)
     elections = {
-        e.court.name: {
+        e.election_id: {
+            "court_name": e.court.name,
             "date": e.election_date.strftime("%m-%d-%Y"),
             "type": e.court.selection_method.title(),
         }
@@ -497,7 +516,7 @@ def elections_state_county(request, state, county):
     # link a list of candidate objects to corresponding election
     for e in local_elections_list:
         candidates = Candidacy.objects.filter(election=e)
-        elections[e.court.name]["candidates"] = [get_candidate_info(c) for c in candidates]
+        elections[e.election_id]["candidates"] = [get_candidate_info(c) for c in candidates]
 
     context = {
         "elections": elections,
@@ -614,7 +633,7 @@ def analysis_state_county(request, state, county):
         "header": "Analysis",
         "preamble": "See judicial analytics on a national scale.",
         "states": US_STATES,
-        "radar_data": radar_data,
+        "radar_data": [],
         "button_name": """Generate Analytics""",
         # "state": court_id,
         "court_name": court_name,
