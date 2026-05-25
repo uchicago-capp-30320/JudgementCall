@@ -9,10 +9,12 @@
                 content.style.maxHeight = content.scrollHeight + "px";
                 const activeJudgeName = this.querySelector('h3')?.textContent.replace(" - Chief Justice", "");
                 // TODO: Handle popping oldest after reaching >2 judges
-                if (activeJudgeNames.length > 2) {
-                    activeJudgeNames.pop(); //.shift() causes judges' legend colors to swap!
+                // if (activeJudgeNames.length >= 2) {
+                //     activeJudgeNames.pop(); //.shift() causes judges' legend colors to swap!
+                // }
+                if (!activeJudgeNames.includes(activeJudgeName)){
+                    activeJudgeNames.push(activeJudgeName);
                 }
-                activeJudgeNames.push(activeJudgeName);
             }
             const judgeEvent = new CustomEvent('judgeSelectionChanged', {
                 detail: { judges: window.activeJudgeNames }
