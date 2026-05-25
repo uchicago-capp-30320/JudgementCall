@@ -6,7 +6,7 @@ app_name = "judgement_call"
 
 
 class StrListConverter:
-    regex = r"[a-zA-Z0-9_\-\s%]+"  # Susan M. Crawford gets lost because of her Period!!!
+    regex = r"[a-zA-Z0-9_\-\s%\.]+"  # Susan M. Crawford gets lost because of her Period!!!
 
     def to_python(self, value):
         if not value:
@@ -49,6 +49,6 @@ urlpatterns = [
         name="radar",
     ),
     path("spacejam/", views.spacejam, name="spacejam"),
-    path("judges/<str:court_id>", views.court_full_view, name="court"),
+    path("judges/<str:court_id>/", views.court_full_view, name="court"),
     path("clear-location/", views.clear_location, name="clear_location"),
 ]

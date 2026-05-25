@@ -3,7 +3,7 @@ from .models import (
     # Person,
     # Election,
     # Candidacy,
-    # Tenure,
+    Tenure,
     # Case,
     IndividualOpinion,
     # CourtLevel,
@@ -226,3 +226,30 @@ def get_icon_dict(instance, is_judge):
         icon_dict = get_candidate_icons(instance, icon_dict)
 
     return icon_dict
+
+
+def get_topic_icons(person):
+    "get icons related to case decisions across all tenures for a person"
+    tenures = Tenure.objects.filter(person=person)
+
+    topic_tallies = defaultdict(lambda: defaultdict(int))
+
+    for tenure in tenures:
+        opinions = IndividualOpinion.objects.select_related(
+            "case__court", "judge_alias__tenure"
+        ).filter(judge_alias__tenure=tenure)
+
+        for opinion in opinions:
+            case = opinion.case
+            ruling = opinion.ruling
+            for attr in case.topic_flags():
+                topic_alignment = getattr(case, attr, None)
+                if topic_alignment != "NA":
+                    stance = effective_stance(topic_alignment, ruling)
+                    topic_tallies[attr][stance] += 1
+
+    topic_classifications = {
+        attr: classify_topic(attr, tallies) for attr, tallies in topic_tallies.items()
+    }
+
+    return {TOPIC_ICON_DICT[k]: v for k, v in topic_classifications.items() if k in TOPIC_ICON_DICT}
