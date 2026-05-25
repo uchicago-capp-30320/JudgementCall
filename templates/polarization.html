@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>{{ header }}</h3>
+<p>{{ preamble }}</p>
+{% include 'choropleth.html' with form=choropleth_form chart_html=chart_html %}
+{% endblock %}

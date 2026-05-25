@@ -39,11 +39,8 @@ urlpatterns = [
     ),
     path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
-    path(
-        "analysis/<str:state>/<str:county>/",
-        views.analysis_state_county,
-        name="analysis_state_county",
-    ),
+    path("analysis/polarization/", views.polarization, name="polarization"),
+    path("analysis/spacejam/", views.spacejam, name="spacejam"),
     path("api/counties/<str:state>/", views.get_counties, name="get_counties"),
     path("gantt/", views.gantt, name="gantt"),
     path(

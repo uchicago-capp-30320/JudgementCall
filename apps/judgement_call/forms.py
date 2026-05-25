@@ -1,32 +1,15 @@
 from django import forms
-from .models import (
-    Court,
-    Person,
-    Election,
-    Candidacy,
-    Tenure,
-    Case,
-    IndividualOpinion,
-    CourtLevel,
-    SelectionType,
-    CaseType,
-    SelectionJurisdictionType,
-    Alias,
-    CaseParticipant,
-    TopicAlignment,
-    RulingType,
-    CountyToCourt,
-    PersonGender,
-    PersonRace,
-    PartyAffiliation,
-)
+from apps.judgement_call.models import Court, Case
 
-STATE_CHOICES = [("AZ", "Arizona"), ("CA", "California"), ...]  # or pull from a model
-COURT_LEVEL_CHOICES = [("supreme", "Supreme Court"), ("appellate", "Appellate"), ...]
+POLITICAL_DIMENSIONS = [field.name for field in Case._meta.get_fields()][14:-2]
+DIMENSION_CHOICES = [("", "Overall Polarization")] + [
+    (dim, dim.replace("_", " ").title()) for dim in POLITICAL_DIMENSIONS
+]
 
 
 class ChoroplethForm(forms.Form):
-    state = forms.ChoiceField(choices=STATE_CHOICES)
-    court_level = forms.ChoiceField(choices=COURT_LEVEL_CHOICES)
-    issue_dimension = forms.CharField()
-    geounit = forms.ChoiceField(choices=STATE_CHOICES)  # same or different list
+    dimension = forms.ChoiceField(
+        choices=DIMENSION_CHOICES,
+        required=False,
+        help_text="",
+    )

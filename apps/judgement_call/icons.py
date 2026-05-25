@@ -59,7 +59,7 @@ def up_for_election(tenure):
     "returns bool"
     return (
         tenure.tenure_length_remaining <= 1,
-        "gray",
+        "#808080ff",
         "This judge's term ends soon.",
     )
 
@@ -69,7 +69,7 @@ def long_tenure(tenure):
     "returns bool indicating >=10yr of current tenure"
     return (
         tenure.tenure_length_to_date >= 10,
-        "gray",
+        "#808080ff",
         "This judge has served for 10+ years.",
     )
 
@@ -112,23 +112,27 @@ def classify_topic(attr, tallies):
 
     # insufficient number of cases to decide
     if total < 3:
-        return (False, "gray", "")
+        return (False, "#808080ff", "")
 
     ratio = infringe / protect if protect > 0 else float("inf")
 
     # 2 infringe for every 1 protect
     if ratio >= 2:
-        return (True, "red", f"This judge has historically ruled against {TOPIC_REPHRASED[attr]}.")
+        return (
+            True,
+            "#b02e2eff",
+            f"This judge has historically ruled against {TOPIC_REPHRASED[attr]}.",
+        )
     # 1 infringe for every 2 protect
     elif ratio <= 0.5:
         return (
             True,
-            "green",
+            "#378e4aff",
             f"This judge has historically ruled to protect {TOPIC_REPHRASED[attr]}.",
         )
     # unremarkable ratio
     else:
-        return (False, "gray", "")
+        return (False, "#808080ff", "")
 
 
 # has ruled to protect <topic>

@@ -1,0 +1,8 @@
+<form method="GET" action="{% url 'judgement_call:polarization' %}">
+    {{ form.as_p }}
+    <button class="reg-button" type="submit">Generate Map</button>
+</form>
+
+{% if chart_html %}
+{{ chart_html|safe }}
+{% endif %}
