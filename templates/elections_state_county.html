@@ -32,9 +32,9 @@ Judgement Call
     <div class="below-nav-and-back">
         <h1 class="below-nav-header">Upcoming elections in {{ county }}</h1>
     </div>
-    {% for court_name, details in elections.items %}
+    {% for election_id, details in elections.items %}
     <div class="collapsible-container">
-        <h2>{{court_name}} Election on {{details.date}}</h2>
+        <h2>{{details.court_name}} Election on {{details.date}}</h2>
         <span class="material-symbols-outlined">
             arrow_forward_ios
         </span>
@@ -55,7 +55,9 @@ Judgement Call
                 {% else %}
                 <p>Party: {{ candidate.party_registration|title }}</p>
                 {% endif %}
+                {% if candidate.more_info %}
                 <p> <a href="{{ candidate.more_info }}">more details</a> </p>
+                {% endif %}
             </div>
         </div>
 
