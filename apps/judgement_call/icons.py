@@ -36,6 +36,21 @@ TOPIC_ICON_DICT = {
     "worker_rights": "person_apron",
 }
 
+TOPIC_REPHRASED = {
+    "environment": "the environment",
+    "consumers": "consumer protections",
+    "reproductive_rights": "reproductive rights",
+    "democratic_norms": "democratic norms",
+    "free_press": "the free press",
+    "public_health": "public health",
+    "separation_church_state": "the separation of church and state",
+    "voting_access": "voting access",
+    "public_education": "public education",
+    "free_speech": "free speech",
+    "privacy": "privacy",
+    "worker_rights": "worker rights",
+}
+
 ### PEOPLE WITH TENURE ###
 
 
@@ -78,26 +93,30 @@ def issue_stance_dict(tenure):
     return topic_tallies
 
 
-def classify_topic(tallies):
+def classify_topic(attr, tallies):
     protect = tallies.get("protected", 0)
     infringe = tallies.get("infringed", 0)
     total = protect + infringe
 
     # insufficient number of cases to decide
     if total < 3:
-        return (False, "gray")
+        return (False, "gray", "")
 
     ratio = infringe / protect if protect > 0 else float("inf")
 
     # 2 infringe for every 1 protect
     if ratio >= 2:
-        return (True, "red")
+        return (True, "red", f"This judge has historically ruled against {TOPIC_REPHRASED[attr]}.")
     # 1 infringe for every 2 protect
     elif ratio <= 0.5:
-        return (True, "green")
+        return (
+            True,
+            "green",
+            f"This judge has historically ruled to protect {TOPIC_REPHRASED[attr]}.",
+        )
     # unremarkable ratio
     else:
-        return (False, "gray")
+        return (False, "gray", "")
 
 
 # has ruled to protect <topic>
@@ -105,7 +124,9 @@ def topics_of_note(tenure):
     "returns something indicating issue protect/infringe areas, tbd"
     issue_dict = issue_stance_dict(tenure)
 
-    topic_classifications = {attr: classify_topic(tallies) for attr, tallies in issue_dict.items()}
+    topic_classifications = {
+        attr: classify_topic(attr, tallies) for attr, tallies in issue_dict.items()
+    }
 
     return topic_classifications
 

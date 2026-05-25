@@ -217,8 +217,6 @@ def court_full_view(request, court_id):
     details = court_formatted[court.name]
     state = request.session.get("state")
     county = request.session.get("county")
-    print(court_formatted)
-    print(details)
 
     context = {
         "court": court,
