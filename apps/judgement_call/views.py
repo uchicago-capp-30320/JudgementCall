@@ -42,6 +42,7 @@ from django.http import JsonResponse
 from .icons import get_judge_icons
 
 from analysis.spacejam import make_plot as make_mds_plot
+import re
 
 
 # comment to push
@@ -94,7 +95,7 @@ def judge_sort(judge_lst):
     return [chief_j] + ordered_lst
 
 
-def build_court_dict(tenures, elections_soon):
+def build_court_dict(tenures, elections_courts):
     """
     build courts_dict to get list of judges & infographic
     """
@@ -106,7 +107,8 @@ def build_court_dict(tenures, elections_soon):
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = {"judges": [], "id": court.court_id}
-            if court_name in elections_soon:
+            upcoming_courts = [c.name for c in elections_courts]
+            if court_name in upcoming_courts:
                 courts[court_name]["upcoming_election"] = True
             else:
                 courts[court_name]["upcoming_election"] = False
@@ -182,14 +184,14 @@ def judges_state_county(request, state, county):
     if not geo_c2c.exists():
         raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
-    elections_soon, court_w_elections = get_upcoming_elections(local_courts_list)
+    _, court_w_elections = get_upcoming_elections(local_courts_list)
 
     # only get current judges
     tenures = Tenure.objects.filter(
         court__in=local_courts_list, end_date__isnull=True
     ) | Tenure.objects.filter(court__in=local_courts_list, end_date__gt=timezone.now())
 
-    courts = build_court_dict(tenures, elections_soon)
+    courts = build_court_dict(tenures, court_w_elections)
 
     context = {
         "courts": courts,
@@ -209,8 +211,8 @@ def court_full_view(request, court_id):
     tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
         court=court, end_date__gt=timezone.now()
     )
-    upcoming_elections = get_upcoming_elections([court])
-    court_formatted = build_court_dict(tenures, upcoming_elections)
+    _, upcoming_courts = get_upcoming_elections([court])
+    court_formatted = build_court_dict(tenures, upcoming_courts)
     details = court_formatted[court.name]
     state = request.session.get("state")
     county = request.session.get("county")
@@ -383,12 +385,33 @@ def elections(request):
     return render(request, "elections.html", context)
 
 
+def quick_name_tidy(name):
+    """to address some weirdness with candidate names"""
+    pattern = r"\s*(\(D\)|\(R\)|\(Nonpartisan\))"
+    parts = re.split(pattern, name)
+    cleaned = [p.strip() for p in parts if p]
+    if cleaned[1] == "(R)" or cleaned[0] == "(Republican)":
+        clean_party = "Republican"
+    elif cleaned[1] == "(D)" or cleaned[0] == "(Democrat)":
+        clean_party = "Democrat"
+    else:
+        clean_party = "Nonpartisan"
+    clean_name = cleaned[0]
+
+    return clean_name, clean_party
+
+
 def get_candidate_info(can):
     """helper for elections_state_county"""
     # on_bench = check_incumbent(can, cour)
+    name = can.person.name_canonical
+    if name.endswith("(R)") or name.endswith("(D)") or name.endswith("Nonpartisan"):
+        name, party = quick_name_tidy(name)
+    else:
+        party = can.person.party_registration
     return {
-        "name": can.person.name_canonical,
-        "party_registration": can.person.party_registration,
+        "name": name,
+        "party_registration": party,
         "more_info": f"/people/{can.person.id}/",
         # "incumbent": on_bench,
     }
