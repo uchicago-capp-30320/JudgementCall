@@ -199,7 +199,7 @@ def get_judge_icons(tenure, icon_dict):
 
 def get_candidate_icons(candidacy, icon_dict):
     "get icons related to candidates"
-    person = candidacy.person
+    # person = candidacy.person
 
 
 def get_icon_dict(instance, is_judge):
