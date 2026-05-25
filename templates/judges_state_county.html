@@ -66,6 +66,7 @@ Judgement Call
             {% else %}
             <p>Party: {{ judge.party_registration }}</p>
             {% endif %}
+            {% include 'icon-block.html' with icons=judge.icons %}
             <p> <a href="{{ judge.more_info }}" style="color: #3e6297;">more details</a> </p>
         </div>
         {% empty %}
