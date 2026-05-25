@@ -23,6 +23,20 @@ class ElectionInline(admin.TabularInline):
 
 class IndividualOpinionInline(admin.TabularInline):
     model = IndividualOpinion
+    # lots of aliases, each requring joins for the __str__
+    # this makes the dropdowns in this table require exponential joins
+    raw_id_fields = ["judge_alias"]
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related(
+                "judge_alias__tenure__person",
+                "judge_alias__tenure__court",
+                "judge_alias__court",
+            )
+        )
 
 
 class CandidacyInline(admin.TabularInline):
@@ -104,6 +118,17 @@ class CaseAdmin(admin.ModelAdmin):
     inlines = [
         IndividualOpinionInline,
     ]
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related(
+                "individualopinion_set__judge_alias__tenure__person",
+                "individualopinion_set__judge_alias__tenure__court",
+                "individualopinion_set__judge_alias__court",
+            )
+        )
 
 
 admin.site.register(Case, CaseAdmin)
