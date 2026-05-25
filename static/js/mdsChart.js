@@ -15,7 +15,7 @@ function makeMDSChart(data, selector) {
     const containerWidth = d3.select(selector).node().getBoundingClientRect().width;
     const width  = Math.min(500, containerWidth);
     const height = width * (2/3);
-    const margin = { top: 20, right: 30, bottom: 40, left: 30 }
+    const margin = { top: 20, right: 60, bottom: 40, left: 30 }
 
     const innerWidth  = width  - margin.left - margin.right;
     const innerHeight = height - margin.top  - margin.bottom;
@@ -27,8 +27,9 @@ function makeMDSChart(data, selector) {
         .unknown("#7f7f7f");
 
     const coordCount = {};
+    const precision = 1;
     const arr = Object.keys(data.x).map(i => {
-        const key = `${data.x[i]},${data.y[i]}`;
+        const key = `${data.x[i].toFixed(precision)},${data.y[i].toFixed(precision)}`;
         coordCount[key] = (coordCount[key] || 0) + 1;
         return {
             x: data.x[i],
@@ -50,8 +51,9 @@ function makeMDSChart(data, selector) {
     const jitter = 0.05;
     arr.forEach(d => {
         if (coordCount[d._coordKey] > 1) {
-            const angle = (2 * Math.PI / coordCount[d._coordKey]) * (d._dupIndex - 1) + Math.PI / 2;  // ← add 90° offset
-            d.x += jitter * 0.8 * Math.cos(angle);
+            d._isDuplicate = true;  // ← mark it
+            const angle = (2 * Math.PI / coordCount[d._coordKey]) * (d._dupIndex - 1) + Math.PI / 2;
+            d.x += jitter * 0.3 * Math.cos(angle);
             d.y += jitter * Math.sin(angle);
         }
     });
@@ -105,31 +107,44 @@ function makeMDSChart(data, selector) {
         .attr("r", dotRadius)
         .style("fill", d => partyColor(d.party))
     .on("mouseover", (event, d) => {
+        if (d._isDuplicate) {
+            svg.selectAll("text.judge-label")
+                .filter(t => t === d)
+                .style("display", "block");
+        }
         tooltip
             .style("display", "block")
             .style("left", event.pageX + 10 + "px")
-            .style("top",  event.pageY - 20 + "px")
+            .style("top", event.pageY - 20 + "px")
             .html(tooltipFormat(d));
-        })
+    })
     .on("mousemove", (event) => {
         tooltip
             .style("left", event.pageX + 12 + "px")
             .style("top",  event.pageY - 28 + "px");
     })
-    .on("mouseout", () => {
+    .on("mouseout", (event, d) => {
+        if (d._isDuplicate) {
+            svg.selectAll("text.judge-label")
+                .filter(t => t === d)
+                .style("display", "none");
+        }
         tooltip.style("display", "none");
-      });
+    });
 
     svg.append('g')
         .selectAll("text")
         .data(arr)
         .enter()
         .append("text")
-        .attr("x", d => xScale(d.x) + dotRadius + 2)  // slightly right of the dot
-        .attr("y", d => yScale(d.y) + 4)               // vertically centered on dot
+        .attr("class", d => d._isDuplicate ? "judge-label judge-label-hidden" : "judge-label")
+        .attr("x", d => xScale(d.x) + dotRadius + 2)
+        .attr("y", d => yScale(d.y) + 4)
         .text(d => d.judge_name)
         .attr("font-size", "11px")
-        .attr("fill", "#333");
+        .attr("fill", "#333")
+        .style("pointer-events", "none")
+        .style("display", d => d._isDuplicate ? "none" : "block");
 
      // Grid lines
     svg.append("g")
