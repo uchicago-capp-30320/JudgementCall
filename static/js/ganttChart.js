@@ -50,7 +50,8 @@ let tooltipContentRemaining = (d) => {
 }
 
 function makeGanttChart(data, selector) {
-  const width  = 800
+  const containerWidth = d3.select(selector).node().getBoundingClientRect().width;
+  const width  = Math.min(800, containerWidth);
   const height = 50 * data.length
   const margin = { top: 20, right: 30, bottom: 40, left: 150 }
 
@@ -83,15 +84,15 @@ function makeGanttChart(data, selector) {
     .range([0, innerHeight])
     .padding(0.2);
 
-  const colorToDate = d3.scaleOrdinal(
-    // observable10 colors
-    ["R", "Republican", "D", "Democratic", "I", null], ["#d62728", "#d62728", "#1f77b4", "#1f77b4", "#ff7f0e", "#7f7f7f"]
-  )
+  const colorToDate = d3.scaleOrdinal()
+    .domain(["republican", "democrat", "independent"])
+    .range(["#d62728", "#1f77b4", "#ff7f0e"])
+    .unknown("#7f7f7f");
 
-  const colorRemaining = d3.scaleOrdinal(
-    // category20 colors
-    ["R", "Republican", "D", "Democratic", "I", null], ["#ff9896", "#ff9896", "#aec7e8", "#aec7e8", "#ffbb78", "#c7c7c7"]
-  )
+  const colorRemaining = d3.scaleOrdinal()
+    .domain(["republican", "democrat", "independent"])
+    .range(["#ff9896", "#aec7e8", "#ffbb78"])
+    .unknown("#c7c7c7");
 
   // --- SVG setup ---
   const svg = d3.select(selector)
