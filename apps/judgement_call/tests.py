@@ -22,6 +22,8 @@ from apps.judgement_call.models import (
 )
 from .icons import get_judge_icons
 from datetime import date, timedelta
+from utils.matching import standardize_alias
+from django.urls import reverse
 
 
 class HomepageTestCase(TestCase):
@@ -341,18 +343,20 @@ class CourtFullViewTestCase(TestCase):
             ruling=RulingType.CONCUR,
         )
 
+    def test_court_view_redirects_if_no_session_established(self):
+        """Without state/county in the session, redirect to landing"""
+        response = self.client.get("/judges/ILAPP1/")
+        assert response.status_code == 302
+        assert response.url == "/"
+
     def test_court_demographics(self):
         """Make sure the court demographics are correct"""
-        # set the session for state/county
-        session = self.client.session
-        session["state"] = "IL"
-        session["county"] = "Cook"
-        session.save()
+        # start the session
+        self.client.get("/?state=IL&county=Cook")
 
         # hit the court full view page
-        response = self.client.get("/judges/ILAPP1", follow=True)
+        response = self.client.get("/judges/ILAPP1/", follow=True)
         details = response.context["details"]
-        print("details: ", details)
 
         # Check average age
         assert details["avg_age"] == 51
@@ -375,7 +379,11 @@ class CourtFullViewTestCase(TestCase):
         assert party_data["republican"] == 1
 
     def test_judge_icons(self):
-        """ "Test that judge icons match the case rulings"""
+        """Test that judge icons match the case rulings"""
+        # start the session
+        self.client.get("/?state=IL&county=Cook")
+
+        # hit the view
         response = self.client.get("/judges/ILAPP1", follow=True)
         details = response.context["details"]
 
@@ -387,9 +395,7 @@ class CourtFullViewTestCase(TestCase):
         assert "wallet" in icons
         assert "eye_tracking" in icons
 
-        # make sure the icons are the right color, green for protected
-        print("look here!")
-        print(icons)
+        # make sure the icons are the right color, grey for not enough cases
         assert icons["wallet"][1] == "gray"  # bc not enough cases to decide
         assert icons["eye_tracking"][1] == "gray"
 
@@ -577,3 +583,43 @@ class AnalysisTestCase(TestCase):
         response = self.client.get("/analysis/")
         assert "states" in response.context
         assert len(response.context["states"]) > 0
+
+
+class MatchingTestCase(TestCase):
+    """Tests for the matching.py util"""
+
+    def setUp(self):
+        # create some aliases
+        self.aliases = [
+            "Chief Justice John Barbenheimer C.J.",
+            "Roberta Presiding Justice P.J.",
+            "Sandra Connor BY DESIGNATION A.R.J.",
+        ]
+
+    def test_standardize_alias_ending_key_words(self):
+        """Make sure the standardize_alias function removes the ending from alias"""
+        fixed_aliases = []
+        for alias in self.aliases:
+            print(f"INPUT: '{alias}'")
+            fixed = standardize_alias(alias)
+            print(f"OUTPUT: '{fixed}'")
+            print("---")
+            fixed_aliases.append(fixed)
+
+        combined = " ".join(fixed_aliases)
+
+        assert "C.J." not in combined
+        assert "c.j." not in combined
+        assert "cj" not in combined
+        assert "Chief Justice" not in combined
+        assert "chief justice" not in combined
+        assert "Justice" not in combined
+        assert "justice" not in combined
+        assert "Presiding" not in combined
+        assert "presiding" not in combined
+        assert "P.J." not in combined
+        assert "PJ" not in combined
+        assert "pj" not in combined
+        assert "p.j." not in combined
+        assert "by designation" not in combined
+        assert "BY DESIGNATION" not in combined
