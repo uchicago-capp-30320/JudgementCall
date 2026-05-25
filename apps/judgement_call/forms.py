@@ -13,3 +13,18 @@ class ChoroplethForm(forms.Form):
         required=False,
         help_text="",
     )
+
+
+def get_court_choices():
+    return [("", "--- Select a Court ---")] + [
+        (c.court_id, c.name)
+        for c in Court.objects.filter(court_type="Supreme Court").order_by("name")
+    ]
+
+
+class SpacejamForm(forms.Form):
+    state = forms.ChoiceField(choices=[], label="Court")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["state"].choices = get_court_choices()
