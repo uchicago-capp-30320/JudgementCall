@@ -518,10 +518,32 @@ def get_current_judges_for_court(court_id):
 
 
 def analysis(request):
-    """Elections landing page."""
+    """Analysis landing page."""
 
-    state = request.GET.get("state")
-    county = request.GET.get("county")
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
+        return analysis_state_county(request, state, county)
+
+    context = {
+        "msg": "Pending",
+        "header": "Analysis",
+        "preamble": """Apply filters to see judicial analytics.""",
+        "states": US_STATES,
+        "button_name": "Generate Analytics",
+        "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
+
+    return render(request, "analysis.html", context)
+
+
+def analysis_state_county(request, state, county):
+    """Analysis landing page."""
+
     court_id = None
     court_name = None
     gantt_data = None
@@ -564,7 +586,7 @@ def analysis(request):
         "county": request.session.get("county"),
     }
 
-    return render(request, "analysis.html", context)
+    return render(request, "analysis_state_county.html", context)
 
 
 def clear_location(request):
