@@ -204,18 +204,20 @@ def judges_state_county(request, state, county):
 
 def court_full_view(request, court_id):
     court = Court.objects.get(court_id=court_id)
-    # judges = get_current_judges_for_court(court_id)
-    # search by court_id to get tenures?
-    # splice out helper function from judges page to make function that can
-    # map over tenures
     tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
         court=court, end_date__gt=timezone.now()
     )
     _, upcoming_courts = get_upcoming_elections([court])
     court_formatted = build_court_dict(tenures, upcoming_courts)
     details = court_formatted[court.name]
-    state = request.session.get("state")
-    county = request.session.get("county")
+
+    if request.session.get("state") and request.session.get("county"):
+        state = request.session.get("state").strip(
+            "()',",
+        )
+        county = request.session.get("county").strip("()',")
+    else:
+        return redirect("judgement_call:landing")
 
     context = {
         "court": court,
@@ -225,6 +227,8 @@ def court_full_view(request, court_id):
         "gantt_data": court.gantt_json().text,
         "radar_data": [],
         # get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+        "state": state,
+        "county": county,
         "fallback_url": reverse(
             "judgement_call:judges_state_county", kwargs={"state": state, "county": county}
         ),

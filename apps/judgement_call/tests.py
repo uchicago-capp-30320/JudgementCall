@@ -22,6 +22,7 @@ from apps.judgement_call.models import (
 )
 from .icons import get_judge_icons
 from datetime import date, timedelta
+from django.urls import reverse
 
 
 class HomepageTestCase(TestCase):
@@ -341,18 +342,20 @@ class CourtFullViewTestCase(TestCase):
             ruling=RulingType.CONCUR,
         )
 
+    def test_court_view_redirects_if_no_session_established(self):
+        """Without state/county in the session, redirect to landing"""
+        response = self.client.get("/judges/ILAPP1/")
+        assert response.status_code == 302
+        assert response.url == "/"
+
     def test_court_demographics(self):
         """Make sure the court demographics are correct"""
-        # set the session for state/county
-        session = self.client.session
-        session["state"] = "IL"
-        session["county"] = "Cook"
-        session.save()
+        # start the session
+        self.client.get("/?state=IL&county=Cook")
 
         # hit the court full view page
-        response = self.client.get("/judges/ILAPP1", follow=True)
+        response = self.client.get("/judges/ILAPP1/", follow=True)
         details = response.context["details"]
-        print("details: ", details)
 
         # Check average age
         assert details["avg_age"] == 51
@@ -375,7 +378,11 @@ class CourtFullViewTestCase(TestCase):
         assert party_data["republican"] == 1
 
     def test_judge_icons(self):
-        """ "Test that judge icons match the case rulings"""
+        """Test that judge icons match the case rulings"""
+        # start the session
+        self.client.get("/?state=IL&county=Cook")
+
+        # hit the view
         response = self.client.get("/judges/ILAPP1", follow=True)
         details = response.context["details"]
 
@@ -387,9 +394,7 @@ class CourtFullViewTestCase(TestCase):
         assert "wallet" in icons
         assert "eye_tracking" in icons
 
-        # make sure the icons are the right color, green for protected
-        print("look here!")
-        print(icons)
+        # make sure the icons are the right color, grey for not enough cases
         assert icons["wallet"][1] == "gray"  # bc not enough cases to decide
         assert icons["eye_tracking"][1] == "gray"
 
