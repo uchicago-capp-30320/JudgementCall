@@ -506,10 +506,10 @@ class ElectionsStateCountyTestCase(TestCase):
         )
 
         election = Election.objects.create(
-            court=court, 
+            court=court,
             election_id="IL-COOK-2026",
-            election_date=date.today() + timedelta(days=90), 
-            incumbent=tenure1
+            election_date=date.today() + timedelta(days=90),
+            incumbent=tenure1,
         )
 
         Candidacy.objects.create(person=self.person1, election=election)
@@ -543,7 +543,7 @@ class ElectionsStateCountyTestCase(TestCase):
         """Make sure the election date appears for each election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         elections = response.context["elections"]
-        illinois_election = elections["IL-COOK-2026"]        
+        illinois_election = elections["IL-COOK-2026"]
         assert illinois_election["date"] == (date.today() + timedelta(days=90)).strftime("%m-%d-%Y")
 
     def test_elections_shows_election_type(self):
