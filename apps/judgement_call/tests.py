@@ -354,7 +354,7 @@ class CourtFullViewTestCase(TestCase):
         self.client.get("/?state=IL&county=Cook")
 
         # hit the court full view page
-        response = self.client.get("/judges/ILAPP1/", follow=True)  
+        response = self.client.get("/judges/ILAPP1/", follow=True)
         details = response.context["details"]
 
         # Check average age
@@ -378,10 +378,10 @@ class CourtFullViewTestCase(TestCase):
         assert party_data["republican"] == 1
 
     def test_judge_icons(self):
-        """Test that judge icons match the case rulings""" 
+        """Test that judge icons match the case rulings"""
         # start the session
         self.client.get("/?state=IL&county=Cook")
-        
+
         # hit the view
         response = self.client.get("/judges/ILAPP1", follow=True)
         details = response.context["details"]
