@@ -47,7 +47,7 @@ TOPIC_REPHRASED = {
     "voting_access": "voting access",
     "public_education": "public education",
     "free_speech": "free speech",
-    "privacy": "privacy",
+    "privacy": "privacy rights",
     "worker_rights": "worker rights",
 }
 
@@ -57,13 +57,21 @@ TOPIC_REPHRASED = {
 # up for election soon
 def up_for_election(tenure):
     "returns bool"
-    return (tenure.tenure_length_remaining() <= 1, "gray")
+    return (
+        tenure.tenure_length_remaining <= 1,
+        "gray",
+        "This judge's term ends soon.",
+    )
 
 
 # long tenure (>=10yr)
 def long_tenure(tenure):
     "returns bool indicating >=10yr of current tenure"
-    return (tenure.tenure_length_to_date() >= 10, "gray")
+    return (
+        tenure.tenure_length_to_date >= 10,
+        "gray",
+        "This judge has served for 10+ years.",
+    )
 
 
 def effective_stance(alignment, indiv_ruling):
@@ -76,6 +84,8 @@ def effective_stance(alignment, indiv_ruling):
 def issue_stance_dict(tenure):
     """returns freq dictionary of for/against topic issues"""
     topic_tallies = defaultdict(lambda: defaultdict(int))
+
+    # get opinions for a judge on a court
     opinions = IndividualOpinion.objects.select_related(
         "case__court", "judge_alias__tenure"
     ).filter(judge_alias__tenure=tenure, case__court=tenure.court)
@@ -84,9 +94,11 @@ def issue_stance_dict(tenure):
         case = opinion.case
         ruling = opinion.ruling
 
+        # go through each topic area, check case alignment
         for attr in case.topic_flags():
             topic_alignment = getattr(case, attr, None)
             if topic_alignment != "NA":
+                # correct judge alignment based on decision vs. their opinion
                 stance = effective_stance(topic_alignment, ruling)
                 topic_tallies[attr][stance] += 1
 
@@ -173,8 +185,8 @@ def has_scandals():
 
 def get_judge_icons(tenure, icon_dict):
     "get icons related to judges"
-    # icon_dict["release_alert"] = up_for_election(tenure)
-    # icon_dict["hourglass"] = long_tenure(tenure)
+    icon_dict["release_alert"] = up_for_election(tenure)
+    icon_dict["hourglass"] = long_tenure(tenure)
     topics_to_include = topics_of_note(tenure)
     topic_icons = {
         TOPIC_ICON_DICT[k]: v for k, v in topics_to_include.items() if k in TOPIC_ICON_DICT
@@ -187,6 +199,8 @@ def get_judge_icons(tenure, icon_dict):
 
 def get_candidate_icons(candidacy, icon_dict):
     "get icons related to candidates"
+    # person = candidacy.person
+    # TODO
 
 
 def get_icon_dict(instance, is_judge):

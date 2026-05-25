@@ -1,0 +1,10 @@
+{% if icons %}
+{% for icon, icon_data in icons.items %}
+{% if icon_data.0 %}
+<div class="icon-tooltip-wrapper">
+    <span class="material-symbols-outlined" style="color: {{ icon_data.1 }};">{{ icon }}</span>
+    <span class="tooltip-text">{{ icon_data.2 }}</span>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
