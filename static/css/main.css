@@ -104,7 +104,7 @@ body {
 
 .more-dropdown.show {
     display: block;
-    text-align: right;
+    text-align: center;
 }
 
 .more-item {
@@ -182,7 +182,7 @@ body {
 }
 
 footer {
-    background-color: #acabaf;
+    background-color: #f0ecff;
     left: 0;
     bottom: 0;
     width: 100%;

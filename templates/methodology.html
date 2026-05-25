@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+<style>
+    h2 {
+        margin-top: 30px;
+        margin-bottom: 10px;
+    }
+
+    h4 {
+        margin-top: 0px;
+        margin-bottom: 10px;
+        font-style: italic;
+    }
+</style>
+
+<h1>METHODOLOGY</h1>
+<p>
+    Judgement Call is designed to help voters understand who their judges are,
+    how their judges rule, and how judicial elections may shape their communities.
+    Our goal is to centralize scattered public information and present it in a
+    clear, accessible way. Additionally, we have a novel feature of interpreting
+    judicial decisions as protecting or infringing upon people's rights. This
+    page explains how we collect, process, and interpret data across the site.
+</p>
+
+<h2>Data Sources</h2>
+<p>
+    Judgement Call aggregates information from multiple public and nonprofit sources.
+    <ul>
+        <li>CourtListener (for exiting court data)</li>
+        <li>State Case Database (State Court Report; for state supreme court cases and decisions)</li>
+        <li>State Law Research Initiative (SLRI; for judge demogrpahic information)</li>
+        <li>Wikipedia (for biographical and tenure data)</li>
+        <li>Ballotpedia (for initial election lists)</li>
+    </ul>
+    Because no single authoritative source exists for all state‑level judicial
+    information, our system merges data across sources and fills gaps where possible.
+</p>
+
+<h2>Data Ingestion and Processing</h2>
+<h4>Case and Opinion Data</h4>
+<ul>
+    <li>Daily ingestion from State Case Database</li>
+    <li>Identification of new cases and participating judges</li>
+    <li>Use of LLM tools to extract:
+        <ul>
+            <li>Case topics</li>
+            <li>Case arguments, decisions, and court opinion</li>
+            <li>Rights implicated during cases</li>
+            <li>Individual judge opinions</li>
+            <li>Whether a judge concurred with or dissented from a court opinion</li>
+        </ul>
+    </li>
+</ul>
+<h4>Tenure and Person Data</h4>
+<ul>
+    <li>Continous ingestion of SLRI and Wikipedia</li>
+    <li>Identification of participating judges from case ingestion</li>
+    <li>Identification of candidates from election ingestion</li>
+</ul>
+<h4>Court Data</h4>
+<ul>
+    <li>CourtListener as a source for court identities</li>
+    <li>One-time ingestion of courts, court selection methods, and bench sizes</li>
+</ul>
+<h4>Election & Candidacy Data</h4>
+<ul>
+    <li>No authoritative national source exists</li>
+    <li>We infer upcoming elections using:</li>
+        <ul>
+            <li>Tenure end dates</li>
+            <li>Court selection methods</li>
+        </ul>
+    <li>Initial candidate lists sourced from Ballotpedia</li>
+    <li>Manual verification where possible</li>
+</ul>
+
+<h2>Analytical Framework</h2>
+<p>
+    Judgement Call includes interpretive assessments of judicial behavior,
+    including whether a judge’s decisions tend to protect or infringe
+    individual rights. These assessments are generated through:
+</p>
+<ul>
+    <li>Topic classification of cases by LLM</li>
+    <li>Extraction of rights implicated by LLM</li>
+    <li>Identification of judge‑specific opinions by LLM</li>
+    <li>Internal scoring calculations that summarize right-protection/infringment tendencies</li>
+</ul>
+
+<h2>Limitations and Disclaimers</h2>
+<h4>Data Completeness</h4>
+<ul>
+    <li>Some states publish limited or inconsistent judicial data</li>
+    <li>No one judicial information site is wholly up-to-date and all-encompassing of necessary data</li>
+    <li>Candidate information may be incomplete or unavailable</li>
+</ul>
+<h4>Interpretation</h4>
+<ul>
+    <li>Rights‑based assessments are our own analytical judgments</li>
+    <li>They are not official statements of any court or government entity</li>
+    <li>Nothing on this site should be interpreted as:</li>
+    <ul>
+        <li>A definitive statement of a judge’s legal philosophy</li>
+        <li>A substitute for official court records</li>
+    </ul>
+</ul>
+<p>Although we strive for accuracy, these limitations apply. Users should
+    verify information independently before relying on this site.</p>
+
+<h2>Source Links</h2>
+<ul>
+    <li><a href="https://www.courtlistener.com/">CourtListener</a></li>
+    <li><a href="https://statecourtreport.org/state-case-database">State Case Database</a></li>
+    <li><a href="https://state-law-research.org/state-justices/">State Law Research Initiative</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/State_supreme_courts_in_the_United_States">Wikipedia</a></li>
+    <li><a href="https://ballotpedia.org/State_judicial_elections,_2026">Ballotpedia</a></li>
+</ul>
+
+{% endblock %}

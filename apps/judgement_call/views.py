@@ -354,6 +354,17 @@ def landing(request):
     return render(request, "home.html", context)
 
 
+def about(request):
+    """About page."""
+    context = {
+        "msg": "<About for this project.>",
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
+
+    return render(request, "about.html", context)
+
+
 def methodology(request):
     """Methodology page."""
     context = {
@@ -362,7 +373,7 @@ def methodology(request):
         "county": request.session.get("county"),
     }
 
-    return render(request, "about.html", context)
+    return render(request, "methodology.html", context)
 
 
 def elections(request):
