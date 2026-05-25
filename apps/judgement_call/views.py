@@ -214,8 +214,10 @@ def court_full_view(request, court_id):
     _, upcoming_courts = get_upcoming_elections([court])
     court_formatted = build_court_dict(tenures, upcoming_courts)
     details = court_formatted[court.name]
-    state = request.session.get("state")
-    county = request.session.get("county")
+    state = request.session.get("state").strip("()',")
+    print(state)
+    county = request.session.get("county").strip("()',")
+    print(county)
 
     context = {
         "court": court,
@@ -225,6 +227,8 @@ def court_full_view(request, court_id):
         "gantt_data": court.gantt_json().text,
         "radar_data": [],
         # get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
+        "state": state,
+        "county": county,
         "fallback_url": reverse(
             "judgement_call:judges_state_county", kwargs={"state": state, "county": county}
         ),
