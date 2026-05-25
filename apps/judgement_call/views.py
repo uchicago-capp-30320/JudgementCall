@@ -204,10 +204,6 @@ def judges_state_county(request, state, county):
 
 def court_full_view(request, court_id):
     court = Court.objects.get(court_id=court_id)
-    # judges = get_current_judges_for_court(court_id)
-    # search by court_id to get tenures?
-    # splice out helper function from judges page to make function that can
-    # map over tenures
     tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
         court=court, end_date__gt=timezone.now()
     )
@@ -215,13 +211,13 @@ def court_full_view(request, court_id):
     court_formatted = build_court_dict(tenures, upcoming_courts)
     details = court_formatted[court.name]
 
-    if request.GET.get("state") and request.GET.get("county"):
+    if request.session.get("state") and request.session.get("county"):
         state = request.session.get("state").strip(
             "()',",
         )
         county = request.session.get("county").strip("()',")
     else:
-        redirect("landing")
+        return redirect("judgement_call:landing")
 
     context = {
         "court": court,
