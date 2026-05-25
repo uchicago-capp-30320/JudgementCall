@@ -5,7 +5,6 @@ from datetime import date
 from localflavor.us.models import USStateField
 from django.db import connection
 import pandas as pd
-from jellyfish import jaro_winkler_similarity
 from string import punctuation
 from utils.matching import find_best_match
 
@@ -290,6 +289,9 @@ class Candidacy(models.Model):
 
     class Meta:
         verbose_name_plural = "Candidacies"
+
+    def __str__(self):
+        return f"{self.person} candidate for {self.election}"
 
 
 class Alias(models.Model):

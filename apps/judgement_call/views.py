@@ -31,7 +31,7 @@ from django.utils import timezone
 # from django.db.models import Count, Avg
 from django.db.models.functions import ExtractYear
 
-# from dateutil.relativedelta import relativedelta
+from dateutil.relativedelta import relativedelta
 import random
 from faker import Faker
 
@@ -41,6 +41,9 @@ from faker import Faker
 from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+from .icons import get_judge_icons
+
+from analysis.spacejam import make_plot as make_mds_plot
 
 # comment to push
 
@@ -160,6 +163,7 @@ def build_court_dict(tenures, elections_soon):
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
+                "icons": get_judge_icons(tenure, {}),
             }
         )
     # courts[court_name]["judges"].sort(key=lambda x: x["name"])
@@ -183,7 +187,7 @@ def judges_state_county(request, state, county):
     if not geo_c2c.exists():
         raise Http404("State or county not found")
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
-    elections_soon = get_upcoming_elections(local_courts_list)
+    elections_soon, court_w_elections = get_upcoming_elections(local_courts_list)
 
     # only get current judges
     tenures = Tenure.objects.filter(
@@ -194,8 +198,6 @@ def judges_state_county(request, state, county):
 
     context = {
         "courts": courts,
-        # "state": state,
-        # "county": county,
         "fallback_url": reverse("judgement_call:judges"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),
@@ -216,9 +218,7 @@ def court_full_view(request, court_id):
     court_formatted = build_court_dict(tenures, upcoming_elections)
     details = court_formatted[court.name]
     state = request.session.get("state")
-    print(state)
     county = request.session.get("county")
-    print(county)
 
     context = {
         "court": court,
@@ -239,10 +239,39 @@ def court_full_view(request, court_id):
 def show_person(request, person_id):
     person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
+    indops = IndividualOpinion.objects.filter(
+        judge_alias__tenure__person__name_canonical=person
+    ).values(
+        "description",
+        "ruling",
+        "case__case_title",
+        "case__description",
+        "case__docket_no",
+        "case__case_type",
+        "case__decision_date",
+        "case__decision_outcome",
+        "case__decision_winner",
+        "case__plaintiff_argument",
+        "case__defendant_argument",
+        "case__document_url",
+        "case__environment",
+        "case__consumers",
+        "case__reproductive_rights",
+        "case__democratic_norms",
+        "case__free_press",
+        "case__public_health",
+        "case__separation_church_state",
+        "case__voting_access",
+        "case__public_education",
+        "case__free_speech",
+        "case__privacy",
+        "case__worker_rights",
+    )
 
     person_info = {
         "name": person.name_canonical,
         "birth_date": person.birth_date,
+        "age": person.age,
         "gender": person.gender.title(),
         "race": person.race.title(),
         "party_registration": person.party_registration.title(),
@@ -265,12 +294,41 @@ def show_person(request, person_id):
             }
         )
 
+    def get_topics(op):
+        topic_string = ", ".join(
+            field.replace("_", " ").title()
+            for field in Case().topic_flags()
+            if op[f"case__{field}"] not in ("NA", None, "")
+        )
+        return topic_string
+
+    person_opinions = []
+    for op in indops:
+        person_opinions.append(
+            {
+                "case_description": op["case__description"],
+                "opinion_description": op["description"],
+                "ruling": op["ruling"],
+                "case_title": op["case__case_title"],
+                "docket_no": op["case__docket_no"],
+                "case_type": op["case__case_type"],
+                "decision_date": op["case__decision_date"],
+                "decision_outcome": op["case__decision_outcome"],
+                "decision_winner": op["case__decision_winner"],
+                "document_url": op["case__document_url"],
+                "topics": get_topics(op),
+            }
+        )
+
     return render(
         request,
-        "person.html",
+        "person_judge.html",
         {
             "person": person_info,
             "tenures": person_tenures,
+            "opinions": person_opinions,
+            "state": request.session.get("state"),
+            "county": request.session.get("county"),
         },
     )
 
@@ -355,9 +413,32 @@ def get_upcoming_elections(relevant_courts):
     )
 
     if next_event:
-        return Election.objects.filter(court__in=relevant_courts, election_date=next_event)
+        next_elections = Election.objects.filter(
+            court__in=relevant_courts, election_date=next_event
+        )
+        next_courts = [e.court for e in next_elections]
+        return (next_elections, next_courts)
 
-    return Election.objects.none()
+    next_elections = Election.objects.none()
+    next_courts = []
+
+    return (next_elections, next_courts)
+
+
+def alternate_get_elections(relevant_courts):
+    """
+    Takes in QSet of courts and returns those with election in next 6mo
+    """
+    start_date = timezone.now()
+    six_mo_from_now = start_date.month + 6
+    end_date = start_date + relativedelta(months=six_mo_from_now)
+
+    upcoming_elections = Election.objects.filter(
+        election_date__range=(start_date, end_date), court__in=relevant_courts
+    )
+    courts_w_upcoming_elections = [e.court for e in upcoming_elections]
+
+    return (upcoming_elections, courts_w_upcoming_elections)
 
 
 def check_incumbent(candidate, court):
@@ -383,7 +464,7 @@ def elections_state_county(request, state, county):
     local_courts_list = Court.objects.filter(countytocourt__in=geo_c2c)
 
     # want to retrieve soonest elections
-    local_elections_list = get_upcoming_elections(local_courts_list)
+    local_elections_list, _ = get_upcoming_elections(local_courts_list)
     elections = {
         e.court.name: {
             "date": e.election_date.strftime("%m-%d-%Y"),
@@ -399,8 +480,6 @@ def elections_state_county(request, state, county):
 
     context = {
         "elections": elections,
-        # "state": state,
-        # "county": county,
         "fallback_url": reverse("judgement_call:elections"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),
@@ -422,13 +501,25 @@ def gantt(request):
     """Gantt chart prototype."""
 
     state = request.GET.get("state", "AZSUP")
-    print(state)
     court = Court.objects.get(court_id=state)
     json = court.gantt_json()
 
     context = {"gantt_data": json.text, "court_id": state, "court_name": court.name}
 
     return render(request, "gantt.html", context)
+
+
+def spacejam(request):
+    """MDS chart prototype."""
+
+    state = request.GET.get("state", "AZSUP")
+    print(state)
+    court = Court.objects.get(court_id=state)
+    mds_data = make_mds_plot(state)
+
+    context = {"mds_data": mds_data.to_json(), "court_id": state, "court_name": court.name}
+
+    return render(request, "mds.html", context)
 
 
 def get_current_judges_for_court(court_id):
@@ -444,10 +535,32 @@ def get_current_judges_for_court(court_id):
 
 
 def analysis(request):
-    """Elections landing page."""
+    """Analysis landing page."""
 
-    state = request.GET.get("state")
-    county = request.GET.get("county")
+    if request.GET.get("state") and request.GET.get("county"):
+        state = request.GET["state"]
+        county = request.GET["county"]
+        request.session["state"] = state
+        request.session["county"] = county
+        return analysis_state_county(request, state, county)
+
+    context = {
+        "msg": "Pending",
+        "header": "Analysis",
+        "preamble": """Apply filters to see judicial analytics.""",
+        "states": US_STATES,
+        "button_name": "Generate Analytics",
+        "fallback_url": reverse("judgement_call:landing"),
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+    }
+
+    return render(request, "analysis.html", context)
+
+
+def analysis_state_county(request, state, county):
+    """Analysis landing page."""
+
     court_id = None
     court_name = None
     gantt_data = None
@@ -490,7 +603,7 @@ def analysis(request):
         "county": request.session.get("county"),
     }
 
-    return render(request, "analysis.html", context)
+    return render(request, "analysis_state_county.html", context)
 
 
 def clear_location(request):

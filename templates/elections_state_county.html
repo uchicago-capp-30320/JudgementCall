@@ -12,7 +12,7 @@ Judgement Call
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Judges near {{ county }}, {{ state }}</title>
+    <title>Elections near {{ county }}, {{ state }}</title>
     <style>
         .judge-card {
             border: 2px solid #3e6297;
@@ -30,7 +30,7 @@ Judgement Call
 
 <body>
     <div class="below-nav-and-back">
-        <h1 class="below-nav-header">Upcoming elections in {{ county }}, {{ state }} </h1>
+        <h1 class="below-nav-header">Upcoming elections in {{ county }}</h1>
     </div>
     {% for court_name, details in elections.items %}
     <div class="collapsible-container">

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analysis</title>
+    <style>
+        .judge-card {
+            border: 2px solid #3e6297;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            max-width: 800px;
+        }
+
+        a {
+            color: #3e6297;
+        }
+    </style>
+</head>
+
+<div class="below-nav-and-back">
+    <h1 class="below-nav-header">{{ header }}</h1>
+</div>
+
+{% if radar_data %}
+{% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
+{% endif %}
+
+{% if gantt_data %}
+{% include "gantt.html" with gantt_data=gantt_data state=state court_name=court_name %}
+{% endif %}
+
+{% endblock %}

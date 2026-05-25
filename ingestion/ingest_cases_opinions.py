@@ -9,7 +9,7 @@ import us
 import json
 import hashlib
 
-from ingest_sc_cases import scrape_scdb
+from ingestion.ingest_sc_cases import scrape_scdb
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
@@ -305,7 +305,7 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
 
 def produce_tables(
     case_df: pd.DataFrame,
-    prompt_path: str,
+    prompt_path: Path = Path(__file__).parent / "prompt.txt",
     model_id: str = "gemini-2.5-flash",
     use_existing: bool = True,
     write_on: bool = True,
@@ -336,7 +336,7 @@ def produce_tables(
     opinion_files = [file.name.replace(".csv", "") for file in opinions_path.iterdir()]
 
     for state in states:
-        print(f"Ingesting cases and opinions for {state}")
+        print(f"Analyzing cases and opinions for {state}")
         if (state in case_files) and (state in opinion_files) and use_existing:
             case_table = cases_path / (state + ".csv")
             cases = pd.read_csv(case_table)
@@ -360,7 +360,7 @@ def produce_tables(
         cases_list.append(cases)
         opinion_list.append(opinions)
 
-        print(f"Ingested {len(cases)} cases for {state}")
+        print(f"Analyzed {len(cases)} cases for {state}")
 
     # Creating total tables
     total_cases = pd.concat(cases_list)
@@ -401,7 +401,8 @@ def produce_tables(
     with open(meta_path, "w") as md:
         json.dump(llm_run_metadata, md)
 
-    return {"case_table": total_cases, "individual_opinion_table": total_opinions}
+    rd = {"case_table": total_cases, "individual_opinion_table": total_opinions}
+    return rd, llm_run_metadata
 
 
 if __name__ == "__main__":
@@ -410,8 +411,8 @@ if __name__ == "__main__":
     prompt_path = Path(__file__).parent.parent / "ingestion" / "prompt.txt"
 
     start = datetime.now()
-    print("Getting cases and opinions...")
-    produce_tables(case_df, prompt_path, use_existing=True)
+    print("Getting cases and opinions for main analysis...")
+    produce_tables(case_df, use_existing=False)
     end = datetime.now()
     time_diff = (end - start).total_seconds() / 60
     print(f"Ingestion complete after {round(time_diff, 2)} minutes.")

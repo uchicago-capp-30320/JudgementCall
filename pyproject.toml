@@ -42,6 +42,7 @@ dependencies = [
     "tqdm>=4.67.3",
     "psycopg>=3.3.4",
     "psycopg2-binary>=2.9.12",
+    "matplotlib>=3.10.9",
 ]
 
 [tool.ruff]

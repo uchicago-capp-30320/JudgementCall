@@ -39,7 +39,17 @@ Judgement Call
                         {% elif judge.party_registration == "Democrat" %}
                         <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
                         {% else %}
-                        <p> {{ judge.party_registration }}</p>
+                        <p>Party: {{ judge.party_registration }}</p>
+                        {% endif %}
+                        {% if judge.icons %}
+                        {% for icon, icon_data in judge.icons.items %}
+                        {% if icon_data.0 %}
+                        <div class="icon-tooltip-wrapper">
+                            <span class="material-symbols-outlined" style="color: {{ icon_data.1 }};">{{ icon }}</span>
+                            <span class="tooltip-text">{{ icon_data.2 }}</span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
                         {% endif %}
                         <p> <a href="{{ judge.more_info }}">more details</a> </p>
                     </div>
@@ -75,6 +85,8 @@ Judgement Call
     </div>
 </div>
 
+
+{# citation: https://dev.to/giftysoftdev/create-a-simple-tabbed-component-with-html-css-javascript-2o0l #}
 <style>
     .tab-container {
         margin: 2rem auto;
