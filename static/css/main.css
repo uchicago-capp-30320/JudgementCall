@@ -369,3 +369,28 @@ footer {
 /* #geosubmit-button {
     display: none;
 } */
+
+.team-headshots {
+}
+
+.team-member {
+    display: flex;
+    min-width: 400px;
+}
+
+.team-member img {
+  border-radius: 8px;
+  padding: 5px;
+  width: 125px;
+}
+
+.team-member .team-member-about {
+  padding: 10px;
+}
+.team-member .team-member-name {
+  font-weight: bold;
+}
+
+.team-member .team-member-role {
+
+}

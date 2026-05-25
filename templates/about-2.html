@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<h3>About Judgement Call</h3>
+
+<p>Judgement Call's mission is to support informed voting in U.S. judicial elections.</p>
+
+<p>
+    State Supreme Court Justices are elected by popular vote in 21 states in the U.S., but it can
+    be difficult for voters to evaluate candidates' qualifications and understand how they align with
+    their values. Judicial selection methods also vary by state and court, making voter education in
+    judicial elections even more challenging.
+    Local organizations do incredible work to help inform voters – but because of the varied nature of
+    judicial elections, not all voters have access to the same level of information..
+</p>
+<p>
+    Judgement Call aims to provide voters with the information they need to make informed decisions
+    in judicial elections. We pull data from a variety of sources to provide a centralized resource for
+    information on current state court judges and candidates for election. We also provide head-to-head
+    comparisons and court level analysis to help you understand how judges in your state rule on the
+    issues you care about.
+</p>
+
+<h3>About the Team</h3>
+<p>
+    Judgement Call was developed by a team of MSCAPP students at the University of Chicago.
+</p>
+
+<div class="team-headshots">
+    <div class="team-member">
+        <img src="{% static 'media/team_headshots/maggie.jpeg' %}" alt="Maggie Larson">
+        <div class="team-member-about">
+            <p class="team-member-name">
+                Maggie Larson
+            </p>
+            <p class="team-member-role">
+                Backend
+            </p>
+        </div>
+    </div>
+    <div class="team-member">
+        <img src="{% static 'media/team_headshots/liberto.jpeg' %}" alt="Liberto de Pablo">
+        <div class="team-member-about">
+            <p class="team-member-name">
+                Liberto de Pablo
+            </p>
+            <p class="team-member-role">
+                Data Engineering
+            </p>
+        </div>
+    </div>
+    <div class="team-member">
+        <img src="{% static 'media/team_headshots/rileym.jpeg' %}" alt="Riley Morrison">
+        <div class="team-member-about">
+            <p class="team-member-name">
+                Riley Morrison
+            </p>
+            <p class="team-member-role">
+                QA
+            </p>
+        </div>
+    </div>
+    <div class="team-member">
+        <img src="{% static 'media/team_headshots/callie.jpeg' %}" alt="Callie Leone">
+        <div class="team-member-about">
+            <p class="team-member-name">
+                Callie Leone
+            </p>
+            <p class="team-member-role">
+                Frontend
+            </p>
+        </div>
+    </div>
+    <div class="team-member">
+        <img src="{% static 'media/team_headshots/alexandrea.jpeg' %}" alt="Alexandrea Harriott">
+        <div class="team-member-about">
+            <p class="team-member-name">
+                Alexandrea Harriott
+            </p>
+            <p class="team-member-role">
+                Project Management
+            </p>
+        </div>
+    </div>
+    <div class="team-member">
+        <img src="{% static 'media/team_headshots/rileyk.jpeg' %}" alt="Riley Kouns">
+        <div class="team-member-about">
+            <p class="team-member-name">
+                Riley Kouns
+            </p>
+            <p class="team-member-role">
+                UI/UX
+            </p>
+        </div>
+    </div>
+
+</div>
+
+
+{% endblock %}
