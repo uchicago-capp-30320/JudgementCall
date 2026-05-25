@@ -10,6 +10,7 @@ Wherever a PK is not specified for a table, the integer `id` automatically gener
 
 The tables are as follows.
 - [Court](#court)
+- [CountyToCourt](#countytocourt)
 - [Tenure](#tenure)
 - [Person](#person)
 - [Case](#case)
@@ -21,17 +22,39 @@ The tables are as follows.
 
 This contains the current, mostly immutable characteristics of each Court in the US. The table *does not* account for or track historic changes to court structure (e.g. a Constitutional Initiative changes Montana State Supreme Court elections from non-partisan to partisan.) Historic changes such as these are few and far between, enough so that they can be addressed *ad hoc* between election cycles.
 
-| Name             | Type                   | Description                                                                                            |
-|------------------|------------------------|--------------------------------------------------------------------------------------------------------|
-| org_id           | String (PK)            | Abbreviated identifier, composed of state and level of court                                           |
-| name             | String (R)             | Full, readable name of court                                                                           |
-| geo_identifier   | String (R)             | Identifier for court's geographical jurisdiction; for use with external geo-lookup                     |
-| court_type       | String (R, enumerated) | Supreme (`sup`), Appellate (`apl`), or Lower (`lwr`)                                                   |
-| bench_size       | Int                    | Number of judges sitting on this court                                                                 |
-| selection_type   | String (R, enumerated) | Broadly, how judges get into this court: `partisan election`, `nonpartisan election`, or `appointment` |
-| selection_method | String                 | Details on how this court's `selection_type` is implemented                                            |
-| term_length      | Int                    | Number of years a judge serves in a full term                                                          |
-| url              | String                 | Link to court's official website                                                                       |
+| Name                           | Type                   | Description                                                                                                          |
+| ------------------------------ | ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| court_id                       | String (PK)            | Abbreviated unique court identifier from CourtListener                                                               |
+| name                           | String (R)             | Full, readable name of court                                                                                         |
+| court_level                    | String (enumerated)    | Jurisdiction level of court, in descending order of authority: `Supreme Court`, `Appellate Court`, and `Lower Court` |
+| court_type                     | String (R)             | More detailed court-level info, such as distinguishing between Texas' criminal and civil supreme courts              |
+| bench_size                     | Int                    | Number of judges sitting on this court, by law                                                                       |
+| selection_type                 | String (R, enumerated) | How judges get into this court: `partisan election`, `nonpartisan election`, `appointment`, `elected by legislature` |
+| selection_method               | String                 | Details on how this court's `selection_type` is implemented (e.g. part by partisan election, part by retention)      |
+| selection_jurisdiction         | String (enumerated)    | Geographic division of court: `statewide`, `district`, `circuit`                                                     |
+| term_length                    | Int                    | Number of years a judge serves in a full term on this court, by law                                                  |
+| initial_term_length            | String                 | Length of term in years for a judge's first election to this court                                                   |
+| retention_method               | String                 | Details on implementation of retention method, if relevant                                                           |
+| subsequent_term_length         | String                 | Length of term in years for a judge's election to this court after their initial term                                |
+| interim_selection_method       | String                 | How seat vacancies are filled in this court                                                                          |
+| interim_term_length            | String                 | Length of term in years for interrim judicial selections / appointments                                              |
+| chief_justice_selection_method | String                 |                                                                                                                      |
+| chief_justice_term_length      |                        |                                                                                                                      |
+| qualifications                 |                        |                                                                                                                      |
+| constitutional_reference       |                        |                                                                                                                      |
+| notes                          |                        |                                                                                                                      |
+| url                            | String                 | Link to court's official website                                                                                     |
+
+# CountyToCourt
+
+This contains the many-to-many crosswalk relation between counties and courts. Every county belongs to a particular Supreme Court and many other lower courts. Each court at any level has jurisdiction in many counties.
+
+| Name   | Type             | Description                                                                               |
+|--------|------------------|-------------------------------------------------------------------------------------------|
+| court  | String (R)       | Abbreviated court identifier, as in [Court](#court).                                      |
+| state  | USStateField (R) | `django-localflavor` form field, validated against known US state names and abbreviations |
+| county | String (R)       | Full county name, formatted as "<COUNTY NAME> County, <STATE NAME> for disambiguation     |
+| fips   | String (R)       | 5-digit string, where first 2 digits identify state and last 3 digits identify county     |
 
 # Tenure
 
