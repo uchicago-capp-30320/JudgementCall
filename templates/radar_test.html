@@ -17,10 +17,7 @@
 
 <script src="{% static 'js/radarChart.js' %}"></script>
 
-
-
 <script>
-
     /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
 
     //////////////////////////////////////////////////////////////
@@ -40,7 +37,7 @@
     //////////////////// Draw the Chart //////////////////////////
     //////////////////////////////////////////////////////////////
 
-    const fullPalette = ["#40B0A6", "#E1BE6A"];
+    const fullPalette = ["#40B0A6", "#E1BE6A", "#e649cb", "#44db6c"];
 
 
     updateRadar = function updateRadar(activeJudgeNames) {
@@ -81,13 +78,9 @@
         updateRadar(updatedJudges);
     });
 
-    // If collapsible ran first, grab the global var immediately
+    // If collapsible-script ran first, grab the global activeJudges immediately
     if (window.activeJudgeNames && window.activeJudgeNames.length > 0) {
         updateRadar(window.activeJudgeNames);
     }
 
-    // updateRadar();
-    //Call function to draw the Radar chart
-    // RadarChart(".radarChart", data, radarChartOptions);
-    // RadarChart(".radarChart", radar_data, radarChartOptions);
 </script>
