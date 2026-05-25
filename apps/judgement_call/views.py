@@ -41,6 +41,7 @@ from faker import Faker
 from django.urls import reverse
 from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+from .icons import get_judge_icons
 
 # comment to push
 
@@ -106,7 +107,6 @@ def build_court_dict(tenures, elections_soon):
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = {"judges": [], "id": court.court_id}
-            print(elections_soon)
             if court_name in elections_soon:
                 courts[court_name]["upcoming_election"] = True
             else:
@@ -161,6 +161,7 @@ def build_court_dict(tenures, elections_soon):
                 "more_info": f"/people/{tenure.person.id}/",
                 "start_date": tenure.start_date,
                 "end_date": tenure.end_date,
+                "icons": get_judge_icons(tenure, {}),
             }
         )
     # courts[court_name]["judges"].sort(key=lambda x: x["name"])
