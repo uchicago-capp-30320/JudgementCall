@@ -2,36 +2,36 @@ from jellyfish import jaro_winkler_similarity
 from string import punctuation
 
 ENDINGS = [
-    "C.J.",
-    "P.J.",
-    "J.",
-    "Sp. J.",
-    "JJ.",
-    "PJJ",
-    "C. J.",
+    "P.J.A.D",
     "P.JJ.",
     "V.C.J.",
+    "Sp. J.",
     "A.R.J.",
+    "J.P.T.",
+    "PJJ",
+    "C. J.",
+    "C.J.",
     "D.J.",
     "S.J.",
-    "P.J.A.D",
-    "J.P.T.",
-    "PJ",
-    "J",
+    "P.J.",
+    "JJ.",
     "CJ",
+    "PJ",
+    "J.",
+    "J",
 ]
 
 KEY_WORDS = [
-    "justice",
-    "judge",
-    "chief justice",
-    "chief",
+    "associate chief justice",
     "presiding justice",
     "associate justice",
-    "associate chief justice",
+    "by designation",
+    "chief justice",
+    "justice",
+    "judge",
+    "chief",
     "retired",
     "sitting",
-    "by designation",
 ]
 
 

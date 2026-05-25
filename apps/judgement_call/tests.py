@@ -22,6 +22,7 @@ from apps.judgement_call.models import (
 )
 from .icons import get_judge_icons
 from datetime import date, timedelta
+from utils.matching import standardize_alias
 
 
 class HomepageTestCase(TestCase):
@@ -577,3 +578,42 @@ class AnalysisTestCase(TestCase):
         response = self.client.get("/analysis/")
         assert "states" in response.context
         assert len(response.context["states"]) > 0
+
+class MatchingTestCase(TestCase):
+    """Tests for the matching.py util"""
+
+    def setUp(self):
+        # create some aliases
+        self.aliases = [
+            "Chief Justice John Barbenheimer C.J.",
+            "Roberta Presiding Justice P.J.",
+            "Sandra Connor BY DESIGNATION A.R.J."
+        ]
+    
+    def test_standardize_alias_ending_key_words(self):
+        """Make sure the standardize_alias function removes the ending from alias"""
+        fixed_aliases = []
+        for alias in self.aliases:
+            print(f"INPUT: '{alias}'")
+            fixed = standardize_alias(alias)
+            print(f"OUTPUT: '{fixed}'")
+            print("---")
+            fixed_aliases.append(fixed)
+        
+        combined = " ".join(fixed_aliases)
+
+        assert "C.J." not in combined
+        assert "c.j." not in combined
+        assert "cj" not in combined
+        assert "Chief Justice" not in combined
+        assert "chief justice" not in combined
+        assert "Justice" not in combined
+        assert "justice" not in combined
+        assert "Presiding" not in combined
+        assert "presiding" not in combined
+        assert "P.J." not in combined
+        assert "PJ" not in combined
+        assert "pj" not in combined
+        assert "p.j." not in combined
+        assert "by designation" not in combined
+        assert "BY DESIGNATION" not in combined
