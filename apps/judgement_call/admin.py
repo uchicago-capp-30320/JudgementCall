@@ -29,6 +29,10 @@ class CandidacyInline(admin.TabularInline):
     model = Candidacy
 
 
+class CaseInline(admin.TabularInline):
+    model = Case
+
+
 # Register your models here.
 class CourtAdmin(admin.ModelAdmin):
     list_filter = ["court_level"]
@@ -88,7 +92,9 @@ admin.site.register(Candidacy, CandidacyAdmin)
 
 
 class CaseProcessingRunAdmin(admin.ModelAdmin):
-    pass
+    inlines = [
+        CaseInline,
+    ]
 
 
 admin.site.register(CaseProcessingRun, CaseProcessingRunAdmin)
