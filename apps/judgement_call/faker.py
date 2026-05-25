@@ -1,5 +1,6 @@
 from faker import Faker
 import random
+
 # from django.http import HttpResponse
 from .models import (
     Court,
@@ -24,6 +25,7 @@ from .models import (
 )
 from django.http import HttpResponse
 from datetime import date
+
 
 def add_fake_data():
     """Create fake data to use while building Judgement Call"""
