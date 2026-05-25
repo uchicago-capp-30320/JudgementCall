@@ -506,7 +506,10 @@ class ElectionsStateCountyTestCase(TestCase):
         )
 
         election = Election.objects.create(
-            court=court, election_date=date.today() + timedelta(days=90), incumbent=tenure1
+            court=court, 
+            election_id="IL-COOK-2026",
+            election_date=date.today() + timedelta(days=90), 
+            incumbent=tenure1
         )
 
         Candidacy.objects.create(person=self.person1, election=election)
@@ -527,19 +530,11 @@ class ElectionsStateCountyTestCase(TestCase):
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         assert "Illinois Lower Court First District" in response.content.decode()
 
-    def test_elections_state_county_shows_incumbent(self):
-        """Test that the incumbent judge appears for the election"""
+    def test_elections_state_county_shows_candidates(self):
+        """Test that the candidates appear for the election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         elections = response.context["elections"]
-        first_election = list(elections.values())[0]
-        if "incumbent" in first_election:
-            assert first_election["incumbent"].person.name_canonical == "Joey Baga-Donuts"
-
-    def test_elections_state_county_shows_non_incumbent(self):
-        """Test that the non-incumbent candidates appear for the election"""
-        response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
-        elections = response.context["elections"]
-        illinois_election = elections["Illinois Lower Court First District"]
+        illinois_election = elections["IL-COOK-2026"]
         candidates = illinois_election["candidates"]
         candidate_names = [c["name"] for c in candidates]
         assert "Jackie Potatohead" in candidate_names
@@ -548,21 +543,21 @@ class ElectionsStateCountyTestCase(TestCase):
         """Make sure the election date appears for each election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         elections = response.context["elections"]
-        illinois_election = elections["Illinois Lower Court First District"]
+        illinois_election = elections["IL-COOK-2026"]        
         assert illinois_election["date"] == (date.today() + timedelta(days=90)).strftime("%m-%d-%Y")
 
     def test_elections_shows_election_type(self):
         """Make sure the election date appears for each election"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         elections = response.context["elections"]
-        illinois_election = elections["Illinois Lower Court First District"]
+        illinois_election = elections["IL-COOK-2026"]
         assert illinois_election["type"] == "Partisan Election With Retention Votes"
 
     def test_candidate_more_details_link(self):
         """Make sure the details link on candidates leads to valid person page"""
         response = self.client.get("/elections/?state=IL&county=Cook", follow=True)
         elections = response.context["elections"]
-        illinois_election = elections["Illinois Lower Court First District"]
+        illinois_election = elections["IL-COOK-2026"]
         candidates = illinois_election["candidates"]
         for candidate in candidates:
             candidate_link = candidate["more_info"]
@@ -600,10 +595,7 @@ class MatchingTestCase(TestCase):
         """Make sure the standardize_alias function removes the ending from alias"""
         fixed_aliases = []
         for alias in self.aliases:
-            print(f"INPUT: '{alias}'")
             fixed = standardize_alias(alias)
-            print(f"OUTPUT: '{fixed}'")
-            print("---")
             fixed_aliases.append(fixed)
 
         combined = " ".join(fixed_aliases)
