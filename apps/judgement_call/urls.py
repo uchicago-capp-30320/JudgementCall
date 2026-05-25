@@ -31,6 +31,7 @@ urlpatterns = [
     ),
     path("people/<int:person_id>/", views.show_person, name="show_person"),
     path("methodology/", views.methodology, name="methodology"),
+    path("about/", views.about, name="about"),
     path("elections/", views.elections, name="elections"),
     path(
         "elections/<str:state>/<str:county>/",
