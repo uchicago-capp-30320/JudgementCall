@@ -190,6 +190,10 @@ footer {
     color: black;
 }
 
+footer div {
+    margin-left: 10px;
+}
+
 .sub-header {
     padding-top: 10px;
 }
