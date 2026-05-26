@@ -1,6 +1,6 @@
 {% load static %}
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
     <meta charset="utf-8">
@@ -46,6 +46,7 @@
                         </button>
                         <div class="more-dropdown" id="more-dropdown">
                             <a class="more-item" href="/methodology/">Methodology</a>
+                            <a class="more-item" href="/about/">About</a>
                         </div>
                     </div>
                 </div>
@@ -58,7 +59,7 @@
             {% endif %}
             <div class="location-bar">
                 {% if state and county %}
-                <span class="location-display splash-page bold">{{ county }}, {{ state }}</span>
+                <span class="location-display splash-page bold">{{ county }}</span>
                 {% else %}
                 <span class="location-display splash-page bold">Choose your area</span>
                 {% endif %}
@@ -79,8 +80,16 @@
                 <p>
                     <strong>Judgement Call</strong> is a project developed by <a
                         href="https://capp.uchicago.edu/">MSCAPP</a> students.
+                        See the <a href="/about">About</a> page to learn more.
                     <br>
-                    Disclaimers would go here.
+                    <span font-style="italic"><strong>Disclaimer</strong>: The information provided on Judgement Call is for general informational purposes only. Information on this site may not reflect the most current data, and is interpretive. Please verify details with official sources.</span>
+                    <br>
+                    <span font-style="italic"><strong>Sources</strong>:
+                    <a href="https://www.courtlistener.com/">CourtListener</a>,
+                    <a href="https://statecourtreport.org/state-case-database">State Case Database</a>,
+                    <a href="https://state-law-research.org/state-justices/">State Law Research Initiative</a>,
+                    <a href="https://en.wikipedia.org/wiki/State_supreme_courts_in_the_United_States">Wikipedia</a>,
+                    <a href="https://ballotpedia.org/State_judicial_elections,_2026">Ballotpedia</a>
                 </p>
             </div>
         </footer>

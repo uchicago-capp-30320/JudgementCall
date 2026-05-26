@@ -104,7 +104,7 @@ body {
 
 .more-dropdown.show {
     display: block;
-    text-align: right;
+    text-align: center;
 }
 
 .more-item {
@@ -182,12 +182,16 @@ body {
 }
 
 footer {
-    background-color: #acabaf;
+    background-color: #f0ecff;
     left: 0;
     bottom: 0;
     width: 100%;
     font-size: small;
     color: black;
+}
+
+footer div {
+    margin-left: 10px;
 }
 
 .sub-header {
@@ -218,6 +222,35 @@ footer {
 
 #back-btn {
     margin-left: 25px;
+}
+
+.icon-tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    /* white-space: nowrap; */
+    transition: opacity 0.2s;
+    font-size: 0.75rem;
+    /* width: max-content;
+    max-width: 200px; */
+}
+
+.icon-tooltip-wrapper:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }
 
 .collapsible-container {
@@ -340,3 +373,28 @@ footer {
 /* #geosubmit-button {
     display: none;
 } */
+
+.team-headshots {
+}
+
+.team-member {
+    display: flex;
+    min-width: 400px;
+}
+
+.team-member img {
+  border-radius: 8px;
+  padding: 5px;
+  width: 125px;
+}
+
+.team-member .team-member-about {
+  padding: 10px;
+}
+.team-member .team-member-name {
+  font-weight: bold;
+}
+
+.team-member .team-member-role {
+
+}

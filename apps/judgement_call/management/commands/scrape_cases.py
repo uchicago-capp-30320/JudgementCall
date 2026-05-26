@@ -1,11 +1,12 @@
 import csv
-import pathlib
+from pathlib import Path
 import string
 import us
+from django.core.management.base import BaseCommand
 from django_typer.management import Typer
-from ingestion.setup_us_states_counties import make_county_to_court_df
-from ingestion.ingest_courts import (
-    MERGED_COURTS_PATH,
+from ingestion.ingest_cases_opinions import produce_tables
+from ingestion.ingest_sc_cases import scrape_scdb
+from ingestion.state_crosswalks import (
     COURT_LOOKUP_LONG,
     COURT_LOOKUP_SHORT,
 )
@@ -14,6 +15,7 @@ from apps.judgement_call.models import (
     Court,
     CountyToCourt,
     Case,
+    CaseProcessingRun,
     IndividualOpinion,
     Person,
     Tenure,
@@ -35,82 +37,81 @@ cases will need to be updated regularly
 app = Typer()
 
 
-@app.command()
-def command(self):
-    # TODO: scrape State Case Database
-    # generate unique document IDs
-    # check if any are new
-    # eg new_cases = df[df["docket_id"].notin(all_cases)]
-    all_cases = [case["case_id"] for case in Case.objects.values("case_id")]
-    print(all_cases)
-    # run LLM processing on new_cases
-    # case = {"case_id": , ...}
-    # case, updated = Case.objects.update_or_create(**case)
-    # indop = {"case": case, "judge_alias": , ...}
-    # indop, created = IndividualOpinion.objects.get_or_create(**indop)
+class Command(BaseCommand):
+    def handle(self, **options):
+        # Scrape State Case Database
+        all_current_cases = scrape_scdb(write_on=True, incremental=True)
 
+        # check if any are new
+        # eg new_cases = df[df["docket_id"].notin(all_cases)]
+        db_cases_ids = [case["case_id"] for case in Case.objects.values("case_id")]
+        new_cases = all_current_cases[~all_current_cases["case_id"].isin(db_cases_ids)]
+        print(f"There are {len(new_cases)} new cases not in database:")
+        print(new_cases)
 
-# HELPER FUNCTIONS
+        # run LLM processing on new_cases if there are any
+        if not new_cases.empty:
+            table_dic, run_metadata = produce_tables(new_cases, use_existing=False, write_on=False)
 
+            # Insert run metadata into database
+            run_metadata.pop("cases_processed")
+            run_metadata["timestamp"] = datetime.strptime(run_metadata["timestamp"], "%m-%d-%Y")
+            cpr, cpr_created = CaseProcessingRun.objects.get_or_create(**run_metadata)
 
-def empty_string_to_none(value):
-    return value if value != "" else None
+            # Insert cases into database
+            cases = table_dic["case_table"].reset_index(drop=True).to_dict(orient="records")
+            for case in cases:
+                court = Court.objects.get(court_id=COURT_LOOKUP_LONG[case["state"]])
+                new_case = {
+                    "case_id": case["case_id"],
+                    "case_processing_run": cpr,
+                    "case_title": case["title"],
+                    "case_type": case["type"],
+                    "consumers": case["consumers"],
+                    "court": court,
+                    "decision_date": datetime.strptime(case["date"], "%Y-%m-%d"),
+                    "decision_outcome": case["decision_outcome"],
+                    "decision_winner": case["decision_winner"],
+                    "defendant_argument": case["defendant_argument"],
+                    "democratic_norms": case["democratic_norms"],
+                    "description": case["description"],
+                    "docket_no": case["docket_no"],
+                    "environment": case["environment"],
+                    "free_press": case["free_press"],
+                    "free_speech": case["free_speech"],
+                    "plaintiff_argument": case["plaintiff_argument"],
+                    "privacy": case["privacy"],
+                    "public_education": case["public_education"],
+                    "public_health": case["public_health"],
+                    "reproductive_rights": case["reproductive_rights"],
+                    "separation_church_state": case["separation_church_state"],
+                    "voting_access": case["voting_access"],
+                    "worker_rights": case["worker_rights"],
+                }
+                if len(case["opinion_link"]) > 200:
+                    new_case["document_url"] = None
+                else:
+                    new_case["document_url"] = case["opinion_link"]
 
+                Case.objects.update_or_create(case_id=case["case_id"], defaults=new_case)
 
-def standardize_alias(alias: str):
-    return alias.strip().lower().translate(str.maketrans("", "", string.punctuation))
-
-
-case_csv_cols = [
-    "",
-    "case_id",
-    "docket_no",
-    "title",
-    "state",
-    "date",
-    "type",
-    "description",
-    "plaintiff_argument",
-    "defendant_argument",
-    "decision_outcome",
-    "decision_winner",
-    "environment",
-    "consumers",
-    "reproductive_rights",
-    "democratic_norms",
-    "free_press",
-    "public_health",
-    "separation_church_state",
-    "voting_access",
-    "public_education",
-    "free_speech",
-    "privacy",
-    "worker_rights",
-]
-
-case_model_cols = [
-    "",
-    "case_id",
-    "docket_no",
-    "case_title",
-    "state",
-    "decision_date",
-    "case_type",
-    "description",
-    "plaintiff_argument",
-    "defendant_argument",
-    "decision_outcome",
-    "decision_winner",
-    "environment",
-    "consumers",
-    "reproductive_rights",
-    "democratic_norms",
-    "free_press",
-    "public_health",
-    "separation_church_state",
-    "voting_access",
-    "public_education",
-    "free_speech",
-    "privacy",
-    "worker_rights",
-]
+            # Insert individual opinions into database
+            ind_opinions = (
+                table_dic["individual_opinion_table"]
+                .reset_index(drop=True)
+                .to_dict(orient="records")
+            )
+            for ind_op in ind_opinions:
+                case = Case.objects.get(case_id=ind_op["case_id"])
+                alias, found = Alias.objects.get_or_create(alias=ind_op["name"], court=case.court)
+                new_opinion = {
+                    "case": case,
+                    "judge_alias": alias,
+                    "description": ind_op["description"],
+                    "ruling": ind_op["ruling"],
+                }
+                IndividualOpinion.objects.update_or_create(
+                    case=case, judge_alias=alias, defaults=new_opinion
+                )
+        else:
+            print("No new cases that are not in the database.")

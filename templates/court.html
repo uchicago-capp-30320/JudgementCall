@@ -9,6 +9,9 @@ Judgement Call
 
 {% include "infographic.html" with details=details %}
 
+<p style="display: none;">{{court_id}}</p>
+{{ court_id|json_script:"court_id"}}
+
 <div class="court-content">
     <div class="court-content-sub" id="judge-list">
         <div class="judge-list">
@@ -36,8 +39,9 @@ Judgement Call
                         {% elif judge.party_registration == "Democrat" %}
                         <p style="color: #3572cf;"> {{ judge.party_registration }}</p>
                         {% else %}
-                        <p> {{ judge.party_registration }}</p>
+                        <p>Party: {{ judge.party_registration }}</p>
                         {% endif %}
+                        {% include 'icon-block.html' with icons=judge.icons %}
                         <p> <a href="{{ judge.more_info }}">more details</a> </p>
                     </div>
                 </div>
@@ -64,9 +68,7 @@ Judgement Call
                 </div>
                 <div class="tab-content" id="about">
                     <div class="radar">
-                        {% if radar_data %}
-                        {% include "radar_test.html" with radar_data=radar_data state=state court_name=court_name %}
-                        {% endif %}
+                        {% include "radar_test.html" %}
                     </div>
                 </div>
             </div>
@@ -74,6 +76,8 @@ Judgement Call
     </div>
 </div>
 
+
+{# citation: https://dev.to/giftysoftdev/create-a-simple-tabbed-component-with-html-css-javascript-2o0l #}
 <style>
     .tab-container {
         margin: 2rem auto;
@@ -117,7 +121,7 @@ Judgement Call
         display: block;
     }
 </style>
-{% include "collapsible-script.html" %}
+{% include "collapsible-script.html" with court_id=court_id%}
 
 <script>
     const tabs = document.querySelectorAll('.tab');
@@ -132,8 +136,12 @@ Judgement Call
 
             tab.classList.add('active');
             document.getElementById(target).classList.add('active');
+            // court_id = JSON.parse(document.getElementById('court_id').textContent);
+            // console.log(court_id);
+            // console.log(activeJudgeNames);
         });
     });
-</script>
 
+
+</script>
 {% endblock %}

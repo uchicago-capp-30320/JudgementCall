@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}
+Judgement Call
+{% endblock %}
+
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title> {{ person.name }}</title>
+    <style>
+        .card {
+            border: 2px solid #493a8c;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        a {
+            color: #3e6297;
+        }
+        .card-demographics {
+            border: 6px solid #493a8c;
+            padding: 0;
+            margin: 20px 0;
+            border-radius: 0;
+        }
+
+        .card-demographics-inner {
+            border: 3px solid #d3d3d3;
+            padding: 18px 22px;
+        }
+
+        .card-demographics .row {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #d3d3d3;
+        }
+
+        .card-demographics .row:last-child {
+            border-bottom: none;
+        }
+
+        .card-demographics .label {
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .card-tenure {
+            border-left: 6px solid #493a8c;
+            background: #f0f0f0;
+            padding: 16px 20px;
+            margin: 20px 0;
+        }
+
+        .card-tenure div {
+            padding: 4px 0;
+        }
+
+        .card-tenure h3 {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+
+        .card-tenure .dates {
+            font-size: 20px;
+        }
+
+        .card-tenure .selection-info {
+            font-style: italic;
+        }
+
+        .card-case {
+            border: 1px solid #d0d0d0;
+            padding: 12px 14px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .card-case h3 {
+            font-weight: 600;
+        }
+
+        .ruling-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            border-radius: 2px;
+            margin: 4px 4px 20px 0px;
+        }
+
+        .case-outcome {
+            float: right;
+            background: #e6e6f5;
+            color: #493a8c;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            border-radius: 2px;
+        }
+
+        .card-case .meta {
+            font-size: 17px;
+            color: #666;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card-demographics"><div class="card-demographics-inner">
+        <h1>{{ person.name }}</h1>
+        <div class="row"><div class="label">Born</div>: {{ person.birth_date }} ({{ person.age }} years old)</div>
+        <div class="row"><div class="label">Gender</div>: {{ person.gender }}</div>
+        <div class="row"><div class="label">Race</div>: {{ person.race }}</div>
+        {% if person.party_registration == "Republican" %}
+        <div class="row"><div class="label">Party</div><div style="color: red;">: {{ person.party_registration }}</div></div>
+        {% elif person.party_registration == "Democrat" %}
+        <div class="row"><div class="label">Party</div><div style="color: blue;">: {{ person.party_registration }}</div></div>
+        {% else %}
+        <div class="row"><div class="label">Party</div>: {{ person.party_registration }}</div>
+        {% endif %}
+        <div class="row"><div class="label">Experience</div>: {{ person.professional_experience }}</div>
+        <div class="row"><div class="label">Law school</div>: {{ person.law_school }}</div>
+    </div></div>
+
+    <h2>Tenures</h2>
+    {% for tenure in tenures %}
+        <div class="card-tenure">
+            <h3>{{ tenure.court }} <span class="dates">({{ tenure.start_date.year }} - {{ tenure.end_date.year }})</span></h3>
+
+            {% if tenure.selection_type %}
+                <div>Selection: {{ tenure.selection_type }}</div>
+            {% endif %}
+
+            {% if tenure.chief_justice %}
+                <div>Chief Justice</div>
+            {% endif %}
+
+            {% if tenure.appointer_name %}
+                <div>
+                    Appointed by <span class="selection-info"> {{ tenure.appointer_name }}
+                    {% if tenure.appointer_party and tenure.appointer_party != "Unknown" %}
+                    ({{ tenure.appointer_party }}){% endif %}</span>
+                </div>
+
+            {% elif tenure.ticket_party and tenure.ticket_party != "Unknown" %}
+                <div>Party affiliation is <span class="selection-info"> {{ tenure.ticket_party }}</span></div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <h2>Cases</h2>
+
+    <div>
+        {% include "icon-block.html" with icons=topic_icons %}
+    </div>
+
+    {% for opinion in opinions %}
+    <div class="card-case">
+        <h3>{{ opinion.case_title }} ({{ opinion.decision_date }})</h3>
+
+        {% if opinion.case_type %}
+        <p>Case Type: <span class="meta">{{ opinion.case_type }}</span></p>
+        {% endif %}
+
+        {% if opinion.topics_string %}
+        <p>Topics: <span class="meta">{{ opinion.topics_string }}</span></p>
+        {% endif %}
+
+        {% for topic, value in opinion.topics_dict.items %}
+            {% if value == "protected" %}
+            <p class="ruling-badge" style="background: #e6f5e6; color: green;">
+                This judge ruled to protect {{ topic }}.
+            </p>
+            {% elif value == "infringed" %}
+            <p class="ruling-badge" style="background: #f5e6e6; color: red;">
+                This judge ruled to infringe on {{ topic }}.
+            </p>
+            {% endif %}
+        {% endfor %}
+
+        {% if opinion.case_description %}
+        <p>Case Description: <span class="meta">{{ opinion.case_description }}</span></p>
+        {% endif %}
+
+        {% if opinion.decision_outcome %}
+        <p>Decision: <span class="meta">{{ opinion.decision_outcome }}</span></p>
+        {% endif %}
+
+        {% if opinion.ruling %}
+        <p>Judge Ruling: <span class="meta">{{ opinion.ruling | title }}</span></p>
+        {% endif %}
+
+        {% if opinion.document_url %}
+        <p><a href="{{ opinion.document_url }}" target="_blank">View Case Document</a></p>
+        {% endif %}
+
+    </div>
+    {% endfor %}
+</body>
+
+</html>
+
+{% endblock %}

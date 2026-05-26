@@ -16,7 +16,7 @@
             <strong style="color: #c92a2a;">Gender</strong>
             {% for item in details.gender_data %}
             <div style="padding: 10px 0; font-size: 1em; font-weight: bold; color: #c92a2a;">
-                {{ item.person__gender|upper }}: <strong>{{ item.count }}</strong>
+                {{ item.person__gender|title }}: <strong>{{ item.count }}</strong>
             </div>
             {% endfor %}
         </div>

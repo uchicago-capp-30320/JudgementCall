@@ -17,10 +17,7 @@
 
 <script src="{% static 'js/radarChart.js' %}"></script>
 
-
-
 <script>
-
     /* Radar chart design created by Nadieh Bremer - VisualCinnamon.com */
 
     //////////////////////////////////////////////////////////////
@@ -40,19 +37,50 @@
     //////////////////// Draw the Chart //////////////////////////
     //////////////////////////////////////////////////////////////
 
-    var color = d3.scaleOrdinal()
-        .range(["#40B0A6", "#E1BE6A"]); // , "#009E73"
+    const fullPalette = ["#40B0A6", "#E1BE6A", "#e649cb", "#44db6c"];
 
-    var radarChartOptions = {
-        w: width,
-        h: height,
-        margin: margin,
-        maxValue: 1.0,
-        levels: 4,
-        roundStrokes: true,
-        color: color
-    };
-    //Call function to draw the Radar chart
-    // RadarChart(".radarChart", data, radarChartOptions);
-    RadarChart(".radarChart", radar_data, radarChartOptions);
+
+    updateRadar = function updateRadar(activeJudgeNames) {
+        if (!activeJudgeNames || activeJudgeNames.length === 0) {
+            console.log("No judges selected");
+            return;
+        }
+        court_id = JSON.parse(document.getElementById('court_id').textContent);
+        const encodedPersons = activeJudgeNames.map(encodeURIComponent).join('__');
+        const url = `/radar/${court_id}/${encodedPersons}/`;
+        fetch(url)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                const num_judges = activeJudgeNames.length;
+                const shortPalette = fullPalette.slice(0,num_judges);
+                var color = d3.scaleOrdinal()
+                    .domain(activeJudgeNames)
+                    .range(shortPalette); // , "#009E73"
+
+                var radarChartOptions = {
+                    w: width,
+                    h: height,
+                    margin: margin,
+                    maxValue: 1.0,
+                    levels: 4,
+                    roundStrokes: true,
+                    color: color
+                };
+                console.log("DOMAIN:", color.domain());
+                console.log("RANGE:", color.range());
+                RadarChart(".radarChart", data, radarChartOptions);
+            })
+    }
+    document.addEventListener('judgeSelectionChanged', function (e) {
+        const updatedJudges = e.detail.judges;
+        updateRadar(updatedJudges);
+    });
+
+    // If collapsible-script ran first, grab the global activeJudges immediately
+    if (window.activeJudgeNames && window.activeJudgeNames.length > 0) {
+        updateRadar(window.activeJudgeNames);
+    }
+
 </script>
