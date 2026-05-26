@@ -241,15 +241,13 @@ class Tenure(models.Model):
 
     @property
     def tenure_length_to_date(self):
-        if self.start_date.year == 3000:
-            return None
-        return years_since(self.start_date)
+        if self.start_date and self.start_date.year != 3000:
+            return years_since(self.start_date)
 
     @property
     def tenure_length_remaining(self):
-        if self.end_date.year == 3000:
-            return None
-        return years_to(self.end_date)
+        if self.end_date and self.end_date.year != 3000:
+            return years_to(self.end_date)
 
 
 class Election(models.Model):

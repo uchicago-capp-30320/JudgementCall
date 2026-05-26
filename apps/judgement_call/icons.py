@@ -58,7 +58,7 @@ TOPIC_REPHRASED = {
 def up_for_election(tenure):
     "returns bool"
     return (
-        tenure.tenure_length_remaining <= 1,
+        tenure.tenure_length_remaining and tenure.tenure_length_remaining <= 1,
         "gray",
         "This judge's term ends soon.",
     )
@@ -68,7 +68,7 @@ def up_for_election(tenure):
 def long_tenure(tenure):
     "returns bool indicating >=10yr of current tenure"
     return (
-        tenure.tenure_length_to_date >= 10,
+        tenure.tenure_length_to_date and tenure.tenure_length_to_date >= 10,
         "gray",
         "This judge has served for 10+ years.",
     )
