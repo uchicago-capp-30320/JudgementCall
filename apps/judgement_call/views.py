@@ -438,8 +438,10 @@ def spacejam(request):
     print(state)
     court = Court.objects.get(court_id=state)
     mds_data = make_mds_plot(state)
-
-    context = {"mds_data": mds_data.to_json(), "court_id": state, "court_name": court.name}
+    if mds_data is not None:
+        context = {"mds_data": mds_data.to_json(), "court_id": state, "court_name": court.name}
+    else:
+        context = {"mds_data": mds_data, "court_id": state, "court_name": court.name}
 
     return render(request, "mds.html", context)
 

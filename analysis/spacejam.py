@@ -55,12 +55,17 @@ def query_similarity_df(court_id):
         .agg({"case": "count"})
         .reset_index()
     )
+    print(similarity_df.groupby(["case", "judge_name", "ruling"]).count())
 
     return similarity_df, context_df
 
 
 def pivot_similarity_df(df):
-    df = df.pivot(index="case", columns="judge_name", values="ruling")
+    try:
+        df = df.pivot(index="case", columns="judge_name", values="ruling")
+    except ValueError as e:
+        print(f"Error: {e}")
+        return None
     nona_df = df.fillna(1)
     feat_mat = nona_df.transpose()
     return feat_mat
@@ -86,10 +91,13 @@ def make_plot(court_id):
 
     df, context = query_similarity_df(court_id)
     feat_mat = pivot_similarity_df(df)
-    coords = mds_embedding(feat_mat)
-    plot_df = make_df_to_plot(coords, context)
-    print(plot_df)
-    return plot_df
+    if feat_mat is not None:
+        coords = mds_embedding(feat_mat)
+        plot_df = make_df_to_plot(coords, context)
+        print(plot_df)
+        return plot_df
+    else:
+        return None
 
     # alt.Chart(plot_df, title=f"{court_id} Judge Similarity").mark_circle(size=60).encode(
     #     x=alt.X("x", axis=None),
