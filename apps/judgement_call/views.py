@@ -41,6 +41,9 @@ from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
 from .icons import get_judge_icons, get_topic_icons
 
+from apps.judgement_call.forms import ChoroplethForm, SpacejamForm
+from analysis.polarization_choropleth import produce_data, create_choropleth
+
 from analysis.spacejam import make_plot as make_mds_plot
 import re
 
@@ -75,7 +78,12 @@ def judges(request):
 def get_counties(request, state):
     """API to enable the javascript to fill the counties dropdown"""
     # based on given state, filter C2C table, return list of distinct counties
-    counties = CountyToCourt.objects.filter(state=state).values_list("county", flat=True).distinct()
+    counties = (
+        CountyToCourt.objects.filter(state=state)
+        .values_list("county", flat=True)
+        .order_by("county")
+        .distinct()
+    )
     return JsonResponse(list(counties), safe=False)
 
 
@@ -560,6 +568,28 @@ def gantt(request):
 
 
 def spacejam(request):
+    mds_data = None
+    court_name = None
+    form = SpacejamForm(request.GET if "state" in request.GET else None)
+
+    if form and form.is_valid():
+        court_id = form.cleaned_data["state"]
+        court = Court.objects.get(court_id=court_id)
+        court_name = court.name
+        mds_data = make_mds_plot(court_id).to_json()
+
+    context = {
+        "form": form,
+        "mds_data": mds_data,
+        "court_name": court_name,
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+        "fallback_url": reverse("judgement_call:analysis"),
+    }
+    return render(request, "spacejam.html", context)
+
+
+def spacejam_backup(request):
     """MDS chart prototype."""
 
     state = request.GET.get("state", "AZSUP")
@@ -596,7 +626,8 @@ def analysis(request):
     context = {
         "msg": "Pending",
         "header": "Analysis",
-        "preamble": """Apply filters to see judicial analytics.""",
+        "preamble": """Please explore our visualizations exploring high-level
+        judicial analytics.""",
         "states": US_STATES,
         "button_name": "Generate Analytics",
         "fallback_url": reverse("judgement_call:landing"),
@@ -605,6 +636,39 @@ def analysis(request):
     }
 
     return render(request, "analysis.html", context)
+
+
+def get_choropleth(request):
+    chart_html = None
+    if "dimension" in request.GET:
+        form = ChoroplethForm(request.GET)
+    else:
+        form = ChoroplethForm()
+
+    if form.is_valid():
+        court_type = "Supreme Court"
+        geo_unit = "state"
+        dimension = form.cleaned_data["dimension"] or None
+
+        df = produce_data(court_type=court_type, geo_unit=geo_unit)
+        fig = create_choropleth(map_data=df, dimension=dimension, geo_unit=geo_unit)
+        chart_html = fig.to_html(full_html=False, include_plotlyjs="cdn")
+
+    return {"form": form, "chart_html": chart_html}
+
+
+def polarization(request):
+    choro_dict = get_choropleth(request)
+    context = {
+        "state": request.session.get("state"),
+        "county": request.session.get("county"),
+        "choropleth_form": choro_dict["form"],
+        "chart_html": choro_dict["chart_html"],
+        "header": "State Supreme Court Issues Polarization Map",
+        "preamble": """Select an issue area to see polarization state-level court decisions.""",
+        "fallback_url": reverse("judgement_call:analysis"),
+    }
+    return render(request, "polarization.html", context)
 
 
 def analysis_state_county(request, state, county):

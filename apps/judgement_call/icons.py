@@ -57,21 +57,35 @@ TOPIC_REPHRASED = {
 # up for election soon
 def up_for_election(tenure):
     "returns bool"
-    return (
-        tenure.tenure_length_remaining <= 1,
-        "gray",
-        "This judge's term ends soon.",
-    )
+    if tenure.end_date is not None:
+        return (
+            tenure.tenure_length_remaining <= 1,
+            "#808080ff",
+            "This judge's term ends soon.",
+        )
+    else:
+        return (
+            False,
+            "#808080ff",
+            "This judge's term ends soon.",
+        )
 
 
 # long tenure (>=10yr)
 def long_tenure(tenure):
     "returns bool indicating >=10yr of current tenure"
-    return (
-        tenure.tenure_length_to_date >= 10,
-        "gray",
-        "This judge has served for 10+ years.",
-    )
+    if tenure.start_date is not None:
+        return (
+            tenure.tenure_length_to_date >= 10,
+            "#808080ff",
+            "This judge has served for 10+ years.",
+        )
+    else:
+        return (
+            False,
+            "#808080ff",
+            "This judge has served for 10+ years.",
+        )
 
 
 def effective_stance(alignment, indiv_ruling):
@@ -112,23 +126,27 @@ def classify_topic(attr, tallies):
 
     # insufficient number of cases to decide
     if total < 3:
-        return (False, "gray", "")
+        return (False, "#808080ff", "")
 
     ratio = infringe / protect if protect > 0 else float("inf")
 
     # 2 infringe for every 1 protect
     if ratio >= 2:
-        return (True, "red", f"This judge has historically ruled against {TOPIC_REPHRASED[attr]}.")
+        return (
+            True,
+            "#b02e2eff",
+            f"This judge has historically ruled against {TOPIC_REPHRASED[attr]}.",
+        )
     # 1 infringe for every 2 protect
     elif ratio <= 0.5:
         return (
             True,
-            "green",
+            "#378e4aff",
             f"This judge has historically ruled to protect {TOPIC_REPHRASED[attr]}.",
         )
     # unremarkable ratio
     else:
-        return (False, "gray", "")
+        return (False, "#808080ff", "")
 
 
 # has ruled to protect <topic>
@@ -185,14 +203,15 @@ def has_scandals():
 
 def get_judge_icons(tenure, icon_dict):
     "get icons related to judges"
-    icon_dict["release_alert"] = up_for_election(tenure)
-    icon_dict["hourglass"] = long_tenure(tenure)
-    topics_to_include = topics_of_note(tenure)
-    topic_icons = {
-        TOPIC_ICON_DICT[k]: v for k, v in topics_to_include.items() if k in TOPIC_ICON_DICT
-    }
+    if tenure is not None:
+        icon_dict["release_alert"] = up_for_election(tenure)
+        icon_dict["hourglass"] = long_tenure(tenure)
+        topics_to_include = topics_of_note(tenure)
+        topic_icons = {
+            TOPIC_ICON_DICT[k]: v for k, v in topics_to_include.items() if k in TOPIC_ICON_DICT
+        }
 
-    icon_dict = icon_dict | topic_icons
+        icon_dict = icon_dict | topic_icons
 
     return icon_dict
 

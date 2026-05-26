@@ -7,8 +7,18 @@ Judgement Call
 
 {% block content %}
 
+<h3>{{ header }}</h3>
+
 <p>{{ preamble }}</p>
 
-{% include "dropdown.html" with states=states %}
+
+<a href="{% url 'judgement_call:polarization' %}" class="reg-button">
+    <h3>State Supreme Court Issues Polarization Map</h3>
+</a>
+
+<a href="{% url 'judgement_call:spacejam' %}" class="reg-button">
+    <h3>Prototype: "Space Jam" Court Opinions Multidimensional Scaling Chart</h3>
+</a>
+
 
 {% endblock %}

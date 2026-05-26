@@ -10,24 +10,24 @@ Judgement Call
     <p class="splash-page bold">
         Judgement Call helps you get to know the judges who make decisions that
         affect your everyday life.
-        <ol>
-            <li>
-                Start by putting in your state and county.
-            </li>
-            <li>
-                Explore the judges in your own jurisdiction. Each judge profile
-                includes background details and case‑level information to help
-                you see how they rule.
-            </li>
-            <li>
-                Look at the upcoming judicial elections in your area, and the
-                judges who may be running. Judge profiles are also here.
-            </li>
-            <li>
-                For a broader view, our analytics page highlights trends across
-                the country.
-            </li>
-        </ol>
+    <ol>
+        <li>
+            Start by putting in your state and county.
+        </li>
+        <li>
+            Explore the judges in your own jurisdiction. Each judge profile
+            includes background details and case‑level information to help
+            you see how they rule.
+        </li>
+        <li>
+            Look at the upcoming judicial elections in your area, and the
+            judges who may be running. Judge profiles are also here.
+        </li>
+        <li>
+            For a broader view, our analytics page highlights trends across
+            the country.
+        </li>
+    </ol>
     </p>
 </div>
 
@@ -59,7 +59,7 @@ Judgement Call
                 your municipality.</p>
         </div>
         <div class="elaboration">
-            <a class="big-button-item" href="/analysis/?state={{ state }}&county={{ county }}">
+            <a class="big-button-item" href="/analysis/">
                 <span class="material-icons md-60">analytics</span>
                 <h2 class="service">Analysis</h2>
             </a>
@@ -69,7 +69,7 @@ Judgement Call
     </nav>
 </div>
 {% else %}
-    {% include "dropdown.html" with states=states button_name="Start Exploring" %}
+{% include "dropdown.html" with states=states button_name="Start Exploring" %}
 {% endif %}
 
 {% endblock %}
