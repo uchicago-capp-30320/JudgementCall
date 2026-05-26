@@ -6,10 +6,11 @@
 <h3>MDS Chart: {{ court_name }}</h3>
 
 <p>
-    This charts shows how similar or different the current {{ court_name }} justices are
+    This chart shows how similar or different the current {{ court_name }} justices are
     based on their voting record. Judges who are close together tend to vote together on cases.
 </p>
 
+{% if mds_data %}
 {{ mds_data|json_script:"mds_data" }}
 <p id="mds-data" style="display: none;">{{ mds_data }}</p>
 
@@ -29,3 +30,7 @@
     const mdsData = JSON.parse(document.getElementById("mds-data").textContent);
     makeMDSChart(mdsData, ".mdsChart");
 </script>
+
+{% else %}
+<p>We couldn't generate a chart for this court.</p>>
+{% endif %}
