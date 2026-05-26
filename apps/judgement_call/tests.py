@@ -396,8 +396,8 @@ class CourtFullViewTestCase(TestCase):
         assert "eye_tracking" in icons
 
         # make sure the icons are the right color, grey for not enough cases
-        assert icons["wallet"][1] == "gray"  # bc not enough cases to decide
-        assert icons["eye_tracking"][1] == "gray"
+        assert icons["wallet"][1] == "#808080ff"  # bc not enough cases to decide
+        assert icons["eye_tracking"][1] == "#808080ff"
 
 
 class ElectionsTestCase(TestCase):
