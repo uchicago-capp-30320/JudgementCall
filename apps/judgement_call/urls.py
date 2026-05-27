@@ -31,6 +31,7 @@ urlpatterns = [
     ),
     path("people/<int:person_id>/", views.show_person, name="show_person"),
     path("methodology/", views.methodology, name="methodology"),
+    path("about/", views.about, name="about"),
     path("elections/", views.elections, name="elections"),
     path(
         "elections/<str:state>/<str:county>/",
@@ -39,11 +40,8 @@ urlpatterns = [
     ),
     path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
-    path(
-        "analysis/<str:state>/<str:county>/",
-        views.analysis_state_county,
-        name="analysis_state_county",
-    ),
+    path("analysis/polarization/", views.polarization, name="polarization"),
+    path("analysis/spacejam/", views.spacejam, name="spacejam"),
     path("api/counties/<str:state>/", views.get_counties, name="get_counties"),
     path("gantt/", views.gantt, name="gantt"),
     path(
@@ -51,7 +49,7 @@ urlpatterns = [
         views.get_individual_opinions_for_radar,
         name="radar",
     ),
-    path("spacejam/", views.spacejam, name="spacejam"),
-    path("judges/<str:court_id>", views.court_full_view, name="court"),
+    path("spacejam/", views.spacejam_backup, name="spacejam_backup"),
+    path("judges/<str:court_id>/", views.court_full_view, name="court"),
     path("clear-location/", views.clear_location, name="clear_location"),
 ]

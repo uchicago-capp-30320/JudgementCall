@@ -10,7 +10,7 @@ from apps.judgement_call.models import Court, CountyToCourt, Case
 def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
     # Calculating the percentage of times each court is protecting a political
     # dimension.
-    political_dimensions = [field.name for field in Case._meta.get_fields()][14:]
+    political_dimensions = [field.name for field in Case._meta.get_fields()][14:-2]
     annotator = {}
     for dim in political_dimensions:
         annotator[dim] = (
@@ -49,7 +49,7 @@ def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
     # polarization.
     dist = nan_euclidean_distances(output_df.iloc[:, 1 : output_df.shape[1] - 1])
     embedding = MDS(n_components=1, n_init=1, init="random", metric="precomputed")
-    transformed = pd.Series(embedding.fit_transform(dist).reshape(1, 3)[0])
+    transformed = pd.Series(embedding.fit_transform(dist).reshape(1, len(output_df))[0])
     output_df.insert(len(output_df.columns), "polarity", transformed)
 
     return output_df
@@ -64,7 +64,7 @@ def create_choropleth(map_data: pd.DataFrame, dimension: str = None, geo_unit: s
             locationmode="USA-states",
             scope="usa",
             color=dimension,
-            color_continuous_scale="Viridis_r",
+            color_continuous_scale="Spectral",
         )
     else:
         fig = px.choropleth(
@@ -73,7 +73,7 @@ def create_choropleth(map_data: pd.DataFrame, dimension: str = None, geo_unit: s
             locationmode="USA-states",
             scope="usa",
             color="polarity",
-            color_continuous_scale="Viridis_r",
+            color_continuous_scale="Spectral",
         )
 
     return fig

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Select a Court to Generate MDS Plot</h3>
+
+<form method="GET">
+    {{ form.as_p }}
+    <input class="reg-button" type="submit" value="Generate Plot">
+</form>
+
+{% if mds_data %}
+{% include 'mds.html' with mds_data=mds_data court_name=court_name %}
+{% endif %}
+
+{% endblock %}

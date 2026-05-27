@@ -26,3 +26,4 @@ s
 .env
 .DS_Store
 data/courts/*.csv
+prod_dump.sql
