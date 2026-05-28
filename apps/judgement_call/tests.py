@@ -587,8 +587,8 @@ class AnalysisTestCase(TestCase):
     def test_polarization_map_dropdown(self):
         """Make sure supreme court issues dropdown loads"""
         response = self.client.get("/analysis/polarization/")
-        assert 'choropleth_form' in response.context
-        assert 'Public Education' in response.content.decode()
+        assert "choropleth_form" in response.context
+        assert "Public Education" in response.content.decode()
 
 
 class MatchingTestCase(TestCase):
