@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, Http404
 from django.db.models import Avg, Count, When, Value, Q
-from django.db.models import Case as Case_
+from django.db.models import Case as Django_Case
 
 # from django.http import HttpResponse
 from .models import (
@@ -753,15 +753,12 @@ def get_individual_opinions_for_radar(
         This format plugs right into radarChart.js for any number
         of justices and rights.
     """
-    # ERROR: My query duplicates judges with multiple aliases (there are many)
-
-    # TO REMOVE (only allow 2 judges as input at a time so
-    # there is enough data overlap to build radar)
-    persons = persons[-2:]
 
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
-    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-13:-1]
+    topic_flags = Case.topic_flags()
+    case_rights = ["case__" + topic_flag for topic_flag in topic_flags]
+    print("RIGHTS", case_rights)
     indops = (
         IndividualOpinion.objects.filter(
             judge_alias__tenure__person__name_canonical__in=persons
@@ -775,7 +772,7 @@ def get_individual_opinions_for_radar(
         kwarg_protected = {right: "protected"}
         kwarg_infringed = {right: "infringed"}
 
-        case_when_statement = Case_(
+        case_when_statement = Django_Case(
             When(  # Ruled to protect a right, or tried stopping court from infringing
                 (Q(**kwarg_protected) & Q(ruling="concur"))
                 | (Q(**kwarg_infringed) & Q(ruling="dissent")),
@@ -786,7 +783,7 @@ def get_individual_opinions_for_radar(
                 | (Q(**kwarg_protected) & Q(ruling="dissent")),
                 then=Value(0),
             ),
-            # Case_ defaults to None otherwise
+            # Django_Case defaults to None otherwise
         )
 
         return case_when_statement
@@ -805,11 +802,6 @@ def get_individual_opinions_for_radar(
         .annotate(**pro_right_kwargs)
     )
 
-    # Convert from List of Dicts (each a judge) to List of Lists (each a judge) of Dicts.
-    # TODO: Radar chart has no legend, but we will add judge name here later for that.
-    # TODO: Handle missing data. What to show when Judge A is missing church-state cases,
-    # and Judge B is missing free press cases? Drop both for both judges? CANNOT DEFAULT TO 0.
-    # For now, drop a right (axis) if EITHER judge has not ruled on a related case
     data_for_radar = [
         [
             {
@@ -842,8 +834,6 @@ def get_individual_opinions_for_radar(
         for judge_list in data_for_radar
     ]
 
-    # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
-    # print(data_for_radar_dropmissing)
     return JsonResponse(data_for_radar_dropmissing, safe=False)
 
 
