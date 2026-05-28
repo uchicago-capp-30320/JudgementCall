@@ -6,7 +6,7 @@ app_name = "judgement_call"
 
 
 class StrListConverter:
-    regex = r"[a-zA-Zñ0-9_\-\s%\.]+"  # Susan M. Crawford gets lost because of her Period!!!
+    regex = r"[a-zA-ZÑñ0-9_\-\s%\.]+"  # Susan M. Crawford gets lost because of her Period!!!
 
     def to_python(self, value):
         if not value:

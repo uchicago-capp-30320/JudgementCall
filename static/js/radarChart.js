@@ -23,7 +23,7 @@ function RadarChart(id, data, options) {
         opacityAreaLow: 0.15, 	//The opacity of the area of the blob when another area is hovered over
         opacityAreaHigh: 0.75, 	//The opacity of the area of the blob when hovered over
         dotRadius: 8, 			//The size of the colored circles of each blog
-        opacityCircles: 0.1, 	//The opacity of the circles of each blob
+        opacityCircles: 0.1, 	//The opacity of the background circles of each blob
         strokeWidth: 2, 		//The width of the stroke around each blob
         roundStrokes: true,	    //If true the area and stroke will follow a round path (cardinal-closed)
         color: d3.schemeCategory10	//Color function
@@ -187,18 +187,35 @@ function RadarChart(id, data, options) {
 
     //Create the outlines
     blobWrapper.append("path")
-        .attr("class", "radarStroke")
+        .attr("class", function(d,i) {
+            return "radarStroke" + " " + `group-${i}`
+        })
         .attr("d", function(d,i) { return radarLine(d); })
         .style("stroke-width", cfg.strokeWidth + "px")
         .style("stroke", function(d,i) { return cfg.color(d[0].name); })
         .style("fill", "none")
-        .style("filter" , "url(#glow)");
+        .style("filter" , "url(#glow)")
+        .on("mouseover", function (d,i){
+            handle_mouseover_fades(d,i);
+        })
+        .on("mouseout", function(d,i){
+            handle_mouseout_fades(d,i);
+        });
 
     //Append the circles (data points themselves)
     blobWrapper.selectAll(".radarCircle")
-        .data(function(d,i) { return d; })
+        //Assign same blob group index to all points in a blob
+        .data(function(d,i) {
+            return d.map(point => {
+                point.groupIndex = i;
+                return point;
+            });
+        })
         .enter().append("circle")
-        .attr("class", "radarCircle")
+        // .attr("class", "radarCircle")
+        .attr("class", function(d,i) {
+            return "radarCircle" + " " + `group-${d.groupIndex}`
+        })
         .attr("r", cfg.dotRadius)
         .attr("cx", function(d,i){
             return rScale(d.value) * Math.cos(angleSlice*i - Math.PI/2);
@@ -206,11 +223,16 @@ function RadarChart(id, data, options) {
         .attr("cy", function(d,i){ return rScale(d.value) * Math.sin(angleSlice*i - Math.PI/2); })
         .style("fill", function(d, i, nodes){
             const parentData = d3.select(nodes[i].parentNode).datum();
-            console.log("PARENT:", parentData[0].name);
             return cfg.color(parentData[0].name);
-        }) // HOW TO MAKE THESE MATCH BLOB COLORS
-        .style("fill-opacity", 0.5)
-        .style("stroke", "#000000");
+        })
+        .style("fill-opacity", 0.6)
+        .style("stroke", "#000000")
+        .on("mouseover", function (d,i){
+            handle_mouseover_fades(d,i);
+        })
+        .on("mouseout", function(d,i){
+            handle_mouseout_fades(d,i);
+        });
 
     /////////////////////////////////////////////////////////
     //////// Append invisible circles for tooltip ///////////
@@ -235,8 +257,6 @@ function RadarChart(id, data, options) {
         .on("mouseover", function(d,i) {
             newX =  parseFloat(d3.select(this).attr("cx")) - 10;
             newY =  parseFloat(d3.select(this).attr("cy")) - 10;
-            console.log(cfg.color.domain());
-            console.log(d.target.__data__.name);
             tooltip
                 .attr("x", newX)
                 .attr("y", newY)
@@ -268,7 +288,7 @@ function RadarChart(id, data, options) {
     var g_legend = svg.append("g")
         .attr("transform", "translate(" + (-cfg.w/2) + "," + (cfg.margin.top) + ")")
         .attr("id", "legendBBox");
-    var size = 20;
+    var iconSize = 20;
     var nudge = 15;
 
     g_legend.selectAll(".radarLegendIcon")
@@ -276,9 +296,9 @@ function RadarChart(id, data, options) {
     .enter()
     .append("rect")
         .attr("x", 200 + nudge)
-        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5) })
-        .attr("width", size)
-        .attr("height", size)
+        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(iconSize+5) })
+        .attr("width", iconSize)
+        .attr("height", iconSize)
         .attr("rx", "5")
         .attr("class", function(d,i) {
             return "radarLegendIcon" + " " + `group-${i}`
@@ -296,9 +316,9 @@ function RadarChart(id, data, options) {
     .data(data)
     .enter()
     .append("text")
-        .attr("x", nudge + 200 + size*1.1)
-        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(size+5)}) //Position exactly to icon y...
-        .attr("dy", "1em") //...then eek the text down by its own size so it's vertically center-aligned!
+        .attr("x", nudge + 200 + iconSize*1.1)
+        .attr("y", function(d,i){ return nudge + cfg.lineSpace*i*(iconSize+5)}) //Position exactly to icon y...
+        .attr("dy", "1em") //...then eek the text down by its own iconSize so it's vertically center-aligned!
         .attr("class", function(d,i) {
             return "radarLegendLabel " + `group-${i}`
         })
@@ -319,11 +339,14 @@ function RadarChart(id, data, options) {
     const legendWidth = d3.select("#legendBBox")
         .node()
         .getBBox().width;
+    const legendHeight = d3.select("#legendBBox")
+        .node()
+        .getBBox().height;
     g_legend.append("rect")
         .attr("x", 200)
         .attr("y", 0)
         .attr("width", legendWidth + 2*nudge)
-        .attr("height", cfg.lineSpace*2*(size+5)+5 + nudge)
+        .attr("height", legendHeight + 2*nudge)
         .attr("rx", 10)
         .style("fill", "#CDCDCD")
         .style("stroke", "#CDCDCD")
@@ -371,6 +394,15 @@ function RadarChart(id, data, options) {
         d3.selectAll(".radarArea")
             .transition().duration(200)
             .style("fill-opacity", cfg.opacityAreaLow);
+        //Dim all radar strokes (outlines)
+        d3.selectAll(".radarStroke")
+            .transition().duration(200)
+            .style("stroke-opacity", cfg.opacityAreaLow);
+        //Dim all radar points
+        d3.selectAll(".radarCircle")
+            .transition().duration(200)
+            .style("fill-opacity", cfg.opacityAreaLow)
+            .style("stroke-opacity", cfg.opacityAreaLow);
         //Dim all legend name labels
         d3.selectAll(".radarLegendLabel")
             .transition().duration(200)
@@ -385,12 +417,18 @@ function RadarChart(id, data, options) {
         const regex = /group-[\d]+/;
         const this_group = this_class.match(regex)[0];
         //Bring back the hovered-over blob
-        console.log(this_group);
+        //When CSS selecting by multiple classes, no spaces between class names!
         d3.select(".radarArea" + "." + this_group)
             .transition().duration(200)
             .style("fill-opacity", cfg.opacityAreaHigh);
+        d3.selectAll(".radarStroke" + "." + this_group)
+            .transition().duration(200)
+            .style("stroke-opacity", 1.0);
+        d3.selectAll(".radarCircle" + "." + this_group)
+            .transition().duration(200)
+            .style("fill-opacity", cfg.opacityAreaHigh)
+            .style("stroke-opacity", cfg.opacityAreaHigh);
         //Bring back the name label associated with the hovered-over blob.
-        //When CSS selecting by multiple classes, no spaces between class names!
         d3.select(".radarLegendLabel" + "." + this_group)
             .transition().duration(200)
             .style("fill-opacity", 1.0);
@@ -405,6 +443,10 @@ function RadarChart(id, data, options) {
         d3.selectAll(".radarArea")
             .transition().duration(200)
             .style("fill-opacity", cfg.opacityArea);
+        d3.selectAll(".radarCircle")
+            .transition().duration(200)
+            .style("fill-opacity", 0.6)
+            .style("stroke-opacity", 1.0);
         d3.selectAll(".radarLegendLabel")
             .transition().duration(200)
             .style("fill-opacity", 1.0);
@@ -420,3 +462,5 @@ function RadarChart(id, data, options) {
 //for adapting to a legend. Ideally, elements that fade in and out
 //together should maybe be created (appended) together. That avoids
 //copy-paste of `.attr("class", ...)` across blobs, legendLabel, etc.
+//Also, the legend domain-range should be static, which requires
+//passing the whole list of names on the bench at once every time.
