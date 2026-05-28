@@ -110,12 +110,12 @@ Judgement Call includes interpretive assessments of judicial behavior, including
 Although we strive for accuracy, these limitations apply. Users should verify information independently before relying on this site.
 
 ## Team
-- Riley Morrison
-- Maggie Larson
 - Liberto de Pablo
-- Riley Kouns
-- Callie Leone
 - Alexandrea Harriott
+- Riley Kouns
+- Maggie Larson
+- Callie Leone
+- Riley Morrison
 
 ## Attribution
 
