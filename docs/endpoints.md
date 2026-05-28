@@ -17,6 +17,18 @@ current_version : ImageVersion
 
 ### Judges-St-County "judges/<str:state>/<str:county>/" ###
 
+Parameters: state, county
+
+Response: HTML page with list of collapsibles representing courts, containing
+buttons to court-level analytics as well as previews of judges on judge cards.
+
+Template Context Variables: 
+
+"courts": courts
+"fallback_url": fallback url to old judges view
+"state": state
+"county": county
+
 ### Court "judges/<str:court_id>/" ###
 
 Parameters: court_id

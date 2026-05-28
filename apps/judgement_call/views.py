@@ -167,14 +167,8 @@ def build_court_dict(tenures, elections_courts):
 
 def judges_state_county(request, state, county):
     """
-    courts structure --
-    courts {
-        court_name: {
-            id: court_id,
-            upcoming_election: T/F,
-            judges: [judge1_dict, judge2_dict, judge3_dict...]
-        }
-    }
+    Take state and county to identify relevant tenures. Tenures are used to
+    generate courts dictionary to populate judges quick view.
     """
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
