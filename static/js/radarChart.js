@@ -354,6 +354,15 @@ function RadarChart(id, data, options) {
         .style("filter" , "url(#glow)")
         .lower(); //Draw below legend content; update rect width to fit actual text length
 
+    g_legend.append("text")
+        .attr("class", "radarLegendTitle")
+        .attr("x", 200)
+        .attr("y", -nudge/2)
+        .style("font-size", "0.75em")
+        .style("font-style", "italic")
+        .style("font-color", "#3a3a3a")
+        .text("Hover a judge to highlight");
+
     /////////////////////////////////////////////////////////
     /////////////////// Helper Function /////////////////////
     /////////////////////////////////////////////////////////
