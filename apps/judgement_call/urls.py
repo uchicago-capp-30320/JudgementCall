@@ -38,7 +38,6 @@ urlpatterns = [
         views.elections_state_county,
         name="elections_state_county",
     ),
-    path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
     path("analysis/polarization/", views.polarization, name="polarization"),
     path("analysis/spacejam/", views.spacejam, name="spacejam"),
