@@ -7,20 +7,10 @@
                 content.style.maxHeight = "0px";
             } else {
                 content.style.maxHeight = content.scrollHeight + "px";
-                // HOLDOVER FROM MAX-2 JUDGES SELECTED
-                // const activeJudgeName = this.querySelector('h3')?.textContent.replace(" - Chief Justice", "");
-                // TODO: Handle popping oldest after reaching >2 judges
-                // if (activeJudgeNames.length >= 2) {
-                //     activeJudgeNames.pop(); //.shift() causes judges' legend colors to swap!
-                // }
-                // if (!activeJudgeNames.includes(activeJudgeName)){
-                //     activeJudgeNames.push(activeJudgeName);
-                // }
             }
             window.activeJudgeNames = [];
             document.querySelectorAll('.collapsible-container').forEach(function (cont) {
                 const contDetails = cont.nextElementSibling;
-                console.log(contDetails);
                 if (contDetails.style.maxHeight && contDetails.style.maxHeight !== "0px") {
                     const activeJudgeName = cont.querySelector('h3')?.textContent.replace(" - Chief Justice", "");
                     if (activeJudgeName) {
@@ -33,8 +23,6 @@
                 detail: { judges: window.activeJudgeNames }
             });
             document.dispatchEvent(judgeEvent);
-
-            console.log("Broadcasted updated judges:", window.activeJudgeNames);
         });
     });
 </script>
