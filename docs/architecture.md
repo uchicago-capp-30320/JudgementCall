@@ -1,19 +1,33 @@
 ## Architecture
 
-The Judgement Call project is aimed at informing voters about their judges by centralizing and synthesizing relevant information about existing judges, and candidates in judicial elections.
+The Judgement Call project is aimed at informing voters and citizens about their judges by centralizing and synthesizing relevant information about existing judges, and candidates in judicial elections.
 
-The project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections. Our primary source for continuous data ingestion source is [CourtListener](https://www.courtlistener.com/), a legal research resource provided by [Free Law Project](https://free.law/).
+The project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections.
 
-### Data flow
+### Data acquisition and pre-processing
 
-Flow chart: https://canva.link/pjkpe01xag0fime
+This section describes the procces through which real data is acquired, and processed on, as it enters the database. This operation occurs in two contexts:
 
-Some tables contain long-lived data, i.e. existing state courts, and will be constructed once and updated rarely. Tenure and person tables will be updated to fill in missing data and as a result of new elections and appointment. The primary flow of information through the project will be case and opinion data, which will be updated daily.
+1. *Initial ingestion*: this is the import that takes several hours to run and produces all of the data required to use the application.
+2. *Continuous ingestion:* this is an import that runs every evening, updating the database with the latest information on cases.
 
-The flow of case and opinion data will be approximately:
-Daily case scraper -> identify new cases -> match judges to existing tenure records -> use LLM to parse topic & individual judge opinions -> create case and opinion records
+The summary below provides is a high-level perspective of data acquist
 
-Our main educational page and “who are my judges?” page will query the tables directly to populate the views with data. The analysis page will both pull information directly from the tables, and will make calls to functions in the analysis module.
+#### Cases & individual opinions
+
+Our information regarding the cases, and the individual opinions of each judge on a case, is acquired through a progression of webscraping and processing through Google's large language model (LLM) Gemini.
+
+![Case and individual opinion flow](images/Case_and_Individual_Opinions.png)
+
+#### Judges
+
+The information regarding judges, ranging from tenure specifics to demographics, is acquired through a process of webscraping and record linkage.
+
+![Judge flow](images/Judges_Person.png)
+
+#### Elections & Candidates
+
+
 
 ### Modules
 
