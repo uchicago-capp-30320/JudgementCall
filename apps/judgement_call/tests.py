@@ -386,18 +386,17 @@ class CourtFullViewTestCase(TestCase):
         # hit the view
         response = self.client.get("/judges/ILAPP1", follow=True)
         details = response.context["details"]
-
-        # Get first judge's icons
-        first_judge = details["judges"][0]
-        icons = first_judge["icons"]
+        all_icons = {}
+        for judge in details["judges"]:
+            all_icons.update(judge["icons"])
 
         # make sure the icons are right
-        assert "wallet" in icons
-        assert "eye_tracking" in icons
+        assert "wallet" in all_icons
+        assert "eye_tracking" in all_icons
 
         # make sure the icons are the right color, grey for not enough cases
-        assert icons["wallet"][1] == "#808080ff"  # bc not enough cases to decide
-        assert icons["eye_tracking"][1] == "#808080ff"
+        assert all_icons["wallet"][1] == "#808080ff"  # bc not enough cases to decide
+        assert all_icons["eye_tracking"][1] == "#808080ff"
 
 
 class ElectionsTestCase(TestCase):
@@ -408,7 +407,7 @@ class ElectionsTestCase(TestCase):
         response = self.client.get("/elections/")
         assert response.status_code == 200
 
-    def test_judges_page_has_states(self):
+    def test_elections_page_has_states(self):
         """Make sure the states are populating in our dropdowns"""
         response = self.client.get("/elections/")
         assert "states" in response.context
@@ -573,11 +572,23 @@ class AnalysisTestCase(TestCase):
         response = self.client.get("/analysis/")
         assert response.status_code == 200
 
-    def test_judges_page_has_states(self):
+    def test_analysis_page_has_states(self):
         """Make sure the states are populating in our dropdowns"""
         response = self.client.get("/analysis/")
-        assert "states" in response.context
-        assert len(response.context["states"]) > 0
+        assert "analytics" in response.content.decode()
+        assert "Polarization" in response.content.decode()
+        assert "Space Jam" in response.content.decode()
+
+    def test_polarization_map_loads(self):
+        """Make sure supreme court issues polarization map loads"""
+        response = self.client.get("/analysis/polarization/")
+        assert response.status_code == 200
+
+    def test_polarization_map_dropdown(self):
+        """Make sure supreme court issues dropdown loads"""
+        response = self.client.get("/analysis/polarization/")
+        assert "choropleth_form" in response.context
+        assert "Public Education" in response.content.decode()
 
 
 class MatchingTestCase(TestCase):

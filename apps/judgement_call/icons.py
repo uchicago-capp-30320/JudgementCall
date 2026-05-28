@@ -1,31 +1,15 @@
 from .models import (
-    # Court,
-    # Person,
-    # Election,
-    # Candidacy,
     Tenure,
-    # Case,
     IndividualOpinion,
-    # CourtLevel,
-    # SelectionType,
-    # CaseType,
-    # SelectionJurisdictionType,
-    # Alias,
-    # CaseParticipant,
-    # TopicAlignment,
-    # RulingType,
-    # CountyToCourt,
-    # PersonGender,
-    # PersonRace,
-    # PartyAffiliation,
 )
 from collections import defaultdict
 
+# maps topic areas to icons
 TOPIC_ICON_DICT = {
     "environment": "eco",
     "consumers": "wallet",
     "reproductive_rights": "pregnancy",
-    "democratic_norms": "assured_workload",  # might review later
+    "democratic_norms": "assured_workload",
     "free_press": "newspaper",
     "public_health": "stethoscope",
     "separation_church_state": "church",
@@ -36,6 +20,7 @@ TOPIC_ICON_DICT = {
     "worker_rights": "person_apron",
 }
 
+# maps topics to appropriate phrasing for pop-ups
 TOPIC_REPHRASED = {
     "environment": "the environment",
     "consumers": "consumer protections",
@@ -56,7 +41,7 @@ TOPIC_REPHRASED = {
 
 # up for election soon
 def up_for_election(tenure):
-    "returns bool"
+    "Returns gray icon tuple if judge term is anticipated to end in a year."
     if tenure.end_date is not None:
         return (
             tenure.tenure_length_remaining <= 1,
@@ -73,7 +58,7 @@ def up_for_election(tenure):
 
 # long tenure (>=10yr)
 def long_tenure(tenure):
-    "returns bool indicating >=10yr of current tenure"
+    "Returns gray icon tuple if judge has served on current bench for 10+ years."
     if tenure.start_date is not None:
         return (
             tenure.tenure_length_to_date >= 10,
@@ -89,14 +74,20 @@ def long_tenure(tenure):
 
 
 def effective_stance(alignment, indiv_ruling):
-    "flip judge stance on topic if dissented from majority opinion"
+    """
+    Takes court decision and indiv judge ruling and flips alignment if judge
+    dissented from main opinion.
+    """
     if indiv_ruling == "dissent" and alignment != "NA":
         return "protected" if alignment == "infringed" else "infringed"
     return alignment
 
 
 def issue_stance_dict(tenure):
-    """returns freq dictionary of for/against topic issues"""
+    """
+    Takes tenure, collects relevant opinions, creates frequency dictionary of
+    issue stances depending on overall court ruling and indiv opinion.
+    """
     topic_tallies = defaultdict(lambda: defaultdict(int))
 
     # get opinions for a judge on a court
@@ -120,6 +111,10 @@ def issue_stance_dict(tenure):
 
 
 def classify_topic(attr, tallies):
+    """
+    Takes issue and tallies from freq_dict and assigns appropriate icon tuples
+    depending on ratio of support/dissent for a given issue area.
+    """
     protect = tallies.get("protected", 0)
     infringe = tallies.get("infringed", 0)
     total = protect + infringe
@@ -151,7 +146,10 @@ def classify_topic(attr, tallies):
 
 # has ruled to protect <topic>
 def topics_of_note(tenure):
-    "returns something indicating issue protect/infringe areas, tbd"
+    """
+    Takes tenure, builds frequency dictionary, and then iterates through issue
+    areas to collect icon tuples. Topic icons have non-gray colors.
+    """
     issue_dict = issue_stance_dict(tenure)
 
     topic_classifications = {
@@ -167,42 +165,39 @@ def topics_of_note(tenure):
 # worked as a public defender
 # worked as a prosecutor
 # worked in legal aid
-# professor? hmm
 def relevant_experience():
-    "returns indicators of having certain types of public-oriented professional experience"
+    """
+    Returns indicators of having certain types of public-oriented legal
+    professional experience
+    """
     # TODO
 
 
-# idk fancy law school?
 def prestigious_school():
-    "returns indicator for an expensive education, maybe top 15?"
+    "Returns indicator for an expensive education, maybe top 15 schools?"
     # TODO
 
 
-# personal party affiliation
+# personal party affiliation, controversial
 def personal_party():
-    "returns indicator for personal party, maybe should be candidates only? idk"
+    "Returns indicator for personal party registration."
     # TODO
 
 
-# do a filler for relevant endorsements
-# list of municipal & party endorsers and then randomly select in favor or against
+# for testing endorsement integration
 def endorsements():
-    "returns fake endorsements"
+    "Returns visually distinct, synthetic endorsements for UI/UX testing purposes."
     # TODO
 
 
-# could do same for scandal, should set toggle to turn these off if we don't want them
+# inspired by Injustice Watch flags
 def has_scandals():
-    "returns fake scandal flag"
+    "Returns visually distinct, synthetic scandal icons for UI/UX testing purposes."
     # TODO
-
-
-# maybe change color to indicate fake data
 
 
 def get_judge_icons(tenure, icon_dict):
-    "get icons related to judges"
+    """Collects icon tuples for people with tenure."""
     if tenure is not None:
         icon_dict["release_alert"] = up_for_election(tenure)
         icon_dict["hourglass"] = long_tenure(tenure)
@@ -217,21 +212,16 @@ def get_judge_icons(tenure, icon_dict):
 
 
 def get_candidate_icons(candidacy, icon_dict):
-    "get icons related to candidates"
+    """Collects icon tuples for candidates with without previous judicial experience."""
     # person = candidacy.person
     # TODO
 
 
 def get_icon_dict(instance, is_judge):
     """
-    end product should look like:
-    person_attributes = {
-        if judge {judge_stuff},
-        person stuff {person_stuff}
-    }
+    Collects appropriate icon tuples for candidates and judges. Flag parameter
+    signals which set to collect.
     """
-    # get relevant instance and then flag if it's for a judge or not I guess
-    # call all the helpers to create person-level dictionary
     if is_judge:
         icon_dict = {}
         icon_dict = get_judge_icons(instance, icon_dict)
@@ -243,8 +233,9 @@ def get_icon_dict(instance, is_judge):
     return icon_dict
 
 
+# quick implementation due to not having time/permission to implement candidate icons
 def get_topic_icons(person):
-    "get icons related to case decisions across all tenures for a person"
+    "Used to retrieve just topic icons for judges in elections view."
     tenures = Tenure.objects.filter(person=person)
 
     topic_tallies = defaultdict(lambda: defaultdict(int))
