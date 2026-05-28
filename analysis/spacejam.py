@@ -1,11 +1,11 @@
+"""
+SPACEJAM ("Spatial Judge Analaysis in Metric Space" (or, "by Maggie"))
+This module contains functions to generate data for Multi-Dimensional Scaling (MDS) analysis of
+judge voting records which appear on the Analysis page of the site.
+"""
+
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from datetime import datetime
-import altair as alt
 from sklearn.manifold import MDS
-from sklearn.cluster import KMeans
-from ingestion.ingest_courts import COURT_LOOKUP_LONG
 from apps.judgement_call.models import Court, IndividualOpinion
 from functools import cache
 
@@ -13,8 +13,20 @@ MDS_CONFIG = {"n_components": 2, "metric_mds": True, "n_init": 1, "init": "rando
 
 
 @cache
-def query_similarity_df(court_id):
+def query_similarity_df(court_id: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Queries database to create judge voting history similarity dataframe and context dataframe.
+    Input: court_id (matching court_id in Court)
+    Output: tuple of (similarity df, context df)
+    - Dataframe where each row is one judge's ruling on one case for the given court
+    - Context dataframe including judge details
+    """
     court = Court.objects.get(court_id=court_id)
+    qset = IndividualOpinion.objects.filter(
+        case__court=court, case__decision_status=True, judge_alias__tenure__isnull=False
+    )
+    if not qset:
+        return (None, None)
     similarity_df = pd.DataFrame(
         list(
             IndividualOpinion.objects.filter(
@@ -59,10 +71,15 @@ def query_similarity_df(court_id):
     return similarity_df, context_df
 
 
-def pivot_similarity_df(df):
-    try:
+def pivot_similarity_df(df: pd.DataFrame) -> pd.DataFrame | None:
+    """
+    Performs a pivot on the judge ruling dataframe to create a feature matrix.
+    Input: dataframe where each row is one judge's ruling on one case for the given court
+    Output: feature matrix dataframe
+    """
+    try:  # Debugging - TODO: more robust checks on data validity
         df = df.pivot(index="case", columns="judge_name", values="ruling")
-    except ValueError as e:
+    except (ValueError, AttributeError) as e:
         print(f"Error: {e}\nCouldn't pivot similarity dataframe.")
         return None
     nona_df = df.fillna(1)
@@ -70,7 +87,12 @@ def pivot_similarity_df(df):
     return feat_mat
 
 
-def mds_embedding(feat_mat):
+def mds_embedding(feat_mat: pd.DataFrame) -> pd.DataFrame:
+    """
+    Apply sklearn MDS embedding method to the feature matrix.
+    Input: feature matrix
+    Output: dataframe of judge names and projected x-y coordinates
+    """
     embedding = MDS(**MDS_CONFIG)
     x_transformed = embedding.fit_transform(feat_mat)
     x, y = x_transformed.transpose()
@@ -79,28 +101,24 @@ def mds_embedding(feat_mat):
     return coords
 
 
-def make_df_to_plot(coords, context):
+def make_df_to_plot(coords: pd.DataFrame, context: pd.DataFrame) -> pd.DataFrame:
+    """
+    Merge coords with context for plotting.
+    """
     judges_mds = coords.merge(context, on="judge_name")
     return judges_mds
 
 
 @cache
-def make_plot(court_id):
-    # court_id = COURT_LOOKUP_LONG[state]
-
+def make_plot(court_id: str) -> pd.DataFrame | None:
+    """
+    Applies the processing pipeline to voting history for a specific court.
+    """
     df, context = query_similarity_df(court_id)
     feat_mat = pivot_similarity_df(df)
     if feat_mat is not None:
         coords = mds_embedding(feat_mat)
         plot_df = make_df_to_plot(coords, context)
-        print(plot_df)
         return plot_df
     else:
         return None
-
-    # alt.Chart(plot_df, title=f"{court_id} Judge Similarity").mark_circle(size=60).encode(
-    #     x=alt.X("x", axis=None),
-    #     y=alt.Y("y", axis=None),
-    #     color="appointer_party",
-    #     tooltip=["judge_name"],
-    # ).interactive()
