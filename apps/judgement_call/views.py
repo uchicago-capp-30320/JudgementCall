@@ -65,24 +65,31 @@ def get_counties(request, state):
 
 
 def judge_sort(judge_lst):
+    """
+    Sorts list of judge dictionaries alphabetically with Chief Justice coming
+    first.
+    """
     ordered_lst = []
 
     for j in judge_lst:
+        # pick out chief justice to add later
         if j["chief_justice"]:
             chief_j = j
         else:
-            if len(ordered_lst) == 0:
-                ordered_lst.append(j)
             for i, sj in enumerate(ordered_lst):
                 if sj["name"] > j["name"]:
-                    ordered_lst.insert((i - 1), j)
+                    ordered_lst.insert(i, j)
+                    break
+            else:
+                ordered_lst.append(j)
 
     return [chief_j] + ordered_lst
 
 
 def build_court_dict(tenures, elections_courts):
     """
-    build courts_dict to get list of judges & infographic
+    Build courts dictionary used in judge_state_county and full_court_view to
+    create judge cards and court demography infographic.
     """
     courts = {}
     # iterate through all the tenures and courts associated with them
@@ -92,8 +99,10 @@ def build_court_dict(tenures, elections_courts):
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = {"judges": [], "id": court.court_id}
+            # courts with upcoming elections
             upcoming_courts = [c.name for c in elections_courts]
             if court_name in upcoming_courts:
+                # turns on upcoming election flag
                 courts[court_name]["upcoming_election"] = True
             else:
                 courts[court_name]["upcoming_election"] = False
@@ -148,7 +157,10 @@ def build_court_dict(tenures, elections_courts):
                 "icons": get_judge_icons(tenure, {}),
             }
         )
-    # courts[court_name]["judges"].sort(key=lambda x: x["name"])
+
+    # sort judges by chief justice then alphabetically
+    for court in courts.keys():
+        courts[court]["judges"] = judge_sort(courts[court]["judges"])
 
     return courts
 
