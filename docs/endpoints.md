@@ -1,3 +1,75 @@
-[Tentative endpoint documentation can be found here.](https://docs.google.com/spreadsheets/d/15if9XTnOo-eCc2ii2QTD-H5dzy37V-oTGCia3Arw1EA/edit?usp=sharing)
+# Endpoint Documentation # 
 
-Git issues prevented us from being able to enter the table here in time for the M4 deadline, but we will recreate our endpoint table here eventually. Our context is more general at this point than hard variable specifics, but we expect to finalize much of this in the upcoming week.
+
+## Key Endpoints ##
+
+### Landing - "/" ###
+/photo/{id}
+
+Parameters: ID (FK to Photo Resource)
+
+Response: HTML page that showcases a single photo.
+
+Template Context Variables:
+
+user : auth.User
+image : Image
+current_version : ImageVersion
+
+### Judges-St-County "judges/<str:state>/<str:county>/" ###
+
+### Court "judges/<str:court_id>/" ###
+
+### Show_Person "people/<int:person_id>/" ###
+
+### Elections-St-County "elections/<str:state>/<str:county>/" ###
+
+### Analysis "analysis/" ###
+
+
+
+
+
+## Mostly Deprecated Endpoints ##
+### Judges "judges/" ###
+
+### Elections "elections/" ###
+
+## Viz Related Endpoints ##
+
+## Predominantly Text Endpoints ##
+
+### About "about/" ###
+
+### 
+
+## Other ##
+
+### Get Counties "api/counties/<str:state>/" ###
+
+
+    path(
+        "judges/<str:state>/<str:county>/",
+        views.judges_state_county,
+        name="judges_state_county",
+    ),
+    path("people/<int:person_id>/", views.show_person, name="show_person"),
+    path("methodology/", views.methodology, name="methodology"),
+    path("about/", views.about, name="about"),
+    path("elections/", views.elections, name="elections"),
+    path(
+        "elections/<str:state>/<str:county>/",
+        views.elections_state_county,
+        name="elections_state_county",
+    ),
+    path("analysis/", views.analysis, name="analysis"),
+    path("analysis/polarization/", views.polarization, name="polarization"),
+    path("analysis/spacejam/", views.spacejam, name="spacejam"),
+    path("api/counties/<str:state>/", views.get_counties, name="get_counties"),
+    path("gantt/", views.gantt, name="gantt"),
+    path(
+        "radar/<str:court_id>/<str2list:persons>/",
+        views.get_individual_opinions_for_radar,
+        name="radar",
+    ),
+    path("spacejam/", views.spacejam_backup, name="spacejam_backup"),
