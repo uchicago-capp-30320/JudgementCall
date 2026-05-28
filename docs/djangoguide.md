@@ -51,8 +51,7 @@ Run all commands from root directory.
 - `uv run manage.py ingest individual-opinions` - will create individual opinion records & link to case records, and will also create alias records for each individual opinion
 - `uv run manage.py ingest county-to-court` - will create geographic crosswalks to courts
 - `uv run manage.py ingest tenures` - will create judge tenure and associated person records (NB: This does not link canonical person name records to aliases)
-- TO BE ADDED
-  - `uv run manage.py ingest elections` - will create election records, each record being a single upcoming seat
-  - `uv run manage.py ingest candidacies` - will create candidacy records & link to election records
+- `uv run manage.py ingest elections` - will create election records, each record being a single upcoming seat
+- `uv run manage.py ingest candidacies` - will create candidacy records & link to election records
 3. Run manage commands in this order:
 - `uv run manage.py match_aliases add=false update=false` - will link canonical person name records to the alias records ingested from cases
