@@ -20,8 +20,8 @@ function RadarChart(id, data, options) {
         lineSpace: 1.2,         //Line spacing between legend items
         wrapWidth: 100, 		//The number of pixels after which a label needs to be given a new line
         opacityArea: 0.5, 	    //The base opacity of the area of the blob
-        opacityAreaLow: 0.35, 	//The opacity of the area of the blob when another area is hovered over
-        opacityAreaHigh: 0.7, 	//The opacity of the area of the blob when hovered over
+        opacityAreaLow: 0.15, 	//The opacity of the area of the blob when another area is hovered over
+        opacityAreaHigh: 0.75, 	//The opacity of the area of the blob when hovered over
         dotRadius: 8, 			//The size of the colored circles of each blog
         opacityCircles: 0.1, 	//The opacity of the circles of each blob
         strokeWidth: 2, 		//The width of the stroke around each blob
@@ -283,7 +283,7 @@ function RadarChart(id, data, options) {
         .attr("class", function(d,i) {
             return "radarLegendIcon" + " " + `group-${i}`
         })
-        .style("fill", function(d,i) { return cfg.color(i); })
+        .style("fill", function(d,i) { return cfg.color(d[0].name); })
         .style("filter" , "url(#glow)")
         .on("mouseover", function (d,i){
             handle_mouseover_fades(d,i);
