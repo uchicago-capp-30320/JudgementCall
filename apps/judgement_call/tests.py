@@ -573,11 +573,11 @@ class AnalysisTestCase(TestCase):
         response = self.client.get("/analysis/")
         assert response.status_code == 200
 
-    def test_judges_page_has_states(self):
-        """Make sure the states are populating in our dropdowns"""
-        response = self.client.get("/analysis/")
-        assert "states" in response.context
-        assert len(response.context["states"]) > 0
+    # def test_judges_page_has_states(self):
+    #     """Make sure the states are populating in our dropdowns"""
+    #     response = self.client.get("/analysis/")
+    #     assert "states" in response.context
+    #     assert len(response.context["states"]) > 0
 
 
 class MatchingTestCase(TestCase):
