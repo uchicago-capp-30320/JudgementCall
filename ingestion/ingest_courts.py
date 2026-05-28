@@ -1,6 +1,7 @@
 """
 One-off ingestion functions to create court records.
-Currently return pandas dataframes.
+Creates csv files for NCSC, Courtlistener and merged data, if they don't already exist,
+for use in ingest.py.
 
 Sources:
 - CourtListener API - https://www.courtlistener.com/api/rest/v4/courts/

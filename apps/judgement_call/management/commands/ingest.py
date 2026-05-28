@@ -1,19 +1,14 @@
 import csv
 import pathlib
-import string
 import json
 import us
-from pathlib import Path
 from tqdm import tqdm
 from dateutil.parser import parse
 from django_typer.management import Typer
 from ingestion.setup_us_states_counties import make_county_to_court_df
 from ingestion.ingest_courts import MERGED_COURTS_PATH
 from ingestion.merge_wiki_slri import OUTPUT_CSV as MERGED_JUDGES_PATH
-from ingestion.state_crosswalks import (
-    COURT_LOOKUP_LONG,
-    COURT_LOOKUP_SHORT,
-)
+from ingestion.state_crosswalks import COURT_LOOKUP_LONG
 from datetime import date, datetime
 from apps.judgement_call.models import (
     Court,
@@ -25,8 +20,6 @@ from apps.judgement_call.models import (
     Tenure,
     Alias,
     SelectionType,
-    PersonGender,
-    PersonRace,
     PartyAffiliation,
     Election,
     Candidacy,
@@ -37,7 +30,11 @@ ELECTIONS_CSV = "./data/elections/bp_elections.csv"
 CANDIDACIES_CSV = "./data/elections/bp_candidacies.csv"
 
 """
-
+Management commands for initial ingestion of data.
+Courts and counties are considered to be static; changes to these objects will be handled manually
+on a case-by-case basis.
+Continuous ingestion for cases is currently implemented in scrape_cases.py.
+Future development: integrate continuous ingestion for tenures (checking for changes to Wikipedia)
 """
 
 app = Typer()
@@ -45,6 +42,11 @@ app = Typer()
 
 @app.command()
 def command(self, data: str):
+    """
+    Ingestion commands for static data. To populate a new database on setup, ensure that courts
+    and tenure csv files are created, then run `manage.py ingest <data>` in the below order.
+    TODO: implement a verbose flag to print data during ingestion
+    """
     if data == "courts":
         count_courts = 0
         count_courts_created = 0
@@ -57,11 +59,8 @@ def command(self, data: str):
                 for row in tqdm(reader):
                     court = dict(zip(headers, row))
                     numeric_fields = ["bench_size", "term_length"]
-
                     for field in numeric_fields:
                         court[field] = empty_string_to_none(court[field])
-
-                    # print(court) #todo: verbose flag
                     court, created = Court.objects.update_or_create(
                         court_id=court["court_id"], defaults={**court}
                     )
@@ -69,7 +68,6 @@ def command(self, data: str):
                     if created:
                         count_courts_created += 1
 
-                    # print(court, created)
         print(f"courts: {count_courts}, created: {count_courts_created}")
 
     if data == "county-to-court":
@@ -86,20 +84,18 @@ def command(self, data: str):
             count_countytocourts += 1
             if created:
                 count_countytocourts_created += 1
-            # print(f"county:{countytocourt}, created: {created}, added court: {lookup_court}")
         print(f"countytocourts: {count_countytocourts}, created: {count_countytocourts_created}")
 
     if data == "cases":
+        # hard coded the metadata file path for the original run
         with open("./data/run_metadata/llm_run_05-15-2026.json") as file:
             d = json.load(file)
             d.pop("cases_processed")
             d["timestamp"] = datetime.strptime(d["timestamp"], "%m-%d-%Y")
             cpr, cpr_created = CaseProcessingRun.objects.get_or_create(**d)
-            print(cpr, cpr_created)
 
         cases_created = 0
         for state in us.STATES:
-            print(state.name)
             state_case_path = pathlib.Path(f"./data/cases/{state.name}.csv")
             print(f"{state.name} file found: {state_case_path.is_file()}")
 
@@ -116,14 +112,14 @@ def command(self, data: str):
                     case_dict = build_case(row_dict)
                     case_dict["court"] = lookup_court
                     case_dict["case_processing_run"] = cpr
-                    #
                     if len(case_dict["document_url"]) > 200:
+                        # Django restriction on URL length
+                        # TODO: handle too-long urls
                         print(f"URL too long: {case_dict['document_url']} ({case_dict['case_id']})")
                         case_dict["document_url"] = None
                     case, created = Case.objects.update_or_create(
                         case_id=case_dict["case_id"], defaults=case_dict
                     )
-                    print(case, created)
                     cases_created += created
         print(f"Cases created: {cases_created}")
 
@@ -131,7 +127,6 @@ def command(self, data: str):
         opinions_created = 0
 
         for state in us.STATES:
-            print(state.name)
             state_opinion_path = pathlib.Path(f"./data/opinions/{state.name}.csv")
             print(f"{state.name} file found: {state_opinion_path.is_file()}")
             court_id = COURT_LOOKUP_LONG[state.name]
@@ -158,7 +153,6 @@ def command(self, data: str):
                     indop, created = IndividualOpinion.objects.update_or_create(
                         case=lookup_case, judge_alias=alias, defaults=indop
                     )
-                    print(indop, created)
                     opinions_created += created
             print(f"Opinions created: {opinions_created}")
 
@@ -173,8 +167,6 @@ def command(self, data: str):
                 judge = dict(zip(headers, row))
                 # quick fix for missing underscore, need to change in scraper
                 judge["professional_experience"] = judge["professional experience"]
-                print(judge["next election date"])
-                print(judge)
                 # handle dates
                 for field in date_fields:
                     year = year_only(judge.get(field))
@@ -215,6 +207,7 @@ def command(self, data: str):
                 election = dict(zip(headers, row))
                 court_id = COURT_LOOKUP_LONG[election["state"]]
                 court_obj = Court.objects.get(court_id=court_id)
+                # TODO: implement name matching step for candidacy ingestion
                 # tenure_obj = Tenure.objects.get(person__name_canonical=election["incumbent"])
                 election_date = datetime.strptime(election["election_date"], "%Y-%m-%d")
                 if election["filing_deadline"] != "":
@@ -231,10 +224,10 @@ def command(self, data: str):
                         "incumbent": None,
                     },
                 )
-                print(election, created)
                 count_elections += 1
                 if created:
                     count_elections_created += 1
+        print(f"elections: {count_elections}, created: {count_elections_created}")
 
     if data == "candidacies":
         count_candidacies = 0
@@ -250,11 +243,9 @@ def command(self, data: str):
                 person_name = candidacy["name"]
                 election_obj = Election.objects.get(election_id=election_id)
                 person_obj, created = Person.objects.get_or_create(name_canonical=person_name)
-                print(election_obj, person_obj)
                 candidate, created = Candidacy.objects.update_or_create(
                     election=election_obj, person=person_obj
                 )
-                print(candidate, created)
                 count_candidacies += 1
                 if created:
                     count_candidacies_created += 1
@@ -323,28 +314,6 @@ def build_tenure(row_dict: dict):
     return court_id, defaults
 
 
-slri_race = {
-    "white": PersonRace.WHITE,
-    "black": PersonRace.BLACK,
-    "asian american": PersonRace.ASIAN,
-    "pacific islander": PersonRace.NHPI,
-}
-
-slri_gender = {
-    "male": PersonGender.MALE,
-    "female": PersonGender.FEMALE,
-}
-
-slri_selection_type = {
-    "elected, nonpartisan": SelectionType.NONPARTISAN,
-    "elected, partisan": SelectionType.PARTISAN,
-    "appointed": SelectionType.APPOINTMENT,
-    "appointed, leg confirmed": SelectionType.APPOINTMENT,
-    "appointed, retention elected": SelectionType.RETENTION,
-    "appointed, leg confirmed, retention elected": SelectionType.RETENTION,
-}
-
-
 def slri_selection_type_parse(slri_selection_type):
     if "elected, nonpartisan" in slri_selection_type:
         return SelectionType.NONPARTISAN
@@ -377,18 +346,20 @@ party_mapping = {
 indop_csv_cols = ["case_id", "name", "description", "ruling"]
 
 case_csv_cols = [
-    # "",
     "case_id",
     "docket_no",
     "title",
     "state",
     "date",
     "type",
+    "opinion_link",
     "description",
     "plaintiff_argument",
     "defendant_argument",
     "decision_outcome",
     "decision_winner",
+    # ------------
+    # rights topics
     "environment",
     "consumers",
     "reproductive_rights",
@@ -404,11 +375,9 @@ case_csv_cols = [
 ]
 
 case_model_cols = [
-    # "",
     "case_id",
     "docket_no",
     "case_title",
-    # "state",
     "decision_date",
     "case_type",
     "description",
