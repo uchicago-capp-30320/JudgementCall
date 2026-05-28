@@ -373,7 +373,8 @@ class Case(models.Model):
     document_url = models.URLField(blank=True, null=True)
     case_processing_run = models.ForeignKey(CaseProcessingRun, on_delete=models.SET_NULL, null=True)
 
-    def topic_flags(self):
+    @staticmethod
+    def topic_flags():
         return [
             "environment",
             "consumers",

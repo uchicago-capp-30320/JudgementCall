@@ -21,7 +21,7 @@ def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
     """
     # Calculating the percentage of times each court is protecting a political
     # dimension.
-    political_dimensions = [field.name for field in Case._meta.get_fields()][14:-2]
+    political_dimensions = Case.topic_flags()
     annotator = {}
     for dim in political_dimensions:
         annotator[dim] = (

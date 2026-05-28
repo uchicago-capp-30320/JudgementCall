@@ -37,7 +37,7 @@
     //////////////////// Draw the Chart //////////////////////////
     //////////////////////////////////////////////////////////////
 
-    const fullPalette = ["#40B0A6", "#E1BE6A", "#e649cb", "#44db6c"];
+    const fullPalette = ["#40B0A6", "#E1BE6A", "#f590e4", "#79e896", "#7d432f", "#3f4ea6"];
 
 
     updateRadar = function updateRadar(activeJudgeNames) {
@@ -68,8 +68,6 @@
                     roundStrokes: true,
                     color: color
                 };
-                console.log("DOMAIN:", color.domain());
-                console.log("RANGE:", color.range());
                 RadarChart(".radarChart", data, radarChartOptions);
             })
     }
