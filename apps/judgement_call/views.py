@@ -574,7 +574,7 @@ def spacejam(request):
     Multidimensional Scaling chart implemented on Analysis page with dropdown
     form.
     """
-    mds_data = None
+    mds_data_json = None
     court_name = None
     form = SpacejamForm(request.GET if "state" in request.GET else None)
 
@@ -582,11 +582,12 @@ def spacejam(request):
         court_id = form.cleaned_data["state"]
         court = Court.objects.get(court_id=court_id)
         court_name = court.name
-        mds_data = make_mds_plot(court_id).to_json()
+        mds_data = make_mds_plot(court_id)
+        mds_data_json = mds_data.to_json() if mds_data is not None else None
 
     context = {
         "form": form,
-        "mds_data": mds_data,
+        "mds_data": mds_data_json,
         "court_name": court_name,
         "state": request.session.get("state"),
         "county": request.session.get("county"),
@@ -598,11 +599,12 @@ def spacejam(request):
 def spacejam_backup(request):
     """Old spacejam view. Can still see raw chart at /spacejam_backup/<courtid>"""
 
-    state = request.GET.get("state", "AZSUP")
-    court = Court.objects.get(court_id=state)
-    mds_data = make_mds_plot(state)
+    court_id = request.GET.get("state", "AZSUP")
+    court = Court.objects.get(court_id=court_id)
+    mds_data = make_mds_plot(court_id)
+    mds_data_json = mds_data.to_json() if mds_data is not None else None
 
-    context = {"mds_data": mds_data.to_json(), "court_id": state, "court_name": court.name}
+    context = {"mds_data": mds_data_json, "court_id": court_id, "court_name": court.name}
 
     return render(request, "mds.html", context)
 
