@@ -236,6 +236,9 @@ def court_full_view(request, court_id):
 
 
 def show_person(request, person_id):
+    """
+    Detailed view for an individual judge or person.
+    """
     person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
     indops = IndividualOpinion.objects.filter(

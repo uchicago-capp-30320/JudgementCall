@@ -47,6 +47,17 @@ gantt_data": court.gantt_json().text
 "fallback_url": fallback url to judges_state_county
 
 ### Show_Person "people/<int:person_id>/" ###
+Parameters: person_id
+
+Response: Detailed profile of person with previous judicial experience.
+
+Template Context Variables:
+"person": person_info
+"tenures": person_tenures
+"topic_icons": get_topic_icons(person)
+"opinions": person_opinions
+"state": state
+"county": county
 
 ### Elections-St-County "elections/<str:state>/<str:county>/" ###
 
