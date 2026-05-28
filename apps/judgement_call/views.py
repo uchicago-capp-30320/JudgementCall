@@ -200,20 +200,29 @@ def judges_state_county(request, state, county):
 
 
 def court_full_view(request, court_id):
+    """
+    Creates detailed court-level analytics view with infographic, judge listings,
+    tenure, and ruling compatibility radar chart.
+    """
+    # retrieve relevant court
     court = Court.objects.get(court_id=court_id)
+    # retrieve tenures to build court dict
     tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
         court=court, end_date__gt=timezone.now()
     )
     _, upcoming_courts = get_upcoming_elections([court])
     court_formatted = build_court_dict(tenures, upcoming_courts)
+    # for this view we only need the one court
     details = court_formatted[court.name]
 
+    # some weird string handling with states/counties
     if request.session.get("state") and request.session.get("county"):
         state = request.session.get("state").strip(
             "()',",
         )
         county = request.session.get("county").strip("()',")
     else:
+        # redirect to initial dropdown if no sessions geodata
         return redirect("judgement_call:landing")
 
     context = {
@@ -223,7 +232,6 @@ def court_full_view(request, court_id):
         "details": details,
         "gantt_data": court.gantt_json().text,
         "radar_data": [],
-        # get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
         "state": state,
         "county": county,
         "fallback_url": reverse(
