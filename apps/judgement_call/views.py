@@ -25,10 +25,12 @@ from analysis.polarization_choropleth import produce_data, create_choropleth
 from analysis.spacejam import make_plot as make_mds_plot
 
 
-# comment to push
 def judges(request):
-    """Judges landing page. Has dropdowns to find your judges."""
-
+    """
+    Original judges landing page. Has dropdowns to get state and county for
+    customized judge viewing.
+    """
+    # redirect to custom view upon receiving state/county
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
@@ -41,8 +43,6 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
-        # "radar_data": get_radar_example_data(request),
-        "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
         "fallback_url": reverse("judgement_call:landing"),
         "state": request.session.get("state"),
