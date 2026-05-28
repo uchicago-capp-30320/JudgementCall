@@ -8,6 +8,17 @@ from apps.judgement_call.models import Court, CountyToCourt, Case
 
 
 def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
+    """
+    Inputs:
+    - court_type: str (the court type. eg., Supreme Court)
+    - geo_unit: str (The greographical unit for the choropleth data)
+
+    Outputs:
+    - pd.DataFrame (a dataframe with the choropleth data)
+
+    This function generates the data necessary to create a choropleth with
+    plotly express.
+    """
     # Calculating the percentage of times each court is protecting a political
     # dimension.
     political_dimensions = [field.name for field in Case._meta.get_fields()][14:-2]
@@ -56,6 +67,16 @@ def produce_data(court_type: str = "Supreme Court", geo_unit: str = "state"):
 
 
 def create_choropleth(map_data: pd.DataFrame, dimension: str = None, geo_unit: str = "state"):
+    """
+    Inputs:
+    - map_data: pd.DataFrame (the data produced by produce_data())
+    - dimension: str (the political dimension to observe in the choropleth
+                      e.g., worker_rights)
+    - geo_unit: str (the geographical unit to produce the map)
+
+    Outputs:
+    - fig: px.choropleth (the choropleth produced with the data)
+    """
     # Creating choropleth
     if dimension is not None:
         fig = px.choropleth(
@@ -64,7 +85,7 @@ def create_choropleth(map_data: pd.DataFrame, dimension: str = None, geo_unit: s
             locationmode="USA-states",
             scope="usa",
             color=dimension,
-            color_continuous_scale="Spectral",
+            color_continuous_scale="Greys",
         )
     else:
         fig = px.choropleth(
