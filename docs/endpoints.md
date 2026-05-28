@@ -5,15 +5,16 @@
 
 ### Landing - "/" ###
 
-Parameters: ID (FK to Photo Resource)
+Parameters: None
 
-Response: HTML page that showcases a single photo.
+Response: HTML page that shows dropdown, which upon completion generates 3 buttons.
 
 Template Context Variables:
 
-user : auth.User
-image : Image
-current_version : ImageVersion
+"button_name": """Start Exploring"""
+"states": US_STATES
+"state": state
+"county": county
 
 ### Judges-St-County "judges/<str:state>/<str:county>/" ###
 
@@ -36,6 +37,7 @@ Parameters: court_id
 Response: Judicial dashboard with judge cards, infographic, tenure and radar charts.
 
 Template Context Variables:
+
 "court": court
 "court_id": court_id
 "court_formatted": court_formatted
@@ -52,6 +54,7 @@ Parameters: person_id
 Response: Detailed profile of person with previous judicial experience.
 
 Template Context Variables:
+
 "person": person_info
 "tenures": person_tenures
 "topic_icons": get_topic_icons(person)
@@ -60,10 +63,34 @@ Template Context Variables:
 "county": county
 
 ### Elections-St-County "elections/<str:state>/<str:county>/" ###
+Parameters: state, county
+
+Response: HTML page with list of collapsibles representing courts, containing
+buttons to court-level analytics as well as previews of candidates on judge cards.
+
+Template Context Variables:
+"person": person_info
+"tenures": person_tenures
+"topic_icons": get_topic_icons(person)
+"opinions": person_opinions
+"state": state
+"county": county
 
 ### Analysis "analysis/" ###
 
+Parameters: state, county
 
+Response: HTML page with links to two high-level visualizations.
+
+Template Context Variables:
+
+"header": "Analysis"
+"preamble": """Please explore our visualizations exploring high-level
+judicial analytics."""
+"states": US_STATES
+"fallback_url": reverse("judgement_call:landing")
+"state": state
+"county": county
 
 
 
@@ -85,8 +112,31 @@ Template Context Variables:
 "county": request.session.get("county")
 
 ### Elections "elections/" ###
+Parameters: request
+
+Response: HTML page with state and county dropdown. Redirects upon submission,
+skips if cached geodata available.
+
+Template Context Variables:
+
+"header": "Elections"
+"preamble": """Informed voting is important. Please select your state
+and county to learn about any upcoming judicial elections."""
+"button_name": "Find Elections"
+"fallback_url": reverse("judgement_call:landing")
+"state": state
+"county": county
 
 ## Viz Related Endpoints ##
+Parameters: state (optional)
+
+Response: HTML page with SVG rendering of judicial tenure chart by state
+
+Template Context Variables:
+
+"gantt_data": json.text
+"court_id": state
+"court_name": court.name
 
 ## Predominantly Text Endpoints ##
 

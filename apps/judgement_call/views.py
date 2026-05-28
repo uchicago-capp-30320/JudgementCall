@@ -631,7 +631,6 @@ def analysis(request):
         "header": "Analysis",
         "preamble": """Please explore our visualizations exploring high-level
         judicial analytics.""",
-        "states": US_STATES,
         "fallback_url": reverse("judgement_call:landing"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),

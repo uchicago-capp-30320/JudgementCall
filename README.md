@@ -25,12 +25,12 @@ Run `uv sync` after the repository is added to your local machine with `git clon
 - `templates/` - Django frontend templates.
 
 ## Team
-- Riley Morrison
-- Maggie Larson
 - Liberto de Pablo
-- Riley Kouns
-- Callie Leone
 - Alexandrea Harriott
+- Riley Kouns
+- Maggie Larson
+- Callie Leone
+- Riley Morrison
 
 ## Project Management Kanban
 Link: https://harriscapp.slack.com/lists/T0ABLBHJB/F0ASJAMQGN5
