@@ -19,6 +19,21 @@ current_version : ImageVersion
 
 ### Court "judges/<str:court_id>/" ###
 
+Parameters: court_id
+
+Response: Judicial dashboard with judge cards, infographic, tenure and radar charts.
+
+Template Context Variables:
+"court": court
+"court_id": court_id
+"court_formatted": court_formatted
+"details": details
+gantt_data": court.gantt_json().text
+"radar_data": []
+"state": state
+"county": county
+"fallback_url": fallback url to judges_state_county
+
 ### Show_Person "people/<int:person_id>/" ###
 
 ### Elections-St-County "elections/<str:state>/<str:county>/" ###
