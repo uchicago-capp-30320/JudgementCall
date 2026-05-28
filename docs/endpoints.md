@@ -4,7 +4,6 @@
 ## Key Endpoints ##
 
 ### Landing - "/" ###
-/photo/{id}
 
 Parameters: ID (FK to Photo Resource)
 
@@ -32,6 +31,20 @@ current_version : ImageVersion
 
 ## Mostly Deprecated Endpoints ##
 ### Judges "judges/" ###
+Parameters: request
+
+Response: HTML page with state and county dropdown. Redirects upon submission,
+skips if cached geodata available.
+
+Template Context Variables:
+
+"header": title
+"preamble": blurb_about_page
+"states": US_STATES
+"button_name": "Find judges"
+"fallback_url": reverse("judgement_call:landing")
+"state": request.session.get("state")
+"county": request.session.get("county")
 
 ### Elections "elections/" ###
 
@@ -46,6 +59,11 @@ current_version : ImageVersion
 ## Other ##
 
 ### Get Counties "api/counties/<str:state>/" ###
+Parameters: state
+
+Response: API that returns available counties in that state to second dropdown.
+
+Template Context Variables: N/A
 
 
     path(

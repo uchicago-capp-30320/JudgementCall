@@ -53,7 +53,7 @@ def judges(request):
 
 
 def get_counties(request, state):
-    """API to enable the javascript to fill the counties dropdown"""
+    """API to enable the JavaScript to fill out the counties dropdown."""
     # based on given state, filter C2C table, return list of distinct counties
     counties = (
         CountyToCourt.objects.filter(state=state)
