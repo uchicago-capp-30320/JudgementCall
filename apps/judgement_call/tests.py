@@ -572,7 +572,6 @@ class AnalysisTestCase(TestCase):
         response = self.client.get("/analysis/")
         assert response.status_code == 200
 
-<<<<<<< HEAD
     def test_analysis_page_has_states(self):
         """Make sure the states are populating in our dropdowns"""
         response = self.client.get("/analysis/")
