@@ -39,6 +39,13 @@ app = Typer()
 
 class Command(BaseCommand):
     def handle(self, **options):
+        """
+        This function performs an incremental scrape of State Case Database
+        that also updates the file ../data/cases_scdb.csv. If new cases are
+        detected (as in not in the database) they are processed through
+        Gemini with produce_tables(), populating the Case, Alias,
+        CaseProcessingRun, and InvidivualOpinion tables.
+        """
         # Scrape State Case Database
         all_current_cases = scrape_scdb(write_on=True, incremental=True)
 

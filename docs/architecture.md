@@ -4,14 +4,20 @@ The Judgement Call project is aimed at informing voters and citizens about their
 
 The project pulls data from a variety of sources to provide a centralized resource for voters in judicial elections.
 
+![Architecture chart](images/general_architecture.png)
+
 ### Data acquisition and pre-processing
 
-This section describes the procces through which real data is acquired, and processed on, as it enters the database. This operation occurs in two contexts:
+Data acquisition and pre-processing operation occurs in two contexts:
 
 1. *Initial ingestion*: this is the import that takes several hours to run and produces all of the data required to use the application.
 2. *Continuous ingestion:* this is an import that runs every evening, updating the database with the latest information on cases.
 
-The summary below provides is a high-level perspective of data acquist
+#### Courts
+
+The information regarding courts are merged from the outputo of webscraping and REST API calls.
+
+![Court data flow](images/court_ingest.png)
 
 #### Cases & individual opinions
 
@@ -27,56 +33,74 @@ The information regarding judges, ranging from tenure specifics to demographics,
 
 #### Elections & Candidates
 
+Our current information regarding elections and candidates was manually webscraped from BallotPedia.
 
+### Insertion into database
 
-### Modules
+The previous high-level summaries of data acquisition produce `.csv` files that are then entered into the database through the management command designed in `ingest.py`. This uses an additional geographic component populating a `countytocourt` table that leverages Python's `us` library to match court ID codes from CourtListener with counties and states.
 
-#### Ingestion
+### Backend processing
 
-The ingestion module contains both one-off scrapers used to create our long-lived datasets and continuous ingestion scrapers which (will) run nightly to update our case and opinion data.
+Once the data makes its way into the database, the app works with the following data model:
 
-- Case / Opinion
-    -	CourtListener
-    -	[State Case Database](https://statecourtreport.org/state-case-database)
-        - `ingest_sc_cases.py` - daily ingestion
+![Data model](images/JC_Data_Model.png)
 
-- Tenure / Person
-    -	Wikipedia
-        - to be implemented
-    -	Ballotpedia
-        - to be implemented
-    -   [State Law Research Initiative](https://state-law-research.org/state-justices/)
-        - `ingest_sc_judges.py` - low-frequency ingestion
+The most relevant sections of the backend consist of making queries using Django's ORM to produce views of judges and people, performing analysis, and management commands:
 
-- Court
-    -   CourtListener: authoritative source for existing state level courts
-    -   [Web archive of National Center for State Courts](http://web.archive.org/web/20211129172422/http://judicialselection.us/judicial_selection/methods/selection_of_judges.cfm?state="): one-off ingestion of court type, bench size, selection and retention methods
-        - `ingest_courts_data.py`
-        - `merge_courts_data.py`
-    - Authoritative source: state constitutions
+![Backend description](images\backend_desc.png)
 
-- Election / Candidacy
-    -   There is no authoritative source on all state court elections; we can "guess" from tenure end dates and selection methods which courts have upcoming elections, and manually verify
-    -   As a starting point, we have a list of upcoming elections sourced from Ballotpedia
+#### match_aliases.py
 
-Next in the ingestion process, also rely on merging data sources and processing tables:
+As individual judge opinions entered the database, the aliases that appeared on court documents were stored in an `Alias` table. We used a record linkage command designed in `utils/matching.py` to match these aliases to actual Judge tenures (with a current match rate of ~57%).
 
--   Use of LLM tools (analyze court documents and extract information) to generate case and opinion tables
-    - Currently being developed in `llm_processing.ipynb`
+![Matching algorithm](images/matching_desc.png)
 
--   Generating tenure tables
-    - To be implemented
+#### generate_elections.py
 
--   Generating election and candidacy tables
-    - To be implemented
+Although this command is not called in the ingestion pipeline, it deduces election dates in courts based off of records in the `Tenure` table using their selection type and term end.
 
-A final step in ingestion will centralize the generation of every table except for cases and
-opinions, which are updated daily, into a single script that can be run in the command line.
+#### scrape_cases.py
+
+This command is at the core of this application's continuous ingestion of data. It is run every night along with `match_aliases`. It performs an incremental webscrape of State Case Database and repeats data processing through Gemini before entering them into the database. This process updates the `Case`, `IndividualOpinion`, `CaseProcessingRun`, and `Alias` tables.
+
+#### views.py
+
+This file contains a crucial component for this application's functioning which is the creation of speed views (Django ORM query results and additional computation) that respond to endpoints on the frontend. There are a few key functions in this file:
+
+- *full_court_view()*: this function fetches a single court by ID using state and county geographic information, queries all of the current judge tenures for that state, and performs high level computations on the court (e.g., average age, race breakdown, etc).
+
+- *show_person()*: this function is a combination of others that centralizes information about a given person including every tenure they've held, all of the cases they rules on, how they generally ruled on those cases, and demographic information.
+
+- *elections_state_county()*: this function gathers election future near elections given a court's identifiable geographic information from the `Elections` table and generates a list of candidates when applicable.
+
+- *analysis_state_county()*: this function uses a court's information to prepares data for the Gantt chart of a court's tenures, and performs the radar computation.
+
+#### icons.py
+
+This file contains that code that is deployed when deciding what icons appear next to a judge. It computes simple badges describing a judge's tenure (i.e., if they've been there for long & if their tenure is almost finished). It then goes through a series of computations to generate each tenures' topic icons, deducing if a judge has a tendency to infringe/protect a specific civil right from the `IndividualOpinion` table.
 
 #### Analysis
 
-The analysis module will contain any functionality related to analysis of stored data, including calculation of judge similarity scores.
+Our analysis module contains the code that creates the polarization choropleth as and the spacejam visualizations. These are designed to be responsive to the outputs from the classes in `forms.py`.
 
-#### Front end
+### Front end
 
-The website will create speed views using the generated tables through ingestion and back end analysis to respond to user queries on the front end.
+#### Connection to backend
+
+The `urls.py` file is the dictionary that connects the endpoints that require loading data from the database with the Django ORM queries written in `views.py`.
+
+#### Structure
+
+The different page templates are shown in the chart below in relation to each other:
+
+![Frontend chart](images/frontend.png)
+
+### Architecture limitations
+
+The current architectures overrelies on `.csv` files. Every script in the `ingestion` module outputs `.csv` files. A future data engineering task should remove the intermediate step.
+
+The current record linkage project only has a match-rate of ~57%, leaving 43% of individual opinions unmatched to a real tenure. Improvement on this matching rate requires more refined record linkage, and real data on previous tenures.
+
+The radar chart is limited to only showing the last two judges that were selected. A more dynamic method of selecting judges for the radar charts is in order for future improvement.
+
+There is no mechanism to update the elections and candidacies after the 2026 election. Similarly, there is no mechanism to update the judges.
