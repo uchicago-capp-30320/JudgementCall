@@ -435,7 +435,8 @@ def quick_name_tidy(name):
 
 def get_candidate_info(can):
     """
-    I forget, honestly
+    Cleans certain candidate names, checks if tenures exist, returns minimum
+    necessary details for each non-judge person.
     """
     name = can.person.name_canonical
     if name.endswith("(R)") or name.endswith("(D)") or name.endswith("Nonpartisan"):
