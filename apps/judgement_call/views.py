@@ -340,7 +340,10 @@ def show_person(request, person_id):
 
 
 def landing(request):
-    """Landing page for Judgement Call users."""
+    """
+    Landing page for Judgement Call users. If no sessions data, populates
+    dropdown prompting them to select their state and county.
+    """
 
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
@@ -361,7 +364,7 @@ def landing(request):
 
 
 def about(request):
-    """About page."""
+    """Team about page."""
     context = {
         "msg": "<About for this project.>",
         "state": request.session.get("state"),
@@ -383,7 +386,10 @@ def methodology(request):
 
 
 def elections(request):
-    """Elections landing page."""
+    """
+    Original elections landing page. Has dropdowns to get state and county for
+    customized elections viewing.
+    """
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
@@ -407,10 +413,15 @@ def elections(request):
 
 
 def quick_name_tidy(name):
-    """to address some weirdness with candidate names"""
+    """
+    Regex implementation to reformat candidates whose party affiliations
+    accidentally got scraped in with their names. Returns name and party
+    separated.
+    """
     pattern = r"\s*(\(D\)|\(R\)|\(Nonpartisan\))"
     parts = re.split(pattern, name)
     cleaned = [p.strip() for p in parts if p]
+
     if cleaned[1] == "(R)" or cleaned[0] == "(Republican)":
         clean_party = "Republican"
     elif cleaned[1] == "(D)" or cleaned[0] == "(Democrat)":
@@ -423,21 +434,15 @@ def quick_name_tidy(name):
 
 
 def get_candidate_info(can):
-    """helper for elections_state_county"""
-    # on_bench = check_incumbent(can, cour)
+    """
+    I forget, honestly
+    """
     name = can.person.name_canonical
     if name.endswith("(R)") or name.endswith("(D)") or name.endswith("Nonpartisan"):
         name, party = quick_name_tidy(name)
     else:
         party = can.person.party_registration
-    # return {
-    #     "name": name,
-    #     "party_registration": party,
-    #     "more_info": f"/people/{can.person.id}/",
-    #     # "incumbent": on_bench,
-    # }
 
-    # check if this person has ever been a judge
     has_tenures = Tenure.objects.filter(person=can.person).exists()
 
     info = {
@@ -454,7 +459,8 @@ def get_candidate_info(can):
 
 def get_upcoming_elections(relevant_courts):
     """
-    Takes in QSet of courts and returns those with nearest associated election date
+    Takes QSet of courts, looks at soonest election date, returns courts from
+    QSet that have an election on that soonest election date.
     """
     next_event = (
         Election.objects.filter(election_date__gte=datetime.now())
@@ -478,7 +484,7 @@ def get_upcoming_elections(relevant_courts):
 
 def alternate_get_elections(relevant_courts):
     """
-    Takes in QSet of courts and returns those with election in next 6mo
+    Takes in QSet of courts and returns those with election in next 6 months.
     """
     start_date = timezone.now()
     six_mo_from_now = start_date.month + 6
@@ -493,7 +499,10 @@ def alternate_get_elections(relevant_courts):
 
 
 def check_incumbent(candidate, court):
-    """Takes a candidate and T/F if currently sitting on election bench"""
+    """
+    Takes a candidate and T/F if currently sitting on election bench.
+    Intended to be used in elections page to signal retention elections.
+    """
     tenures = Tenure.objects.filter(person=candidate.person)
     been_judge = tenures.exists()
     if been_judge:
@@ -508,6 +517,9 @@ def check_incumbent(candidate, court):
 
 
 def elections_state_county(request, state, county):
+    """
+    Custom elections summary view based on state and county.
+    """
     # grab all the courts associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
     if not geo_c2c.exists():
@@ -540,17 +552,8 @@ def elections_state_county(request, state, county):
     return render(request, "elections_state_county.html", context)
 
 
-def candidates(request):
-    """Elections landing page."""
-    context = {
-        "msg": "Pending",
-    }
-
-    return render(request, "dropdown.html", context)
-
-
 def gantt(request):
-    """Gantt chart prototype."""
+    """Gantt chart implemented on courts view."""
 
     state = request.GET.get("state", "AZSUP")
     court = Court.objects.get(court_id=state)
@@ -562,6 +565,10 @@ def gantt(request):
 
 
 def spacejam(request):
+    """
+    Multidimensional Scaling chart implemented on Analysis page with dropdown
+    form.
+    """
     mds_data_json = None
     court_name = None
     form = SpacejamForm(request.GET if "state" in request.GET else None)
@@ -585,7 +592,7 @@ def spacejam(request):
 
 
 def spacejam_backup(request):
-    """MDS chart prototype."""
+    """Old spacejam view. Can still see raw chart at /spacejam_backup/<courtid>"""
 
     court_id = request.GET.get("state", "AZSUP")
     court = Court.objects.get(court_id=court_id)
@@ -599,7 +606,7 @@ def spacejam_backup(request):
 
 def get_current_judges_for_court(court_id):
     """
-    Helper function to generate radar chart data for analysis page.
+    Helper function to list of judges for radar chart.
     """
     return list(
         (
@@ -625,7 +632,6 @@ def analysis(request):
         "preamble": """Please explore our visualizations exploring high-level
         judicial analytics.""",
         "states": US_STATES,
-        "button_name": "Generate Analytics",
         "fallback_url": reverse("judgement_call:landing"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),
@@ -635,6 +641,11 @@ def analysis(request):
 
 
 def get_choropleth(request):
+    """
+    Helper function that uses form input to generate dynamic Plotly polarization
+    chart output.
+    """
+
     chart_html = None
     if "dimension" in request.GET:
         form = ChoroplethForm(request.GET)
@@ -654,6 +665,9 @@ def get_choropleth(request):
 
 
 def polarization(request):
+    """
+    Gets choropleth data and pushes to polarization template.
+    """
     choro_dict = get_choropleth(request)
     context = {
         "state": request.session.get("state"),
@@ -668,7 +682,10 @@ def polarization(request):
 
 
 def analysis_state_county(request, state, county):
-    """Analysis landing page."""
+    """
+    Old version of analysis view that assumed radar and gantt charts would be
+    on the analysis page.
+    """
 
     court_id = None
     court_name = None
@@ -689,13 +706,8 @@ def analysis_state_county(request, state, county):
     # use dynamic radar if court selected, fallback to example data
     if court_id:
         judges = get_current_judges_for_court(court_id)
-        print("court_id:", court_id)
-        print("judges:", judges)
         radar_data = get_individual_opinions_for_radar(request, court_id=court_id, persons=judges)
         print("radar_data:", radar_data)
-
-    print("gantt_data:", gantt_data)
-    print("court_name:", court_name)
 
     context = {
         "msg": "Pending!",
@@ -704,7 +716,6 @@ def analysis_state_county(request, state, county):
         "states": US_STATES,
         "radar_data": [],
         "button_name": """Generate Analytics""",
-        # "state": court_id,
         "court_name": court_name,
         "gantt_data": gantt_data,
         "fallback_url": reverse("judgement_call:landing"),
@@ -715,7 +726,20 @@ def analysis_state_county(request, state, county):
     return render(request, "analysis_state_county.html", context)
 
 
+def candidates(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending",
+    }
+
+    return render(request, "dropdown.html", context)
+
+
 def clear_location(request):
+    """
+    Clears location cache and redirects user to dropdown landing to select new
+    location.
+    """
     request.session.pop("state", None)
     request.session.pop("county", None)
     return redirect(reverse("judgement_call:landing"))
@@ -843,6 +867,8 @@ def get_individual_opinions_for_radar(
 
 def get_radar_example_data(request):
     """
+    Older prototype version of radar chart.
+
     Example view to test out D3 Radar charts in `radar_test.html`.
     Pick a court (state) and get fraction of each right type that
     involves protecting the right.
