@@ -30,7 +30,7 @@ Please visit https://judgementcall.civic.garden/.
 3. Follow the directions in `docs/djangoguide.md` to obtain all relevant data and to re-ingest data if necessary.
 4. Generate the website with `uv run python manage.py runserver` and follow the link given in the console.
 
-_Please note that this data will not be as up-to-date as that given by the website._
+_Please note that this data will not be as up-to-date as that provided by the website._
 
 ## File System Layout
 - `analysis` - Scripts to generate analysis page figures and explorative visualizations.
@@ -44,6 +44,70 @@ _Please note that this data will not be as up-to-date as that given by the websi
 - `static/` - Static CSS, images and JS files.
 - `templates/` - Django frontend templates.
 - `utils/` - Shared utility functions used across data processing scripts.
+
+## Methodology
+
+### Data Sources
+Judgement Call aggregates information from multiple public and nonprofit sources.
+- [CourtListener](https://www.courtlistener.com/) - for existing court data
+- [State Case Database](https://statecourtreport.org/state-case-database) (State Court Report) - for state supreme court cases and decisions
+- [State Law Research Initiative](https://state-law-research.org/state-justices/) (SLRI) - for judge demogrpahic information
+- [Wikipedia](https://en.wikipedia.org/wiki/State_supreme_courts_in_the_United_States) - for biographical and tenure data
+- [Ballotpedia](https://ballotpedia.org/State_judicial_elections,_2026) - for initial election lists
+
+Because no single authoritative source exists for all state‑level judicial information, our system merges data across sources and fills gaps where possible.
+
+### Data Ingestion and Processing
+
+#### Case and Opinion Data
+- Daily ingestion from State Case Database
+- Identification of new cases and participating judges
+- Use of LLM tools to extract:
+    - Case topics
+    - Case arguments, decisions, and court opinion
+    - Rights implicated during cases
+    - Individual judge opinions
+    - Whether a judge concurred with or dissented from a court opinion
+
+#### Tenure and Person Data
+- Continous ingestion of SLRI and Wikipedia
+- Identification of participating judges from case ingestion
+- Identification of candidates from election ingestion
+
+#### Court Data
+- CourtListener as a source for court identities
+- One-time ingestion of courts, court selection methods, and bench sizes
+
+#### Election & Candidacy Data
+- No authoritative national source exists
+- We infer upcoming elections using:
+    - Tenure end dates
+    - Court selection methods
+- Initial candidate lists sourced from Ballotpedia
+- Manual verification where possible
+
+### Analytical Framework
+Judgement Call includes interpretive assessments of judicial behavior, including whether a judge’s decisions tend to protect or infringe individual rights. These assessments are generated through:
+- Topic classification of cases by LLM
+- Extraction of rights implicated by LLM
+- Identification of judge‑specific opinions by LLM
+- Internal scoring calculations that summarize right-protection/infringment tendencies
+
+## Limitations and Disclaimers
+
+### Data Completeness
+- Some states publish limited or inconsistent judicial data
+- No one judicial information site is wholly up-to-date and all-encompassing of necessary data
+- Candidate information may be incomplete or unavailable
+
+### Interpretation
+- Rights‑based assessments are our own analytical judgments
+- They are not official statements of any court or government entity
+- Nothing on this site should be interpreted as:
+    - A definitive statement of a judge’s legal philosophy
+    - A substitute for official court records
+
+Although we strive for accuracy, these limitations apply. Users should verify information independently before relying on this site.
 
 ## Team
 - Riley Morrison
