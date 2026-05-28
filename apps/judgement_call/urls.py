@@ -50,5 +50,4 @@ urlpatterns = [
     ),
     path("spacejam/", views.spacejam_backup, name="spacejam_backup"),
     path("judges/<str:court_id>/", views.court_full_view, name="court"),
-    path("clear-location/", views.clear_location, name="clear_location"),
 ]
