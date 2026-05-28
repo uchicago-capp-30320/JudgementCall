@@ -38,6 +38,8 @@ urlpatterns = [
         views.elections_state_county,
         name="elections_state_county",
     ),
+    # some of these urls are extraneous, but it got scary when I tried to
+    # delete them
     path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
     path("analysis/polarization/", views.polarization, name="polarization"),

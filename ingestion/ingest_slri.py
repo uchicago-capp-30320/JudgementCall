@@ -1,5 +1,5 @@
 import lxml.html
-import requests
+import curl_cffi
 import time
 import uuid
 import pandas as pd
@@ -21,29 +21,47 @@ OUTPUT_CSV = DATA_DIR / "slri.csv"
 def make_request(url):
     """
     Function makes request to url. If the request responds with a 429 status
-    code, the request is made again after 2.5 seconds until. The process
-    repeats until the response responds with a 200 code.
+    code, or a Connection Error the request is made again after an iteratively-
+    growing wait time. If the wait time exceeds 1 minute, the code either
+    raises a Connection Error or a Runtime Error.
     """
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    acc = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-    headers = {
-        "User-Agent": user_agent,
-        "Accept": acc,
-        "Accept-Language": "en-US,en;q=0.5",
-        "Accept-Encoding": "gzip, deflate",
-        "Connection": "keep-alive",
-    }
+    # Initialize wait time at 10 seconds
+    wait_time = 10
 
-    resp = requests.get(url, headers=headers)
+    while True:
+        try:
+            # Redirects set to safe mode to avoid security in the request
+            resp = curl_cffi.get(url, impersonate="chrome", allow_redirects="safe")
 
-    if resp.status_code == 429:
-        time.sleep(2.5)
-        resp = make_request(url)
-    elif resp.status_code == 200:
-        return resp
+            if resp.status_code == 200:
+                return resp
+
+            elif resp.status_code == 429:
+                if wait_time > 60:
+                    print("Wait time larger than one minute, aborting")
+                    raise RuntimeError
+
+                print(f"Ran into 429 error, waiting for {wait_time} seconds")
+                time.sleep(wait_time)
+                wait_time += 1
+
+        except curl_cffi.exceptions.ConnectionError as ce:
+            if wait_time > 60:
+                print("Wait time larger than one minute, aborting")
+                raise ce
+
+            print(f"Ran into connection error, waiting for {wait_time} seconds")
+            time.sleep(wait_time)
+            wait_time += 1
 
 
-def scrape_judge(url):
+def scrape_judge(url: str):
+    """
+    This function takese the url for a individual judge's page on SLRI and
+    extracts items from the about list like the gender, party, race, etc.
+    Returns a dictionary where each key, value, pair is an item's name, and its
+    corresponding value.
+    """
     j_page = lxml.html.fromstring(make_request(url).text)
     r_d = {}
 
@@ -61,9 +79,15 @@ def scrape_judge(url):
     return r_d
 
 
-def scrape_main(url):
+def scrape_main(url: str) -> pd.DataFrame:
+    """
+    Function takes the url for the SLRI page on state justices and iterates
+    through each judge page, iteratively building a pandas dataframe where
+    each field is a judge item and each row is a judge.
+    """
     main_page = lxml.html.fromstring(make_request(url).text)
 
+    # Extract judge links to iterate through
     xp1 = "//section[@filter = 'judge']//"
     xp2 = "a[contains(@href, 'judge')]//@href"
     judge_links = main_page.xpath(xp1 + xp2)
@@ -94,6 +118,7 @@ def scrape_main(url):
     for field in judge_fields:
         judge_pd[field] = []
 
+    # Iterating through judges and populating dictionary
     for i, name in tqdm(enumerate(judge_names)):
         judge_pd["name"].append(name)
         judge_pd["JID"].append(uuid.uuid4())
@@ -115,8 +140,7 @@ def scrape_main(url):
     return pd.DataFrame(judge_pd)
 
 
-url = "https://state-law-research.org/state-justices/"
-
-judge_pd = scrape_main(url)
-
-judge_pd.to_csv(OUTPUT_CSV)
+if __name__ == "__main__":
+    url = "https://state-law-research.org/state-justices/"
+    judge_pd = scrape_main(url)
+    judge_pd.to_csv(OUTPUT_CSV)

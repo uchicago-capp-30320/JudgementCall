@@ -6,6 +6,9 @@ from pathlib import Path
 from datetime import datetime
 import random
 
+# This webscraping script includes random waiting times to avoid bot detection
+# protections in the State Case Database website.
+
 EXISTING_CASES_PATH = Path(__file__).parent.parent / "data" / "cases_scdb.csv"
 
 
@@ -25,13 +28,16 @@ def generate_case_id(docket_no, court, date):
 def make_request(url):
     """
     Function makes request to url. If the request responds with a 429 status
-    code, the request is made again after 2.5 seconds until. The process
-    repeats until the response responds with a 200 code.
+    code, or a Connection Error the request is made again after an iteratively-
+    growing wait time. If the wait time exceeds 1 minute, the code either
+    raises a Connection Error or a Runtime Error.
     """
+    # Initialize wait time at 10 seconds
     wait_time = 10
 
     while True:
         try:
+            # Redirects set to safe mode to avoid security in the request
             resp = curl_cffi.get(url, impersonate="chrome", allow_redirects="safe")
 
             if resp.status_code == 200:
@@ -56,13 +62,20 @@ def make_request(url):
             wait_time += 1
 
 
-def scrape_case(case_url):
+def scrape_case(case_url) -> dict:
     """
-    Given a partial url for a case, this function completes the url then
-    makes a request on the completed url. It uses lxml.html to extract the
-    following fields from a case:
+    Inputs:
+    - case_url: str (the URL for a case page on SCDB)
+
+    Output:
+    - rd: dict (a dictionary containing all of the relevant case information.)
+
+    After making the request this function parses out the following fields
+    from a case:
+    - case_id (string: generated from other fields)
     - docket_no (string: docket number for case)
     - title (string: title for the case)
+    - state (string: the state for the case state Supreme Court)
     - date (datetime: if the case is pending then it's the date of the latest
             docuemnt, if the case is decided it's the date of the opinion)
     - type (string: category for the case, e.g., Criminal Law)
@@ -151,6 +164,19 @@ def scrape_case(case_url):
 
 
 def page_meta_data(url):
+    """
+    Inputs:
+    - url: str (the URL for a standard SCDB page showing multiple cases)
+
+    Outputs:
+    - pd.DataFrame() (the metadata from the cases on a page)
+    - next_page_url: str (if there is a URL for the next page, it is returned
+                          as a string, otherwise as None)
+
+    This function takes a page URL for a standard SCDB page showing multiple
+    cases and extracts the information from each case than can be extracted
+    without going into the case page.
+    """
     root = lxml.html.fromstring(make_request(url).text)
 
     xp1 = "//h2[@class = 'card__heading']"
@@ -196,6 +222,18 @@ def page_meta_data(url):
 def check_if_exists(
     title: str, state: str, date: str, case_type: str, existing_cases: pd.DataFrame
 ):
+    """
+    Inputs:
+    - title: str (the title for a case)
+    - state: str (the state for a case)
+    - date: str (the date for a case)
+    - type: str (a cases type as determined by SCDB)
+    - existing_cases: pd.DataFrame (the existing cases in cases_scdb.csv)
+
+    Output:
+    - r_bool: bool (True if there is exists a row in the existing cases
+                    that has all of the inputted characteristics)
+    """
     r_bool = False
 
     if existing_cases is not None:
@@ -211,24 +249,28 @@ def check_if_exists(
 
 def scrape_page(url, rd, incremental=False, existing_cases=None, seen_cases=None):
     """
-    Function takes the url for a page, and a return dictionary with the
-    structure:
+    Inputs:
+    - url: str (the URL for a page displaying many cases on SCDB)
+    - rd: dict (a dictionary with standard field to be added on to)
+    - incremental: bool (indicator for whether a page scrape is in the context
+                        of an incremental webscrape)
+    - existing_cases: pd.DataFrame (set to None on default, but if not None
+                                    will equal a dataframe with existing cases
+                                    found inside of cases_scdb.csv)
+    - seen_cases: set (a set containing tuples of cases that have been in seen
+                        in a webscraping session)
 
-    rd = {
-        "docket_no": [],
-        "title": [],
-        "date": [],
-        "type": [],
-        "pending": [],
-        "opinion_link": []
-    }
+    Outputs:
+    - rd: dict (contains)
+    - seen_cases (a set containing all of the cases that have been seen in the
+                  webscraping session along with new cases that were seen on
+                  the page)
 
-    With the given url, the function requests the page displaying cases. It
-    uses lxml.html to extract the url for each case displayed on the page. With
-    each case url, it uses the scrape_case function to extract the case
-    information. Iterating through each displayed case, the function returns
-    a dictionary of lists containing the information for the cases.
+    The function requests the page displaying cases, and scrapes each case on
+    the page. If a webscrape is incremental it will only do so if a case's
+    identifiable data from the main page is not already in cases_scdb.csv.
     """
+    # Extract page metadata
     meta_data, next_page_url = page_meta_data(url)
 
     for index, row in meta_data.iterrows():
@@ -236,16 +278,22 @@ def scrape_page(url, rd, incremental=False, existing_cases=None, seen_cases=None
         already_exists = check_if_exists(
             row["case_title"], row["case_state"], row["case_date"], row["case_type"], existing_cases
         )
+
+        # Skip a case if it has already been recorded in previous webscrapes
         if incremental and already_exists:
             print(f"The case {row['case_title']} is already in the database.")
             continue
+
+        # Skip a case if it has already been seen in this current run
         elif incremental and (case_tuple in seen_cases):
             print(f"The case {row['case_title']} as already been scraped.")
             continue
+
         wait_time = random.uniform(5, 20)
         print(f"Waiting for {round(wait_time, 1)} before scraping {row['case_title']}")
         time.sleep(wait_time)
         case_info = scrape_case(row["case_link"])
+
         if incremental and (seen_cases is not None):
             seen_cases.add(case_tuple)
 
@@ -257,11 +305,23 @@ def scrape_page(url, rd, incremental=False, existing_cases=None, seen_cases=None
 
 def multi_page(start_url, incremental=False, existing_cases=None):
     """
+    Inputs:
+    - start_url: str (the URL of the first page)
+    - incremental: bool (indicator for whether a page scrape is in the context
+                        of an incremental webscrape)
+    - existing_cases: pd.DataFrame (set to None on default, but if not None
+                                    will equal a dataframe with existing cases
+                                    found inside of cases_scdb.csv)
+
+    Output:
+    - pd.DataFrame (a complete data set with all of the cases that were scraped
+                    after iterating through each page)
+
     Given an initial page displaying cases, the function extracts the
     information for each case using the scrape_page function, it then uses
-    the next_page_url function to extract the url for the next page. Finally,
-    the function iterates through every available page, extracting case
-    information for each case, until there is no more available page.
+    the next_page_url to scrape the next page. Finally, the function iterates
+    through every available page, extracting case information for each case,
+    until there is no more available page.
     """
     url = start_url
     url_base = "https://statecourtreport.org/state-case-database"
@@ -311,6 +371,15 @@ def multi_page(start_url, incremental=False, existing_cases=None):
 
 def handle_duplicate_id(input_df: pd.DataFrame, series_name: str):
     """
+    Inputs:
+    - input_df: pd.DataFrame (the dataframe where duplicates need to be
+    handled)
+    - series_name: str (the name of the dataframe column that has duplicates)
+
+    Outputs:
+    - input_df: pd.DataFrame (the input dataframe except that unique values
+                              in the given column are handled)
+
     Combinations of docket number, court, and date, are sometimes not enough
     to uniquely differentiate cases. To ensure IDs are unique before they go
     into the database, this function differentiates unique duplicate IDs by
@@ -333,6 +402,16 @@ def handle_duplicate_id(input_df: pd.DataFrame, series_name: str):
 
 
 def scrape_scdb(write_on=True, incremental=False):
+    """
+    Inputs:
+    - write_on: bool (toggled on to write a .csv file with the updated cases)
+    - incremental: bool (indicator for whether a page scrape is in the context
+                        of an incremental webscrape)
+
+    Outputs:
+    - (case_df / full_cases): pd.DataFrame (returned if the webscrape is
+                                            incremental or not)
+    """
     if incremental:
         url = f"https://statecourtreport.org/state-case-database?state=All&issue=All&year={datetime.now().year}"
         existing_cases = pd.read_csv(EXISTING_CASES_PATH)
