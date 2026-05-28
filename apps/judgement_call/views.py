@@ -1,9 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.db.models import Avg, Count, When, Value, Q
-from django.db.models import Case as Case_
+from django.db.models import Case as Django_Case
 
-# from django.http import HttpResponse
 from .models import (
     Court,
     Person,
@@ -12,46 +11,27 @@ from .models import (
     Tenure,
     Case,
     IndividualOpinion,
-    CourtLevel,
-    SelectionType,
-    CaseType,
-    SelectionJurisdictionType,
-    Alias,
-    CaseParticipant,
-    TopicAlignment,
-    RulingType,
     CountyToCourt,
-    PersonGender,
-    PersonRace,
-    PartyAffiliation,
 )
-from datetime import datetime
 from django.utils import timezone
-
-# from django.db.models import Count, Avg
-from django.db.models.functions import ExtractYear
-
 from dateutil.relativedelta import relativedelta
-
-# from django.db.models import Q, Count, Sum, When, FloatField
-# from django.core.paginator import Paginator
-# from urllib.parse import urlparse
 from django.urls import reverse
-from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+from datetime import datetime
+from localflavor.us.us_states import US_STATES
+import re
 from .icons import get_judge_icons, get_topic_icons
-
 from apps.judgement_call.forms import ChoroplethForm, SpacejamForm
 from analysis.polarization_choropleth import produce_data, create_choropleth
-
 from analysis.spacejam import make_plot as make_mds_plot
-import re
 
 
-# comment to push
 def judges(request):
-    """Judges landing page. Has dropdowns to find your judges."""
-
+    """
+    Original judges landing page. Has dropdowns to get state and county for
+    customized judge viewing.
+    """
+    # redirect to custom view upon receiving state/county
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
@@ -64,8 +44,6 @@ def judges(request):
         "header": "Find your judges",
         "preamble": """Knowing your judges is important. Check them out!""",
         "states": US_STATES,
-        # "radar_data": get_radar_example_data(request),
-        "radar_data": get_individual_opinions_for_radar(request),
         "button_name": "Find judges",
         "fallback_url": reverse("judgement_call:landing"),
         "state": request.session.get("state"),
@@ -76,7 +54,7 @@ def judges(request):
 
 
 def get_counties(request, state):
-    """API to enable the javascript to fill the counties dropdown"""
+    """API to enable the JavaScript to fill out the counties dropdown."""
     # based on given state, filter C2C table, return list of distinct counties
     counties = (
         CountyToCourt.objects.filter(state=state)
@@ -88,24 +66,31 @@ def get_counties(request, state):
 
 
 def judge_sort(judge_lst):
+    """
+    Sorts list of judge dictionaries alphabetically with Chief Justice coming
+    first.
+    """
     ordered_lst = []
 
     for j in judge_lst:
+        # pick out chief justice to add later
         if j["chief_justice"]:
             chief_j = j
         else:
-            if len(ordered_lst) == 0:
-                ordered_lst.append(j)
             for i, sj in enumerate(ordered_lst):
                 if sj["name"] > j["name"]:
-                    ordered_lst.insert((i - 1), j)
+                    ordered_lst.insert(i, j)
+                    break
+            else:
+                ordered_lst.append(j)
 
     return [chief_j] + ordered_lst
 
 
 def build_court_dict(tenures, elections_courts):
     """
-    build courts_dict to get list of judges & infographic
+    Build courts dictionary used in judge_state_county and full_court_view to
+    create judge cards and court demography infographic.
     """
     courts = {}
     # iterate through all the tenures and courts associated with them
@@ -115,8 +100,10 @@ def build_court_dict(tenures, elections_courts):
         court_name = tenure.court.name
         if court_name not in courts:
             courts[court_name] = {"judges": [], "id": court.court_id}
+            # courts with upcoming elections
             upcoming_courts = [c.name for c in elections_courts]
             if court_name in upcoming_courts:
+                # turns on upcoming election flag
                 courts[court_name]["upcoming_election"] = True
             else:
                 courts[court_name]["upcoming_election"] = False
@@ -171,21 +158,18 @@ def build_court_dict(tenures, elections_courts):
                 "icons": get_judge_icons(tenure, {}),
             }
         )
-    # courts[court_name]["judges"].sort(key=lambda x: x["name"])
+
+    # sort judges by chief justice then alphabetically
+    for court in courts.keys():
+        courts[court]["judges"] = judge_sort(courts[court]["judges"])
 
     return courts
 
 
 def judges_state_county(request, state, county):
     """
-    courts structure --
-    courts {
-        court_name: {
-            id: court_id,
-            upcoming_election: T/F,
-            judges: [judge1_dict, judge2_dict, judge3_dict...]
-        }
-    }
+    Take state and county to identify relevant tenures. Tenures are used to
+    generate courts dictionary to populate judges quick view.
     """
     # grab all the tenures associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
@@ -211,20 +195,29 @@ def judges_state_county(request, state, county):
 
 
 def court_full_view(request, court_id):
+    """
+    Creates detailed court-level analytics view with infographic, judge listings,
+    tenure, and ruling compatibility radar chart.
+    """
+    # retrieve relevant court
     court = Court.objects.get(court_id=court_id)
+    # retrieve tenures to build court dict
     tenures = Tenure.objects.filter(court=court, end_date__isnull=True) | Tenure.objects.filter(
         court=court, end_date__gt=timezone.now()
     )
     _, upcoming_courts = get_upcoming_elections([court])
     court_formatted = build_court_dict(tenures, upcoming_courts)
+    # for this view we only need the one court
     details = court_formatted[court.name]
 
+    # some weird string handling with states/counties
     if request.session.get("state") and request.session.get("county"):
         state = request.session.get("state").strip(
             "()',",
         )
         county = request.session.get("county").strip("()',")
     else:
+        # redirect to initial dropdown if no sessions geodata
         return redirect("judgement_call:landing")
 
     context = {
@@ -234,7 +227,6 @@ def court_full_view(request, court_id):
         "details": details,
         "gantt_data": court.gantt_json().text,
         "radar_data": [],
-        # get_individual_opinions_for_radar(request, court_id=court_id, persons=judges),
         "state": state,
         "county": county,
         "fallback_url": reverse(
@@ -245,6 +237,9 @@ def court_full_view(request, court_id):
 
 
 def show_person(request, person_id):
+    """
+    Detailed view for an individual judge or person.
+    """
     person = get_object_or_404(Person, id=person_id)
     tenures = Tenure.objects.filter(person=person)
     indops = IndividualOpinion.objects.filter(
@@ -346,7 +341,10 @@ def show_person(request, person_id):
 
 
 def landing(request):
-    """Landing page for Judgement Call users."""
+    """
+    Landing page for Judgement Call users. If no sessions data, populates
+    dropdown prompting them to select their state and county.
+    """
 
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
@@ -367,7 +365,7 @@ def landing(request):
 
 
 def about(request):
-    """About page."""
+    """Team about page."""
     context = {
         "msg": "<About for this project.>",
         "state": request.session.get("state"),
@@ -389,7 +387,10 @@ def methodology(request):
 
 
 def elections(request):
-    """Elections landing page."""
+    """
+    Original elections landing page. Has dropdowns to get state and county for
+    customized elections viewing.
+    """
     if request.GET.get("state") and request.GET.get("county"):
         state = request.GET["state"]
         county = request.GET["county"]
@@ -413,10 +414,15 @@ def elections(request):
 
 
 def quick_name_tidy(name):
-    """to address some weirdness with candidate names"""
+    """
+    Regex implementation to reformat candidates whose party affiliations
+    accidentally got scraped in with their names. Returns name and party
+    separated.
+    """
     pattern = r"\s*(\(D\)|\(R\)|\(Nonpartisan\))"
     parts = re.split(pattern, name)
     cleaned = [p.strip() for p in parts if p]
+
     if cleaned[1] == "(R)" or cleaned[0] == "(Republican)":
         clean_party = "Republican"
     elif cleaned[1] == "(D)" or cleaned[0] == "(Democrat)":
@@ -429,21 +435,16 @@ def quick_name_tidy(name):
 
 
 def get_candidate_info(can):
-    """helper for elections_state_county"""
-    # on_bench = check_incumbent(can, cour)
+    """
+    Cleans certain candidate names, checks if tenures exist, returns minimum
+    necessary details for each non-judge person.
+    """
     name = can.person.name_canonical
     if name.endswith("(R)") or name.endswith("(D)") or name.endswith("Nonpartisan"):
         name, party = quick_name_tidy(name)
     else:
         party = can.person.party_registration
-    # return {
-    #     "name": name,
-    #     "party_registration": party,
-    #     "more_info": f"/people/{can.person.id}/",
-    #     # "incumbent": on_bench,
-    # }
 
-    # check if this person has ever been a judge
     has_tenures = Tenure.objects.filter(person=can.person).exists()
 
     info = {
@@ -460,7 +461,8 @@ def get_candidate_info(can):
 
 def get_upcoming_elections(relevant_courts):
     """
-    Takes in QSet of courts and returns those with nearest associated election date
+    Takes QSet of courts, looks at soonest election date, returns courts from
+    QSet that have an election on that soonest election date.
     """
     next_event = (
         Election.objects.filter(election_date__gte=datetime.now())
@@ -484,7 +486,7 @@ def get_upcoming_elections(relevant_courts):
 
 def alternate_get_elections(relevant_courts):
     """
-    Takes in QSet of courts and returns those with election in next 6mo
+    Takes in QSet of courts and returns those with election in next 6 months.
     """
     start_date = timezone.now()
     six_mo_from_now = start_date.month + 6
@@ -499,7 +501,10 @@ def alternate_get_elections(relevant_courts):
 
 
 def check_incumbent(candidate, court):
-    """Takes a candidate and T/F if currently sitting on election bench"""
+    """
+    Takes a candidate and T/F if currently sitting on election bench.
+    Intended to be used in elections page to signal retention elections.
+    """
     tenures = Tenure.objects.filter(person=candidate.person)
     been_judge = tenures.exists()
     if been_judge:
@@ -514,6 +519,9 @@ def check_incumbent(candidate, court):
 
 
 def elections_state_county(request, state, county):
+    """
+    Custom elections summary view based on state and county.
+    """
     # grab all the courts associated with a specific state / county
     geo_c2c = CountyToCourt.objects.filter(state=state, county=county)
     if not geo_c2c.exists():
@@ -546,17 +554,8 @@ def elections_state_county(request, state, county):
     return render(request, "elections_state_county.html", context)
 
 
-def candidates(request):
-    """Elections landing page."""
-    context = {
-        "msg": "Pending",
-    }
-
-    return render(request, "dropdown.html", context)
-
-
 def gantt(request):
-    """Gantt chart prototype."""
+    """Gantt chart implemented on courts view."""
 
     state = request.GET.get("state", "AZSUP")
     court = Court.objects.get(court_id=state)
@@ -568,6 +567,10 @@ def gantt(request):
 
 
 def spacejam(request):
+    """
+    Multidimensional Scaling chart implemented on Analysis page with dropdown
+    form.
+    """
     mds_data_json = None
     court_name = None
     form = SpacejamForm(request.GET if "state" in request.GET else None)
@@ -591,7 +594,7 @@ def spacejam(request):
 
 
 def spacejam_backup(request):
-    """MDS chart prototype."""
+    """Old spacejam view. Can still see raw chart at /spacejam_backup/<courtid>"""
 
     court_id = request.GET.get("state", "AZSUP")
     court = Court.objects.get(court_id=court_id)
@@ -605,7 +608,7 @@ def spacejam_backup(request):
 
 def get_current_judges_for_court(court_id):
     """
-    Helper function to generate radar chart data for analysis page.
+    Helper function to list of judges for radar chart.
     """
     return list(
         (
@@ -630,8 +633,6 @@ def analysis(request):
         "header": "Analysis",
         "preamble": """Please explore our visualizations exploring high-level
         judicial analytics.""",
-        "states": US_STATES,
-        "button_name": "Generate Analytics",
         "fallback_url": reverse("judgement_call:landing"),
         "state": request.session.get("state"),
         "county": request.session.get("county"),
@@ -641,6 +642,11 @@ def analysis(request):
 
 
 def get_choropleth(request):
+    """
+    Helper function that uses form input to generate dynamic Plotly polarization
+    chart output.
+    """
+
     chart_html = None
     if "dimension" in request.GET:
         form = ChoroplethForm(request.GET)
@@ -660,6 +666,9 @@ def get_choropleth(request):
 
 
 def polarization(request):
+    """
+    Gets choropleth data and pushes to polarization template.
+    """
     choro_dict = get_choropleth(request)
     context = {
         "state": request.session.get("state"),
@@ -674,7 +683,10 @@ def polarization(request):
 
 
 def analysis_state_county(request, state, county):
-    """Analysis landing page."""
+    """
+    Old version of analysis view that assumed radar and gantt charts would be
+    on the analysis page.
+    """
 
     court_id = None
     court_name = None
@@ -695,13 +707,8 @@ def analysis_state_county(request, state, county):
     # use dynamic radar if court selected, fallback to example data
     if court_id:
         judges = get_current_judges_for_court(court_id)
-        print("court_id:", court_id)
-        print("judges:", judges)
         radar_data = get_individual_opinions_for_radar(request, court_id=court_id, persons=judges)
         print("radar_data:", radar_data)
-
-    print("gantt_data:", gantt_data)
-    print("court_name:", court_name)
 
     context = {
         "msg": "Pending!",
@@ -710,7 +717,6 @@ def analysis_state_county(request, state, county):
         "states": US_STATES,
         "radar_data": [],
         "button_name": """Generate Analytics""",
-        # "state": court_id,
         "court_name": court_name,
         "gantt_data": gantt_data,
         "fallback_url": reverse("judgement_call:landing"),
@@ -721,7 +727,20 @@ def analysis_state_county(request, state, county):
     return render(request, "analysis_state_county.html", context)
 
 
+def candidates(request):
+    """Elections landing page."""
+    context = {
+        "msg": "Pending",
+    }
+
+    return render(request, "dropdown.html", context)
+
+
 def clear_location(request):
+    """
+    Clears location cache and redirects user to dropdown landing to select new
+    location.
+    """
     request.session.pop("state", None)
     request.session.pop("county", None)
     return redirect(reverse("judgement_call:landing"))
@@ -753,15 +772,12 @@ def get_individual_opinions_for_radar(
         This format plugs right into radarChart.js for any number
         of justices and rights.
     """
-    # ERROR: My query duplicates judges with multiple aliases (there are many)
-
-    # TO REMOVE (only allow 2 judges as input at a time so
-    # there is enough data overlap to build radar)
-    persons = persons[-2:]
 
     # Query all cases that had individual opinions authored by
     # (any!) tenures of the given persons in the given court.
-    case_rights = ["case__" + f.name for f in Case._meta.get_fields()][-13:-1]
+    topic_flags = Case.topic_flags()
+    case_rights = ["case__" + topic_flag for topic_flag in topic_flags]
+    print("RIGHTS", case_rights)
     indops = (
         IndividualOpinion.objects.filter(
             judge_alias__tenure__person__name_canonical__in=persons
@@ -775,7 +791,7 @@ def get_individual_opinions_for_radar(
         kwarg_protected = {right: "protected"}
         kwarg_infringed = {right: "infringed"}
 
-        case_when_statement = Case_(
+        case_when_statement = Django_Case(
             When(  # Ruled to protect a right, or tried stopping court from infringing
                 (Q(**kwarg_protected) & Q(ruling="concur"))
                 | (Q(**kwarg_infringed) & Q(ruling="dissent")),
@@ -786,7 +802,7 @@ def get_individual_opinions_for_radar(
                 | (Q(**kwarg_protected) & Q(ruling="dissent")),
                 then=Value(0),
             ),
-            # Case_ defaults to None otherwise
+            # Django_Case defaults to None otherwise
         )
 
         return case_when_statement
@@ -805,11 +821,6 @@ def get_individual_opinions_for_radar(
         .annotate(**pro_right_kwargs)
     )
 
-    # Convert from List of Dicts (each a judge) to List of Lists (each a judge) of Dicts.
-    # TODO: Radar chart has no legend, but we will add judge name here later for that.
-    # TODO: Handle missing data. What to show when Judge A is missing church-state cases,
-    # and Judge B is missing free press cases? Drop both for both judges? CANNOT DEFAULT TO 0.
-    # For now, drop a right (axis) if EITHER judge has not ruled on a related case
     data_for_radar = [
         [
             {
@@ -842,13 +853,13 @@ def get_individual_opinions_for_radar(
         for judge_list in data_for_radar
     ]
 
-    # print("IND OPS HERE:", data_for_radar_dropmissing[:2])
-    # print(data_for_radar_dropmissing)
     return JsonResponse(data_for_radar_dropmissing, safe=False)
 
 
 def get_radar_example_data(request):
     """
+    Older prototype version of radar chart.
+
     Example view to test out D3 Radar charts in `radar_test.html`.
     Pick a court (state) and get fraction of each right type that
     involves protecting the right.

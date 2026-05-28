@@ -9,13 +9,16 @@ import us
 import json
 import hashlib
 
-from ingestion.ingest_sc_cases import scrape_scdb
+# Temporary
+from ingest_sc_cases import scrape_scdb
+from tqdm import tqdm
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
 from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional, TypedDict, get_type_hints
 
+# Initializing list of Gemini query times and skips dictionary
 QUERY_TIMES = []
 SKIPS = {"case_id": [], "num_skips": 0}
 
@@ -85,18 +88,21 @@ class Case(BaseModel):
     judge_opinions: List[IndividualOpinion]
 
 
-def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str):
+def read_opinion(
+    pdf_link: str, model_id: str, client: genai.Client, prompt: str, temperature: float = 0.0
+) -> dict:
     """
     Inputs:
-    - pdf_link: string
-    - model_id: string
-    - client: genai.Client
-    - prompt: str
+    - pdf_link: string (the url to the court opinion pdf document)
+    - model_id: string (the Gemini model to be used when reading the opinion)
+    - client: genai.Client (the initialized Gemini client used for querying)
+    - prompt: str (the stringified prompt for the Gemini query)
+    - temperature: float (the temperature when making the prompt)
 
     Outputs:
-    - dict
+    - dict (structured as the Case class defined above)
 
-    Function makes a request to the content from a pdf url and prompts it into
+    Function makes a Gemini query with a pdf url and a prompts it into
     Gemini through the inputted gemini client. Returns a dictionary following
     the structure of the Case class defined outside of the function.
 
@@ -109,20 +115,24 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
     while True:
         start = datetime.now()
         try:
+            # Make Gemini query
             genai_resp = client.models.generate_content(
                 model=model_id,
                 contents=[types.Part.from_bytes(data=resp, mime_type="application/pdf"), prompt],
                 config={
                     "response_mime_type": "application/json",
                     "response_json_schema": Case.model_json_schema(),
-                    "temperature": 0,
+                    "temperature": temperature,
                 },
             )
+
+            # Validate query output and metadata
             structured_output = Case.model_validate_json(genai_resp.text).model_dump()
             end = datetime.now()
             time_diff = (end - start).total_seconds()
             QUERY_TIMES.append(time_diff)
             return structured_output
+
         # Server errors with Gemini occur when a model is experiencing high
         # demand. Pausing and waiting before querying again.
         except errors.ServerError as e:
@@ -136,25 +146,36 @@ def read_opinion(pdf_link: str, model_id: str, client: genai.Client, prompt: str
                 raise e
 
 
-def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: dict):
+def apply_model(
+    case_df: pd.DataFrame,
+    prompt_path: str,
+    model_id: str = "gemini-2.5-flash",
+    temperature: float = 0.0,
+):
     """
     Inputs:
-    - case_df: pd.Dataframe,
-    - prompt_start: str,
-    - client_info: dict
+    - case_df: pd.Dataframe (dataframe containing webscraped cases)
+    - prompt_path: str (the stringified prompt for the Gemini query)
+    - model_id: str (Gemini model's name for query)
+    - temperature: float (the temperature when making the prompt)
 
     Outputs:
-    - file_dic: dict
+    - case_dic: dict (contains the case information including the Gemini
+                      output)
 
-    Function creates the full prompt by taking the prompt start (extracted)
-    from .txt file and joins it with the string version of the judge
-    dataframe. It then extract the information about the client, the model id
-    and gemini client.
+    Function initializes the Gemini client, and creates the full prompt by
+    reading from the prompt file path. It then iterates through each webscraped
+    case and queries the custom Gemini model about it.
     """
-    model_id = client_info["model_id"]
-    client = client_info["client"]
+    with open(prompt_path, "r") as prompt_file:
+        prompt = prompt_file.read()
 
-    file_dic = {}
+    load_dotenv(find_dotenv())
+
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    client = genai.Client(api_key=gemini_key)
+
+    case_dic = {}
     for index, row in case_df.iterrows():
         print(f"Querying case no. {index + 1}: {row['title']}")
 
@@ -162,7 +183,10 @@ def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: d
         case_id = row["case_id"]
 
         try:
-            opinion_resp = read_opinion(pdf_link, model_id, client, prompt_start)
+            opinion_resp = read_opinion(pdf_link, model_id, client, prompt, temperature)
+
+        # Although extremely rare, some Gemini outputs are not structured
+        # according to the custom Case class, such cases are skipped
         except (ValidationError, errors.ClientError):
             message = f"{row['title']} - Skipped because LLM output"
             message += "did not follow enforced data structure"
@@ -171,60 +195,32 @@ def analyze_state_cases(case_df: pd.DataFrame, prompt_start: str, client_info: d
             SKIPS["case_id"].append(case_id)
             continue
 
-        file_dic[case_id] = {}
-        file_dic[case_id]["pdf_link"] = pdf_link
-        file_dic[case_id]["response"] = opinion_resp
-
-    return file_dic
-
-
-def apply_model(
-    case_df: pd.DataFrame,
-    prompt_path: str,
-    model_id: str = "gemini-2.5-flash",
-):
-    """
-    Inputs:
-    - case_df: pd.Dataframe,
-    - prompt_path: str,
-    - model_id: str
-
-    Outputs:
-    - case_dic: dict
-
-    This function extracts the fixed part of the prompt by reading the .txt
-    file, and it initializes the Gemini model by using the API key. It then
-    calls analyze_cases() returns its output.
-    """
-    with open(prompt_path, "r") as prompt_file:
-        prompt_start = prompt_file.read()
-
-    load_dotenv(find_dotenv())
-
-    gemini_key = os.getenv("GEMINI_API_KEY")
-    client_info = {"model_id": model_id, "client": genai.Client(api_key=gemini_key)}
-
-    case_dic = analyze_state_cases(case_df, prompt_start, client_info)
+        case_dic[case_id] = {}
+        case_dic[case_id]["pdf_link"] = pdf_link
+        case_dic[case_id]["response"] = opinion_resp
 
     return case_dic
 
 
-def state_opinion_table(case_dic: dict):
+def court_opinion_table(case_dic: dict):
     """
     Inputs:
     - case_dic: dict (the output of apply_model())
 
     Outputs:
-    - pd.DataFrame
+    - pd.DataFrame (a table with the individual opinions found in a case
+                    opinion document)
 
     This function converst the output from apply_model() into an opinion
-    table with three columns:
+    table with five columns:
     - case_id
     - name
-    - opinion
+    - description
+    - ruling
     """
     opinion_table = {"case_id": [], "name": [], "description": [], "ruling": []}
 
+    # Extracting individual opinion data from Gemini output
     for key in case_dic.keys():
         opinions = case_dic[key]["response"]
         num_opinions = len(opinions["judge_opinions"])
@@ -244,14 +240,15 @@ def state_opinion_table(case_dic: dict):
     return pd.DataFrame(opinion_table)
 
 
-def state_case_table(case_df: pd.DataFrame, case_dic: dict):
+def court_case_table(case_df: pd.DataFrame, case_dic: dict):
     """
     Inputs:
-    - case_df: pd.DataFrame
-    - case_dic: dict
+    - case_df: pd.DataFrame (dataframe containing webscraped cases)
+    - case_dic: dict (output from apply_model())
 
     Outputs:
-    - pd.DataFrame
+    - pd.DataFrame (a table with all of the case information from a set of
+                    court cases)
 
     This function takes a dataframe of cases, and compines it with the output
     of apply_model() to create a complete case table that includes case
@@ -281,53 +278,109 @@ def state_case_table(case_df: pd.DataFrame, case_dic: dict):
         if row["case_id"] not in case_dic:
             continue
 
-        case_table["docket_no"].append(row["docket_no"])
-        case_table["state"].append(row["state"])
-        case_table["date"].append(date)
-        case_table["title"].append(row["title"])
-        case_table["type"].append(row["type"])
-        case_table["opinion_link"].append(row["opinion_link"])
-        case_table["case_id"].append(row["case_id"])
+        for field in case_table.keys():
+            if field == "date":
+                date = str(datetime.strptime(row["date"], "%B %d, %Y"))[:10]
+                case_table[field].append(date)
+            elif field == "description":
+                break
+            else:
+                case_table[field].append(row[field])
 
         response = case_dic[row["case_id"]]["response"]
-        case_table["description"].append(response["issue_debate"])
-        case_table["plaintiff_argument"].append(response["plaintiff_argument"])
-        case_table["defendant_argument"].append(response["defendant_argument"])
-        case_table["decision_outcome"].append(response["decision_outcome"])
-        case_table["decision_winner"].append(response["decision_winner"])
+        for field in response.keys():
+            if field == "issue_debate":
+                case_table["description"].append(response[field])
+            elif field == "rights_affected":
+                rights_affected = response["rights_affected"]
+                break
+            else:
+                print(field)
+                case_table[field].append(response[field])
 
-        rights_affected = response["rights_affected"]
         for right in rights_enumerated_list:
             case_table[right].append(rights_affected[right])
 
     return pd.DataFrame(case_table)
 
 
+def create_meta_data(model_id: str, cases_processed: list, prompt_path: Path):
+    """
+    Inputs:
+    - model_id: str (the Gemini model to be used when reading the opinion)
+    - cases_processed: list (a list of case IDs for cases that were processed)
+    - prompt_pathL Path (the path for the prompt to be read form)
+
+    Outputs:
+    - llm_run_metadata: dict (the dictionary of information describing the run)
+
+    This function takes specific information about the run and writes a
+    metadata JSON file in the data directory.
+    """
+    try:
+        avg_query_time = sum(QUERY_TIMES) / len(QUERY_TIMES)
+    except ZeroDivisionError:
+        avg_query_time = 0
+
+    with open(prompt_path, "r") as prompt_file:
+        prompt = prompt_file.read()
+
+    llm_run_metadata = {
+        "timestamp": datetime.today().strftime("%m-%d-%Y"),
+        "model_id": model_id,
+        "cases_processed": cases_processed,
+        "prompt_start": prompt,
+        "skips": SKIPS,
+        "avg_case_query_time": avg_query_time,
+    }
+
+    meta_path = (
+        Path(__file__).parent.parent
+        / "data"
+        / "run_metadata"
+        / f"llm_run_{llm_run_metadata['timestamp']}.json"
+    )
+    meta_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(meta_path, "w") as md:
+        json.dump(llm_run_metadata, md)
+
+    return llm_run_metadata
+
+
 def produce_tables(
     case_df: pd.DataFrame,
+    court_geo: str = "state",
     prompt_path: Path = Path(__file__).parent / "prompt.txt",
     model_id: str = "gemini-2.5-flash",
+    temperature: float = 0.0,
     use_existing: bool = True,
     write_on: bool = True,
 ):
     """
     Inputs:
-    - case_df: pd.DataFrame
-    - prompt_path: str
-    - model_id: str
-    - use_existing: bool
-    - write_on: bool
+    - case_df: pd.DataFrame (dataframe containing webscraped cases)
+    - prompt_path: str (the stringified prompt for the Gemini query)
+    - model_id: str (Gemini model's name for query)
+    - temperature: float (the temperature when making the prompt)
+    - use_existing: bool (toggled on to use existing .csv files to create tables)
+    - write_on: bool (toggled on to write .csv files for each table created)
 
     Outputs:
-    - rd: dict
+    - rd: dict{pd.DataFrame} (a dictionary containing the case and individual
+                              opinion tables)
+    -
 
     This function takes dataframes of cases and judges, and iterates state
     by state to iteratively create the opinion and case tables. Returns
     each in a dictionary.
     """
-    states = case_df["state"].sort_values().unique()
+    unique_courts = case_df[court_geo].sort_values().unique()
+
+    # Initializing lists of cases and opinions
     cases_list = []
     opinion_list = []
+
+    # Creating paths and extracting .csv files for cases and opinions
     cases_path = Path(__file__).parent.parent / "data" / "cases"
     cases_path.mkdir(parents=True, exist_ok=True)
     case_files = [file.name.replace(".csv", "") for file in cases_path.iterdir()]
@@ -335,32 +388,37 @@ def produce_tables(
     opinions_path.mkdir(parents=True, exist_ok=True)
     opinion_files = [file.name.replace(".csv", "") for file in opinions_path.iterdir()]
 
-    for state in states:
-        print(f"Analyzing cases and opinions for {state}")
-        if (state in case_files) and (state in opinion_files) and use_existing:
-            case_table = cases_path / (state + ".csv")
+    for court in tqdm(unique_courts):
+        print(f"Analyzing cases and opinions for {court}")
+
+        # Extracting case and opinion tables from existing files if
+        # use existing is toggled on
+        if (court in case_files) and (court in opinion_files) and use_existing:
+            case_table = cases_path / (court + ".csv")
             cases = pd.read_csv(case_table)
-            opinion_table = opinions_path / (state + ".csv")
+            opinion_table = opinions_path / (court + ".csv")
             opinions = pd.read_csv(opinion_table)
+
         else:
-            court_cases = case_df[case_df["state"] == state]
-            case_dic = apply_model(court_cases, prompt_path, model_id)
-            cases = state_case_table(court_cases, case_dic)
-            opinions = state_opinion_table(case_dic)
+            # Otherwise create then from stratch with webscraped cases
+            court_cases = case_df[case_df[court_geo] == court]
+            case_dic = apply_model(court_cases, prompt_path, model_id, temperature)
+            cases = court_case_table(court_cases, case_dic)
+            opinions = court_opinion_table(case_dic)
 
             if write_on:
-                file_path = Path(__file__).parent.parent / "data" / "cases" / (state + ".csv")
+                file_path = Path(__file__).parent.parent / "data" / "cases" / (court + ".csv")
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 cases.to_csv(file_path, index=False)
 
-                file_path = Path(__file__).parent.parent / "data" / "opinions" / (state + ".csv")
+                file_path = Path(__file__).parent.parent / "data" / "opinions" / (court + ".csv")
                 file_path.parent.mkdir(parents=True, exist_ok=True)
                 opinions.to_csv(file_path, index=False)
 
         cases_list.append(cases)
         opinion_list.append(opinions)
 
-        print(f"Analyzed {len(cases)} cases for {state}")
+        print(f"Analyzed {len(cases)} cases for {court}")
 
     # Creating total tables
     total_cases = pd.concat(cases_list)
@@ -374,34 +432,11 @@ def produce_tables(
         file_path.parent.mkdir(parents=True, exist_ok=True)
         total_opinions.to_csv(file_path, index=False)
 
-    # Also write JSON metadata on this LLM batch run
-    with open(prompt_path, "r") as prompt_file:
-        prompt = prompt_file.read()
-
-    try:
-        avg_query_time = sum(QUERY_TIMES) / len(QUERY_TIMES)
-    except ZeroDivisionError:
-        avg_query_time = 0
-
-    llm_run_metadata = {
-        "timestamp": datetime.today().strftime("%m-%d-%Y"),
-        "model_id": model_id,
-        "cases_processed": total_cases["case_id"].tolist(),
-        "prompt_start": prompt,
-        "skips": SKIPS,
-        "avg_case_query_time": avg_query_time,
-    }
-    meta_path = (
-        Path(__file__).parent.parent
-        / "data"
-        / "run_metadata"
-        / f"llm_run_{llm_run_metadata['timestamp']}.json"
-    )
-    meta_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(meta_path, "w") as md:
-        json.dump(llm_run_metadata, md)
-
     rd = {"case_table": total_cases, "individual_opinion_table": total_opinions}
+
+    # Also write JSON metadata on this LLM batch run
+    llm_run_metadata = create_meta_data(model_id, total_cases["case_id"].tolist(), prompt_path)
+
     return rd, llm_run_metadata
 
 

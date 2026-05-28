@@ -6,7 +6,7 @@ app_name = "judgement_call"
 
 
 class StrListConverter:
-    regex = r"[a-zA-Z0-9_\-\s%\.]+"  # Susan M. Crawford gets lost because of her Period!!!
+    regex = r"[a-zA-ZÑñ0-9_\-\s%\.]+"  # Susan M. Crawford gets lost because of her Period!!!
 
     def to_python(self, value):
         if not value:
@@ -38,6 +38,8 @@ urlpatterns = [
         views.elections_state_county,
         name="elections_state_county",
     ),
+    # some of these urls are extraneous, but it got scary when I tried to
+    # delete them
     path("candidates/<str:state>/<str:county>/", views.candidates, name="candidates"),
     path("analysis/", views.analysis, name="analysis"),
     path("analysis/polarization/", views.polarization, name="polarization"),

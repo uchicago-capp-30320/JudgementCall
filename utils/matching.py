@@ -36,11 +36,25 @@ KEY_WORDS = [
 
 
 def standardize_name(name: str):
+    """
+    Inputs:
+    - name: str (the string of the name for matching)
+
+    Output:
+    - name: str (standardized name)
+    """
     name = name.replace("\n", "")
     return name.strip().lower().translate(str.maketrans("", "", punctuation))
 
 
 def standardize_alias(alias: str):
+    """
+    Inputs:
+    - alias: str (the string of the alias for matching)
+
+    Output:
+    - alias: str (standardized alias)
+    """
     for end in ENDINGS:
         if alias.endswith(end):
             alias = alias.removesuffix(end)
@@ -54,6 +68,17 @@ def standardize_alias(alias: str):
 
 
 def analyze_potential_matches(alias: str, names: list[str], num_words: int = None):
+    """
+    Inputs:
+    - alias: str (alias to be matched with names)
+    - names: list[str] (a list of name to match the alias against)
+    - num_words: int (only used as an input when matching partial names with
+                      partial aliases)
+
+    Outputs:
+    - matches: dict (a dictionary where each key value pair is the name and its
+                     similarity score to the alias)
+    """
     matches = {}
 
     for name in names:
@@ -68,6 +93,15 @@ def analyze_potential_matches(alias: str, names: list[str], num_words: int = Non
 
 
 def find_best_match(alias: str, names: list[str]):
+    """
+    Inputs:
+    - alias: str (alias to be matched)
+    - names: list[str] (a list of names to match the alias against)
+
+    Output:
+    - top_match: str (the top-matching name, if one if not found function
+                      returns None)
+    """
     standard_alias = standardize_alias(alias)
     matches = analyze_potential_matches(standard_alias, names)
     top_match = max(matches, key=lambda k: matches[k])
@@ -84,7 +118,7 @@ def find_best_match(alias: str, names: list[str]):
     else:
         # If both of the conditions above fail, then reverse iterate
         # through the terms of the standardized alias to match them with
-        # the corresponding terms in the standardized top-matching name
+        # the top-matching corresponding terms in the standardized name
         alias_terms = standard_alias.split(" ")
         build_out_term = ""
 
