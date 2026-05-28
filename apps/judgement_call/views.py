@@ -1,9 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, Http404
+from django.http import Http404
 from django.db.models import Avg, Count, When, Value, Q
 from django.db.models import Case as Case_
-
-# from django.http import HttpResponse
 from .models import (
     Court,
     Person,
@@ -12,40 +10,19 @@ from .models import (
     Tenure,
     Case,
     IndividualOpinion,
-    CourtLevel,
-    SelectionType,
-    CaseType,
-    SelectionJurisdictionType,
-    Alias,
-    CaseParticipant,
-    TopicAlignment,
-    RulingType,
     CountyToCourt,
-    PersonGender,
-    PersonRace,
-    PartyAffiliation,
 )
-from datetime import datetime
 from django.utils import timezone
-
-# from django.db.models import Count, Avg
-from django.db.models.functions import ExtractYear
-
 from dateutil.relativedelta import relativedelta
-
-# from django.db.models import Q, Count, Sum, When, FloatField
-# from django.core.paginator import Paginator
-# from urllib.parse import urlparse
 from django.urls import reverse
-from localflavor.us.us_states import US_STATES
 from django.http import JsonResponse
+from datetime import datetime
+from localflavor.us.us_states import US_STATES
+import re
 from .icons import get_judge_icons, get_topic_icons
-
 from apps.judgement_call.forms import ChoroplethForm, SpacejamForm
 from analysis.polarization_choropleth import produce_data, create_choropleth
-
 from analysis.spacejam import make_plot as make_mds_plot
-import re
 
 
 # comment to push
