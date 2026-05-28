@@ -1,5 +1,5 @@
 <script>
-    window.activeJudgeNames = []; // Make accessible in court.html
+    window.activeJudgeNames = []; // Make selected judges accessible in court.html
     document.querySelectorAll('.collapsible-container').forEach(function (container) {
         container.addEventListener('click', function () {
             const content = this.nextElementSibling;
@@ -9,6 +9,7 @@
                 content.style.maxHeight = content.scrollHeight + "px";
             }
             window.activeJudgeNames = [];
+            // After clicking a collapsible judge, see which judges are open and get their names
             document.querySelectorAll('.collapsible-container').forEach(function (cont) {
                 const contDetails = cont.nextElementSibling;
                 if (contDetails.style.maxHeight && contDetails.style.maxHeight !== "0px") {
@@ -19,6 +20,7 @@
                 }
             });
 
+            // Notify for radar_test.html
             const judgeEvent = new CustomEvent('judgeSelectionChanged', {
                 detail: { judges: window.activeJudgeNames }
             });
